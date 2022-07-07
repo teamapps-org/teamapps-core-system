@@ -19,6 +19,7 @@
  */
 package org.teamapps.application.server.controlcenter;
 
+import org.teamapps.application.api.annotation.TeamAppsBootableClass;
 import org.teamapps.application.api.application.AbstractApplicationBuilder;
 import org.teamapps.application.api.application.perspective.PerspectiveBuilder;
 import org.teamapps.application.api.config.ApplicationConfig;
@@ -37,6 +38,7 @@ import org.teamapps.application.server.controlcenter.applications.ApplicationUpd
 import org.teamapps.application.server.controlcenter.applications.ApplicationsPerspectiveBuilder;
 import org.teamapps.application.server.controlcenter.applocal.AppLocalAdministrationPerspectiveBuilder;
 import org.teamapps.application.server.controlcenter.cluster.ClusterPerspectiveBuilder;
+import org.teamapps.application.server.controlcenter.core.SystemCoreUpdatePerspectiveBuilder;
 import org.teamapps.application.server.controlcenter.database.DataBasePerspectiveBuilder;
 import org.teamapps.application.server.controlcenter.monitoring.MonitoringPerspectiveBuilder;
 import org.teamapps.application.server.controlcenter.organization.OrganizationChartPerspectiveBuilder;
@@ -57,6 +59,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+@TeamAppsBootableClass(priority = 3)
 public class ControlCenterAppBuilder extends AbstractApplicationBuilder {
 
 	private ApplicationConfig<SystemConfig> applicationConfig;
@@ -80,6 +83,7 @@ public class ControlCenterAppBuilder extends AbstractApplicationBuilder {
 				new TranslationsPerspectiveBuilder(),
 				new ApplicationConfigurationPerspectiveBuilder(),
 				new ClusterPerspectiveBuilder(),
+				new SystemCoreUpdatePerspectiveBuilder(),
 				new SystemLogPerspectiveBuilder(),
 				new MonitoringPerspectiveBuilder(),
 				new DataBasePerspectiveBuilder(),
@@ -97,7 +101,7 @@ public class ControlCenterAppBuilder extends AbstractApplicationBuilder {
 
 	@Override
 	public ApplicationVersion getApplicationVersion() {
-		return ApplicationVersion.create(0, 57);
+		return ApplicationVersion.create(0, 63);
 	}
 
 	@Override
@@ -116,50 +120,9 @@ public class ControlCenterAppBuilder extends AbstractApplicationBuilder {
 				new LocalizationLanguages(
 						Locale.ENGLISH
 				).setMachineTranslatedLanguages(
-						Locale.GERMAN,
-						Locale.FRENCH,
-						Locale.ITALIAN,
-						Locale.JAPANESE,
-						Locale.CHINESE,
-						Locale.forLanguageTag("bg"),
-						Locale.forLanguageTag("cs"),
-						Locale.forLanguageTag("da"),
-						Locale.forLanguageTag("el"),
-						Locale.forLanguageTag("es"),
-						Locale.forLanguageTag("et"),
-						Locale.forLanguageTag("fi"),
-						Locale.forLanguageTag("hu"),
-						Locale.forLanguageTag("lt"),
-						Locale.forLanguageTag("lv"),
-						Locale.forLanguageTag("nl"),
-						Locale.forLanguageTag("pl"),
-						Locale.forLanguageTag("pt"),
-						Locale.forLanguageTag("ro"),
-						Locale.forLanguageTag("ru"),
-						Locale.forLanguageTag("sk"),
-						Locale.forLanguageTag("sl"),
-						Locale.forLanguageTag("sv"),
-						Locale.forLanguageTag("fa"),
-						Locale.forLanguageTag("iw"), //he
-						Locale.forLanguageTag("hi"),
-						Locale.forLanguageTag("hr"),
-						Locale.forLanguageTag("in"), //id
-						Locale.forLanguageTag("ko"),
-						Locale.forLanguageTag("mk"),
-						Locale.forLanguageTag("mn"),
-						Locale.forLanguageTag("sr"),
-						Locale.forLanguageTag("tr"),
-						Locale.forLanguageTag("vi")
+						Locale.GERMAN
 				)
 		);
-	}
-
-	public static void main(String[] args) {
-		Locale locale = new Locale("id");
-//		Locale locale = Locale.forLanguageTag("id");
-		System.out.println(locale);
-
-		System.out.println(Locale.forLanguageTag("he"));
 	}
 
 	@Override
