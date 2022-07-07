@@ -73,7 +73,7 @@ public class ApplicationUpdatesPerspective extends AbstractManagedApplicationPer
 		selectedApplication.set(getMainApplication());
 		View applicationVersionsView = getPerspective().addView(View.createView(StandardLayout.CENTER, ApplicationIcons.BOX_SOFTWARE, getLocalized("applications.versions"), null));
 		View applicationDetailsView = getPerspective().addView(View.createView(StandardLayout.RIGHT, ApplicationIcons.BOX_SOFTWARE, getLocalized("applications.application"), null));
-		applicationDetailsView.getPanel().setBodyBackgroundColor(Color.WHITE.withAlpha(0.9f));
+		applicationDetailsView.getPanel().setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.9f));
 
 		EntityListModelBuilder<ApplicationVersion> applicationVersionModelBuilder = new EntityListModelBuilder<>(getApplicationInstanceData());
 		applicationVersionModelBuilder.setRecords(selectedApplication.get().getVersions());

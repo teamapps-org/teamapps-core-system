@@ -56,7 +56,7 @@ public class NewsBoardPerspective extends AbstractManagedApplicationPerspective 
 
 	private void createUi() {
 		masterView = getPerspective().addView(View.createView(StandardLayout.CENTER, ApplicationIcons.MESSAGE, getLocalized("newsBoard.title"), null));
-		masterView.getPanel().setBodyBackgroundColor(Color.WHITE.withAlpha(0.1f));
+		masterView.getPanel().setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.1f));
 
 		updateMessages();
 

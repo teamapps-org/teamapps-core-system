@@ -82,7 +82,7 @@ public class OrganizationChartPerspective extends AbstractManagedApplicationPers
 			return;
 		}
 		View masterView = getPerspective().addView(View.createView(StandardLayout.CENTER, ApplicationIcons.PIECES, getLocalized("organizationChart.title"), null));
-		masterView.getPanel().setBodyBackgroundColor(Color.WHITE.withAlpha(0.75f));
+		masterView.getPanel().setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.75f));
 		View masterTableView = getPerspective().addView(View.createView(StandardLayout.CENTER, ApplicationIcons.PIECES, getLocalized("organizationChart.title"), null));
 		masterTableView.setVisible(false);
 		ToolbarButtonGroup buttonGroup;

@@ -74,7 +74,7 @@ public class DatabasePerspective extends AbstractManagedApplicationPerspective {
 		timeLineView = getPerspective().addView(View.createView(StandardLayout.TOP, ApplicationIcons.CHART_LINE, getLocalized(Dictionary.TIMELINE), null));
 		tableView = getPerspective().addView(View.createView(StandardLayout.CENTER, ApplicationIcons.TABLE, getLocalized(Dictionary.TABLE), null));
 		formView = getPerspective().addView(View.createView(StandardLayout.RIGHT, ApplicationIcons.FORM, getLocalized(Dictionary.FORM), null));
-		formView.getPanel().setBodyBackgroundColor(Color.WHITE.withAlpha(0.9f));
+		formView.getPanel().setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.9f));
 
 
 

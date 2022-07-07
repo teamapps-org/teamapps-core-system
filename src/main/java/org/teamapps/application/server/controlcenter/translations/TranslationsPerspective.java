@@ -85,8 +85,8 @@ public class TranslationsPerspective extends AbstractManagedApplicationPerspecti
 		View localizationKeyView = View.createView(StandardLayout.CENTER, ApplicationIcons.SPELL_CHECK, getLocalized("translations.overView"), null);
 		View topicImageView = View.createView(StandardLayout.CENTER_BOTTOM, ApplicationIcons.FORM, getLocalized(Dictionary.PREVIEW_IMAGE), null);
 		View translationView = View.createView(StandardLayout.RIGHT, ApplicationIcons.SPELL_CHECK, getLocalized("translations.translation"), null);
-		localizationKeyView.getPanel().setBodyBackgroundColor(Color.WHITE.withAlpha(0.9f));
-		translationView.getPanel().setBodyBackgroundColor(Color.WHITE.withAlpha(0.9f));
+		localizationKeyView.getPanel().setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.9f));
+		translationView.getPanel().setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.9f));
 
 		topicImageView.setVisible(false);
 

@@ -76,15 +76,15 @@ public class MessageWindow extends AbstractApplicationView {
 
 
 		View languageView = perspective.addView(View.createView(StandardLayout.LEFT, ApplicationIcons.EARTH, getLocalized(Dictionary.LANGUAGE), null));
-		languageView.getPanel().setBodyBackgroundColor(Color.WHITE.withAlpha(0.94f));
+		languageView.getPanel().setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.94f));
 		languageView.setVisible(false);
 
 		centerView = perspective.addView(View.createView(StandardLayout.CENTER, ApplicationIcons.MESSAGE, getLocalized("newsBoard.message"), null));
-		centerView.getPanel().setBodyBackgroundColor(Color.WHITE.withAlpha(0.7f));
+		centerView.getPanel().setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.7f));
 
 
 		View imageView = perspective.addView(View.createView(ExtendedLayout.OUTER_RIGHT, ApplicationIcons.PHOTO_LANDSCAPE, getLocalized("newsBoard.images"), null));
-		imageView.getPanel().setBodyBackgroundColor(Color.WHITE.withAlpha(0.94f));
+		imageView.getPanel().setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.94f));
 		imageView.setSize(ViewSize.ofAbsoluteWidth(120));
 		imageView.setSize(ViewSize.ofRelativeWidth(0.15f));
 		imageView.setVisible(false);
@@ -252,7 +252,7 @@ public class MessageWindow extends AbstractApplicationView {
 		window = new Window(1100, 800, application.getUi());
 		window.setIcon(ApplicationIcons.MESSAGE);
 		window.setTitle(getLocalized("newsBoard.message"));
-		window.setBodyBackgroundColor(Color.WHITE.withAlpha(0.3f));
+		window.setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.3f));
 		window.setMaximizable(true);
 		window.setCloseable(true);
 		window.setCloseOnEscape(true);

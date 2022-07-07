@@ -69,7 +69,7 @@ public class ApplicationGroupsPerspective extends AbstractManagedApplicationPers
 	private void createUi() {
 		View groupsView = View.createView(StandardLayout.CENTER, ApplicationIcons.WINDOWS, getLocalized("applicationGroups.title"), null);
 		View applicationDetailsView = View.createView(StandardLayout.RIGHT, ApplicationIcons.WINDOWS, getLocalized("applicationGroups.title"), null);
-		applicationDetailsView.getPanel().setBodyBackgroundColor(Color.WHITE.withAlpha(0.9f));
+		applicationDetailsView.getPanel().setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.9f));
 
 		ToolbarButtonGroup buttonGroup = applicationDetailsView.addWorkspaceButtonGroup(new ToolbarButtonGroup());
 		ToolbarButton addGroupButton = buttonGroup.addButton(ToolbarButton.create(ApplicationIcons.ADD, getLocalized("applicationGroups.addGroup"), getLocalized("applicationGroups.addGroup.desc")));

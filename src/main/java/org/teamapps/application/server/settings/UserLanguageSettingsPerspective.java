@@ -47,7 +47,7 @@ public class UserLanguageSettingsPerspective extends AbstractApplicationPerspect
 	private void createUi() {
 		Perspective perspective = getPerspective();
 		View view = perspective.addView(View.createView(StandardLayout.CENTER, ApplicationIcons.DICTIONARY, getLocalized(Dictionary.LANGUAGE), null));
-		view.getPanel().setBodyBackgroundColor(Color.WHITE.withAlpha(0.9f));
+		view.getPanel().setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.9f));
 
 		User user = User.getById(getApplicationInstanceData().getUser().getId());
 		ComboBox<Language> languageComboBox = Language.createComboBox(getApplicationInstanceData());

@@ -100,8 +100,8 @@ public class MachineTranslationsPerspective extends AbstractManagedApplicationPe
 	private void createUi() {
 		View localizationKeyView = View.createView(StandardLayout.CENTER, ApplicationIcons.EARTH_LINK, getLocalized("machineTranslation.title"), null);
 		View translationView = View.createView(StandardLayout.RIGHT, ApplicationIcons.EARTH_LINK, getLocalized("machineTranslation.title"), null);
-		localizationKeyView.getPanel().setBodyBackgroundColor(Color.WHITE.withAlpha(0.9f));
-		translationView.getPanel().setBodyBackgroundColor(Color.WHITE.withAlpha(0.9f));
+		localizationKeyView.getPanel().setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.9f));
+		translationView.getPanel().setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.9f));
 
 
 		ToolbarButtonGroup buttonGroup = localizationKeyView.addWorkspaceButtonGroup(new ToolbarButtonGroup());

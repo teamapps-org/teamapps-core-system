@@ -21,7 +21,7 @@ package org.teamapps.application.server.controlcenter.users;
 
 import org.apache.commons.io.IOUtils;
 import org.teamapps.application.api.application.ApplicationInstanceData;
-import org.teamapps.application.api.application.perspective.AbstractPerspectiveBuilder;
+import org.teamapps.application.api.application.perspective.PerspectiveBuilder;
 import org.teamapps.application.api.application.perspective.PerspectiveMenuPanel;
 import org.teamapps.application.api.localization.Dictionary;
 import org.teamapps.application.api.localization.Language;
@@ -32,6 +32,7 @@ import org.teamapps.application.server.controlcenter.Privileges;
 import org.teamapps.application.server.controlcenter.roles.UserRoleAssignmentPerspectiveBuilder;
 import org.teamapps.application.server.system.application.AbstractManagedApplicationPerspective;
 import org.teamapps.application.server.system.organization.OrganizationUtils;
+import org.teamapps.application.server.system.postaladdress.PostalAddressForm;
 import org.teamapps.application.server.system.privilege.UserPrivileges;
 import org.teamapps.application.server.system.privilege.UserPrivilegesView;
 import org.teamapps.application.server.system.session.PerspectiveSessionData;
@@ -62,7 +63,6 @@ import org.teamapps.ux.component.field.datetime.InstantDateTimeField;
 import org.teamapps.ux.component.field.upload.PictureChooser;
 import org.teamapps.ux.component.form.ResponsiveForm;
 import org.teamapps.ux.component.form.ResponsiveFormLayout;
-import org.teamapps.ux.component.format.Spacing;
 import org.teamapps.ux.component.itemview.SimpleItemView;
 import org.teamapps.ux.component.table.Table;
 import org.teamapps.ux.component.table.TableColumn;
@@ -97,7 +97,7 @@ public class UsersPerspective extends AbstractManagedApplicationPerspective {
 		);
 
 		menuPanel.addInstantiatedPerspective(usersPerspectiveBuilder, this);
-		SimpleItemView<AbstractPerspectiveBuilder> buttonMenu = menuPanel.getButtonMenu();
+		SimpleItemView<PerspectiveBuilder> buttonMenu = menuPanel.getButtonMenu();
 		setPerspectiveMenuPanel(menuPanel.getComponent(), buttonMenu);
 
 		List<OrganizationUnitView> allowedUnits = getAllowedUnits(Privileges.USERS_PERSPECTIVE, Privilege.READ);
