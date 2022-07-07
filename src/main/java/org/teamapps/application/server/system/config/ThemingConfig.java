@@ -26,6 +26,8 @@ public class ThemingConfig {
 	private String applicationSecondaryBackgroundUrl = "/resources/backgrounds/default-bl.jpg";
 	private String applicationDarkBackgroundUrl = "/resources/backgrounds/dark.jpg";
 	private String applicationDarkSecondaryBackgroundUrl = "/resources/backgrounds/dark.jpg";
+	private boolean darkTheme;
+	private String baseStyles;
 
 	public String getLoginBackgroundUrl() {
 		return loginBackgroundUrl;
@@ -65,5 +67,21 @@ public class ThemingConfig {
 
 	public void setApplicationDarkSecondaryBackgroundUrl(String applicationDarkSecondaryBackgroundUrl) {
 		this.applicationDarkSecondaryBackgroundUrl = applicationDarkSecondaryBackgroundUrl;
+	}
+
+	public boolean isDarkTheme() {
+		return darkTheme;
+	}
+
+	public void setDarkTheme(boolean darkTheme) {
+		this.darkTheme = darkTheme;
+	}
+
+	public String getBaseStyles() {
+		return baseStyles;
+	}
+
+	public void setBaseStyles(String baseStyles) {
+		this.baseStyles = baseStyles;
 	}
 }

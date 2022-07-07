@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.teamapps.application.api.localization.Dictionary;
 import org.teamapps.application.api.password.SecurePasswordHash;
 import org.teamapps.application.api.theme.ApplicationIcons;
+import org.teamapps.application.server.system.bootstrap.ApplicationRootPanel;
 import org.teamapps.application.server.system.bootstrap.LogoutHandler;
 import org.teamapps.application.server.system.bootstrap.SystemRegistry;
 import org.teamapps.application.server.system.launcher.ApplicationLauncher;
@@ -80,7 +81,8 @@ public class LoginHandler {
 			rankedLanguages.add(context.getLocale().getLanguage());
 			rankedLanguages.add("en");
 		}
-		RootPanel rootPanel = context.addRootPanel();
+		ApplicationRootPanel rootPanel = new ApplicationRootPanel();
+		context.addRootPanel("body", rootPanel);
 
 		Map<String, Object> clientParameters = context.getClientInfo().getClientParameters();
 		if (clientParameters != null && clientParameters.containsKey("ATOK")) {
@@ -112,7 +114,7 @@ public class LoginHandler {
 				Terms of use
 	 */
 
-	public void createLoginView(SessionContext context, RootPanel rootPanel) {
+	public void createLoginView(SessionContext context, ApplicationRootPanel rootPanel) {
 		String backgroundUrl = systemRegistry.getSystemConfig().getThemingConfig().getLoginBackgroundUrl();
 		context.registerBackgroundImage("login", backgroundUrl, backgroundUrl);
 		context.setBackgroundImage("login", 0);
@@ -144,7 +146,7 @@ public class LoginHandler {
 		return null;
 	}
 
-	private void showPasswordLogin(SessionContext context, RootPanel rootPanel) {
+	private void showPasswordLogin(SessionContext context, ApplicationRootPanel rootPanel) {
 		ElegantPanel elegantPanel = new ElegantPanel();
 		elegantPanel.setMaxContentWidth(450);
 
@@ -220,7 +222,7 @@ public class LoginHandler {
 	}
 
 
-	private void showSecureTokenLogin(List<UserAccessToken> loginTokens, SessionContext context, RootPanel rootPanel) {
+	private void showSecureTokenLogin(List<UserAccessToken> loginTokens, SessionContext context, ApplicationRootPanel rootPanel) {
 		ElegantPanel elegantPanel = new ElegantPanel();
 		InfiniteItemView<User> itemView = new InfiniteItemView<>(Templates.LOGIN_TEMPLATE, 170, 170);
 		ListInfiniteItemViewModel<User> itemViewModel = new ListInfiniteItemViewModel<>();
@@ -326,13 +328,14 @@ public class LoginHandler {
 	}
 
 
-	private void handleSuccessfulLogin(User user, RootPanel rootPanel, SessionContext context) {
+	private void handleSuccessfulLogin(User user, ApplicationRootPanel rootPanel, SessionContext context) {
 		try {
 			UserSessionData userSessionData = new UserSessionData(user, context, systemRegistry, rootPanel);
 			UniversalDB.setUserId(userSessionData.getUser().getId());
 			String userInfo = user.getId() + "-" + user.getLastName() + "-" + user.getFirstName();
 			LOGGER.info("User logged in: {}", userInfo);
 			context.setName(userInfo);
+			systemRegistry.addActiveUser(userSessionData);
 			if (systemRegistry.getSessionRegistryHandler() != null) {
 				systemRegistry.getSessionRegistryHandler().handleAuthenticatedUser(userSessionData, context);
 			}

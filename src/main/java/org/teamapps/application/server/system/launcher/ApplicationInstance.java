@@ -69,7 +69,7 @@ public class ApplicationInstance implements PerspectiveByNameLauncher {
 				if (perspectiveSessionData == null) {
 					LOGGER.error("Missing application loader for:" + managedApplicationPerspective.getApplicationPerspective());
 				}
-				if (perspectiveSessionData != null && perspectiveSessionData.getPerspectiveBuilder() !=null &&  perspectiveSessionData.getPerspectiveBuilder().isPerspectiveAccessible(perspectiveSessionData)) {
+				if (perspectiveSessionData != null && perspectiveSessionData.getPerspectiveBuilder() != null && perspectiveSessionData.getPerspectiveBuilder().isPerspectiveAccessible(perspectiveSessionData)) {
 					sortedPerspectives.add(perspectiveSessionData);
 				}
 			}
@@ -100,7 +100,7 @@ public class ApplicationInstance implements PerspectiveByNameLauncher {
 			applicationMenuTree = createApplicationMenuTree(sortedPerspectives);
 			View applicationMenu = View.createView(StandardLayout.LEFT, ApplicationIcons.RADIO_BUTTON_GROUP, getLocalized(Dictionary.MENU), null);
 			responsiveApplication.addApplicationView(applicationMenu);
-			applicationMenu.getPanel().setBodyBackgroundColor(Color.WHITE.withAlpha(0.84f));
+			applicationMenu.getPanel().setBodyBackgroundColor(userSessionData.isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.84f));
 			VerticalLayout verticalLayout = new VerticalLayout();
 			applicationMenu.setComponent(verticalLayout);
 
@@ -141,7 +141,7 @@ public class ApplicationInstance implements PerspectiveByNameLauncher {
 
 
 		mobileApplicationMenu = View.createView(StandardLayout.LEFT, ApplicationIcons.RADIO_BUTTON_GROUP, getLocalized(Dictionary.APPLICATION_MENU), null);
-		mobileApplicationMenu.getPanel().setBodyBackgroundColor(Color.WHITE.withAlpha(0.84f));
+		mobileApplicationMenu.getPanel().setBodyBackgroundColor(userSessionData.isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.84f));
 		responsiveApplication.addApplicationView(mobileApplicationMenu);
 		mobileLayout = new MobileLayout();
 		mobileApplicationMenu.setComponent(mobileLayout);
@@ -188,7 +188,7 @@ public class ApplicationInstance implements PerspectiveByNameLauncher {
 			if (applicationPerspective.getPerspectiveMenuPanel() != null) {
 				if (perspectiveSessionData.getManagedApplicationPerspective().isToolbarPerspectiveMenu()) {
 					Component perspectiveMenuPanel = applicationPerspective.getPerspectiveMenuPanel();
-					perspectiveMenuPanel.setCssStyle("height","300px");
+					perspectiveMenuPanel.setCssStyle("height", "300px");
 					if (perspectiveMenuPanel instanceof Tree) {
 						Tree menu = (Tree) perspectiveMenuPanel;
 						menu.onNodeSelected.addListener(() -> {

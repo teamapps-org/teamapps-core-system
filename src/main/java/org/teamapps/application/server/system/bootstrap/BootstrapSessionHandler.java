@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,6 +21,8 @@ package org.teamapps.application.server.system.bootstrap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.teamapps.application.api.annotation.TeamAppsBootableClass;
+import org.teamapps.application.api.application.ApplicationBuilder;
 import org.teamapps.application.api.config.ApplicationConfig;
 import org.teamapps.application.api.password.SecurePasswordHash;
 import org.teamapps.application.server.ServerRegistry;
@@ -48,13 +50,16 @@ import org.teamapps.model.controlcenter.User;
 import org.teamapps.model.controlcenter.UserAccountStatus;
 import org.teamapps.universaldb.UniversalDB;
 import org.teamapps.universaldb.index.file.FileValue;
+import org.teamapps.ux.component.template.BaseTemplateRecord;
 import org.teamapps.ux.session.SessionContext;
 
 import java.io.File;
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
+@TeamAppsBootableClass(priority = 7)
 public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -70,12 +75,9 @@ public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 	public Event<SessionContext> onUserLogout = new Event<>();
 
 	private final SessionRegistryHandler sessionRegistryHandler;
-	private SessionManager sessionManager;
 	private ServerRegistry serverRegistry;
 	private UniversalDB universalDB;
 	private SystemRegistry systemRegistry;
-	private ControlCenterAppBuilder controlCenterAppBuilder;
-	private Cluster cluster;
 
 	public BootstrapSessionHandler() {
 		this(null);
@@ -85,50 +87,36 @@ public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 		this.sessionRegistryHandler = sessionRegistryHandler;
 	}
 
-	public void installNewSystem(File applicationJar) throws Exception {
-		sessionManager.updateSessionHandler(applicationJar);
-	}
-
 	@Override
 	public void init(SessionManager sessionManager, ServerRegistry serverRegistry) {
 		try {
-			this.sessionManager = sessionManager;
 			this.serverRegistry = serverRegistry;
 			this.universalDB = serverRegistry.getUniversalDB();
-			startSystem();
+			startSystem(sessionManager);
 		} catch (Exception e) {
 			LOGGER.error("Error initializing system:", e);
 		}
 	}
 
 	public void startCluster(Cluster cluster) {
-		this.cluster = cluster;
 		systemRegistry.setCluster(cluster);
 	}
 
-	private void startSystem() throws Exception {
+	private void startSystem(SessionManager sessionManager) throws Exception {
 		ClassLoader classLoader = this.getClass().getClassLoader();
 		ControlCenterSchema schema = new ControlCenterSchema();
 		universalDB.addAuxiliaryModel(schema, classLoader);
 
-		controlCenterAppBuilder = new ControlCenterAppBuilder();
-		ApplicationConfig<SystemConfig> applicationConfig = controlCenterAppBuilder.getApplicationConfig();
-		systemRegistry = new SystemRegistry(this, serverRegistry, applicationConfig);
+		ApplicationBuilder controlCenterApp = getControlCenterApplication();
+		ApplicationConfig<SystemConfig> applicationConfig = controlCenterApp.getApplicationConfig();
+		systemRegistry = new SystemRegistry(this, serverRegistry, sessionManager, applicationConfig);
 		systemRegistry.setSessionRegistryHandler(sessionRegistryHandler);
+		systemRegistry.installAndLoadApplication(controlCenterApp);
+		getSystemApplications().forEach(app -> systemRegistry.installAndLoadApplication(app));
 
-		systemRegistry.installAndLoadApplication(controlCenterAppBuilder);
 		if (User.getCount() == 0) {
-			User.create()
-					.setFirstName("Super")
-					.setLastName("Admin")
-					.setLogin("admin")
-					.setPassword(SecurePasswordHash.createDefault().createSecureHash("teamapps!"))
-					.setUserAccountStatus(UserAccountStatus.SUPER_ADMIN)
-					.setLanguages(ValueConverterUtils.compressStringList(Arrays.asList("de", "en", "fr")))
-					.save();
+			createInitialUser();
 		}
-//		systemRegistry.installAndLoadApplication(new UserSettingsApp());
-//		loadSystemApps();
 
 		for (Application application : Application.getAll()) {
 			LOGGER.info("Loading app:" + application.getName());
@@ -154,8 +142,26 @@ public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 
 	}
 
-	public void loadSystemApps() {
-		systemRegistry.installAndLoadApplication(new MessagingApplication());
+	public void createInitialUser() {
+		User.create()
+				.setFirstName("Super")
+				.setLastName("Admin")
+				.setLogin("admin")
+				.setPassword(SecurePasswordHash.createDefault().createSecureHash("teamapps!"))
+				.setUserAccountStatus(UserAccountStatus.SUPER_ADMIN)
+				.setLanguages(ValueConverterUtils.compressStringList(Arrays.asList("en", "fr", "de")))
+				.save();
+	}
+
+	public ApplicationBuilder getControlCenterApplication() {
+		return new ControlCenterAppBuilder();
+	}
+
+	public List<ApplicationBuilder> getSystemApplications() {
+		return Arrays.asList(
+				new UserSettingsApp(),
+				new MessagingApplication()
+		);
 	}
 
 	@Override
@@ -178,6 +184,16 @@ public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 	}
 
 	@Override
+	public List<BaseTemplateRecord<Long>> getActiveUsers() {
+		return systemRegistry.getActiveUsers();
+	}
+
+	@Override
+	public void shutDown() {
+
+	}
+
+	@Override
 	public void handleLogout(SessionContext context) {
 
 	}
@@ -190,7 +206,4 @@ public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 		return systemRegistry;
 	}
 
-	public ControlCenterAppBuilder getControlCenterAppBuilder() {
-		return controlCenterAppBuilder;
-	}
 }

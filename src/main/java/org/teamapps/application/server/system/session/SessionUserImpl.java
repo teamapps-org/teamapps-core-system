@@ -36,10 +36,13 @@ public class SessionUserImpl implements SessionUser {
 	private final User user;
 	private final SessionContext context;
 	private final List<String> rankedLanguages;
+	private UserSessionData userSessionData;
 
-	public SessionUserImpl(User user, SessionContext context) {
-		this.user = user;
-		this.context = context;
+
+	public SessionUserImpl(UserSessionData userSessionData) {
+		this.userSessionData = userSessionData;
+		this.user = userSessionData.getUser();
+		this.context = userSessionData.getContext();
 		rankedLanguages = new ArrayList<>();
 		init();
 	}
@@ -105,6 +108,11 @@ public class SessionUserImpl implements SessionUser {
 	@Override
 	public List<String> getRankedLanguages() {
 		return rankedLanguages;
+	}
+
+	@Override
+	public boolean isDarkTheme() {
+		return userSessionData.isDarkTheme();
 	}
 
 }

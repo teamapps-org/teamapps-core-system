@@ -134,6 +134,7 @@ public class ApplicationLauncher {
 		}, false);
 		selectedApplication.onChanged().addListener(this::handleApplicationSelection);
 		userSessionData.getUser().setLastLogin(Instant.now()).save();
+		setTheme(userSessionData.isDarkTheme());
 		userSessionData.setApplicationDesktopSupplier(this::createApplicationDesktop);
 		initApplicationData();
 		createApplicationLauncher();
@@ -178,28 +179,21 @@ public class ApplicationLauncher {
 			return;
 		}
 		THREAD_LOCAL_APPLICATION.set(application);
-		if (application.isDarkTheme()) {
-			userSessionData.getContext().setBackgroundImage("defaultDarkBackground", 0);
-			SessionConfiguration configuration = SessionContext.current().getConfiguration();
-			configuration.setTheme(StylingTheme.DARK);
-			SessionContext.current().setConfiguration(configuration);
-
-		} else {
-			userSessionData.getContext().setBackgroundImage("defaultBackground", 0);
-			SessionConfiguration configuration = SessionContext.current().getConfiguration();
-			configuration.setTheme(StylingTheme.DEFAULT);
-			SessionContext.current().setConfiguration(configuration);
-		}
+		setTheme(application.isDarkTheme() || userSessionData.isDarkTheme());
 		selectedThemeIsDarkTheme = application.getDarkTheme();
+	}
+
+	private void setTheme(boolean dark) {
+		userSessionData.getContext().setBackgroundImage(dark ? "defaultDarkBackground" : "defaultBackground", 0);
+		SessionConfiguration configuration = SessionContext.current().getConfiguration();
+		configuration.setTheme(dark ? StylingTheme.DARK : StylingTheme.DEFAULT);
+		SessionContext.current().setConfiguration(configuration);
 	}
 
 	private void handleApplicationLauncherSelection() {
 		selectedApplication.set(null);
 		if (selectedThemeIsDarkTheme) {
-			userSessionData.getContext().setBackgroundImage("defaultBackground", 0);
-			SessionConfiguration configuration = SessionContext.current().getConfiguration();
-			configuration.setTheme(StylingTheme.DEFAULT);
-			SessionContext.current().setConfiguration(configuration);
+			setTheme(true);
 			selectedThemeIsDarkTheme = false;
 		}
 	}
@@ -263,10 +257,15 @@ public class ApplicationLauncher {
 
 	private void createMainView() {
 		ThemingConfig themingConfig = registry.getSystemConfig().getThemingConfig();
-		//todo user prefs/system prefs default dark theme
 		userSessionData.getContext().registerBackgroundImage("defaultBackground", themingConfig.getApplicationBackgroundUrl(), themingConfig.getApplicationSecondaryBackgroundUrl());
 		userSessionData.getContext().registerBackgroundImage("defaultDarkBackground", themingConfig.getApplicationDarkBackgroundUrl(), themingConfig.getApplicationDarkSecondaryBackgroundUrl());
-		userSessionData.getContext().setBackgroundImage("defaultBackground", 0);
+		if (themingConfig.isDarkTheme()) {
+			setTheme(true);
+		}
+		if (themingConfig.getBaseStyles() != null) {
+			userSessionData.getRootPanel().setBaseStyles(themingConfig.getBaseStyles());
+		}
+		userSessionData.getContext().setBackgroundImage(userSessionData.isDarkTheme() ? "defaultDarkBackground" : "defaultBackground", 0);
 
 		if (mobileView) {
 			userSessionData.setRootComponent(applicationLauncher);
@@ -331,6 +330,7 @@ public class ApplicationLauncher {
 		applicationOpenCount++;
 		LOGGER.info("Open app: " + (selectedPerspective.get() != null ? selectedPerspective.get().getApplicationPerspective().getQualifiedName() : null));
 		if (openedApplications.contains(applicationData)) {
+			userSessionData.setDarkTheme(applicationData.getManagedApplication().isDarkTheme());
 			if (mobileView) {
 				Component component = mobilAppByApplicationData.get(applicationData);
 				userSessionData.setRootComponent(component);
@@ -341,6 +341,7 @@ public class ApplicationLauncher {
 			}
 		} else {
 			ApplicationInstance applicationInstance = new ApplicationInstance(userSessionData, applicationData, applicationLauncher, selectedPerspective);
+			userSessionData.setDarkTheme(applicationData.getManagedApplication().isDarkTheme());
 			if (mobileView) {
 				Component application = applicationInstance.createMobileApplication();
 				userSessionData.setRootComponent(application);
@@ -411,7 +412,7 @@ public class ApplicationLauncher {
 		applicationsSearchField.onTextInput().addListener(applicationLauncher::setFilter);
 		panel.setRightHeaderField(applicationsSearchField);
 		panel.setContent(applicationLauncher);
-		panel.setBodyBackgroundColor(Color.WHITE.withAlpha(0.7f));
+		panel.setBodyBackgroundColor(userSessionData.isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.7f));
 		if (mobileView) {
 			return panel;
 		}
@@ -419,7 +420,7 @@ public class ApplicationLauncher {
 		framePanel.setHideTitleBar(true);
 		framePanel.setPadding(5);
 		framePanel.setContent(panel);
-		framePanel.setBodyBackgroundColor(Color.WHITE.withAlpha(0.001f));
+		framePanel.setBodyBackgroundColor(userSessionData.isDarkTheme() ? Color.BLACK.withAlpha(0.001f) : Color.WHITE.withAlpha(0.001f));
 		return framePanel;
 	}
 

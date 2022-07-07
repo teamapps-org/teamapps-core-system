@@ -28,6 +28,7 @@ import org.teamapps.application.api.localization.Dictionary;
 import org.teamapps.application.api.theme.ApplicationIcons;
 import org.teamapps.application.server.EntityUpdateEventHandler;
 import org.teamapps.application.server.ServerRegistry;
+import org.teamapps.application.server.SessionManager;
 import org.teamapps.application.server.system.auth.AuthenticationHandler;
 import org.teamapps.application.server.system.auth.UrlAuthenticationHandler;
 import org.teamapps.application.server.system.bootstrap.installer.ApplicationInstaller;
@@ -41,19 +42,19 @@ import org.teamapps.application.server.system.localization.SystemLocalizationPro
 import org.teamapps.application.server.system.machinetranslation.MachineTranslation;
 import org.teamapps.application.server.system.machinetranslation.TranslationService;
 import org.teamapps.application.server.system.server.SessionRegistryHandler;
+import org.teamapps.application.server.system.session.UserSessionData;
 import org.teamapps.application.ux.IconUtils;
 import org.teamapps.cluster.core.Cluster;
+import org.teamapps.icons.Icon;
 import org.teamapps.model.controlcenter.*;
 import org.teamapps.reporting.convert.DocumentConverter;
 import org.teamapps.universaldb.UniversalDB;
 import org.teamapps.universaldb.record.EntityBuilder;
+import org.teamapps.ux.component.template.BaseTemplateRecord;
 
 import java.io.File;
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -74,16 +75,19 @@ public class SystemRegistry {
 	private final BaseResourceLinkProvider baseResourceLinkProvider;
 	private SessionRegistryHandler sessionRegistryHandler;
 	private DocumentConverter documentConverter;
-	private List<AuthenticationHandler> authenticationHandlers = new ArrayList<>();
-	private EntityUpdateEventHandler entityUpdateEventHandler;
+	private final List<AuthenticationHandler> authenticationHandlers = new ArrayList<>();
+	private final EntityUpdateEventHandler entityUpdateEventHandler;
 	private Cluster cluster;
 	private ServerRegistry serverRegistry;
+	private final SessionManager sessionManager;
+	private final WeakHashMap<UserSessionData, Long> activeUsersMap = new WeakHashMap<>();
 
-	public SystemRegistry(BootstrapSessionHandler bootstrapSessionHandler, ServerRegistry serverRegistry, ApplicationConfig<SystemConfig> applicationConfig) {
+	public SystemRegistry(BootstrapSessionHandler bootstrapSessionHandler, ServerRegistry serverRegistry, SessionManager sessionManager, ApplicationConfig<SystemConfig> applicationConfig) {
 		this.serverRegistry = serverRegistry;
 		SystemConfig systemConfig = applicationConfig.getConfig();
 		this.bootstrapSessionHandler = bootstrapSessionHandler;
 		this.serverRegistry = serverRegistry;
+		this.sessionManager = sessionManager;
 		this.universalDB = serverRegistry.getUniversalDB();
 		this.entityUpdateEventHandler = serverRegistry.getEntityUpdateEventHandler();
 		this.applicationConfig = applicationConfig;
@@ -93,7 +97,6 @@ public class SystemRegistry {
 		this.baseResourceLinkProvider = new BaseResourceLinkProvider();
 		this.unspecifiedApplicationGroup = getOrCreateUnspecifiedApplicationGroup();
 
-		authenticationHandlers.add(new UrlAuthenticationHandler(() -> applicationConfig.getConfig().getAuthenticationConfig()));
 		applicationConfig.onConfigUpdate.addListener(this::handleConfigUpdate);
 		handleConfigUpdate();
 	}
@@ -125,6 +128,26 @@ public class SystemRegistry {
 		if (translationService != null) {
 			LocalizationUtil.translateAllValues(translationService, getSystemConfig().getLocalizationConfig());
 		}
+	}
+
+	public synchronized void addActiveUser(UserSessionData userSessionData) {
+		activeUsersMap.put(userSessionData, System.currentTimeMillis());
+	}
+
+	public synchronized List<BaseTemplateRecord<Long>> getActiveUsers() {
+		List<BaseTemplateRecord<Long>> activeUserData = new ArrayList<>();
+		for (Map.Entry<UserSessionData, Long> entry : activeUsersMap.entrySet()) {
+			UserSessionData userSessionData = entry.getKey();
+			if (userSessionData != null && !userSessionData.getContext().isDestroyed()) {
+				User user = userSessionData.getUser();
+				String caption = user.getFirstName() + " " + user.getLastName() + " (" + user.getLogin() + ")";
+				String description = user.getOrganizationUnit() != null ? user.getOrganizationUnit().getName().getText() : null;
+				Icon icon = userSessionData.getUserPrivileges() != null ? ApplicationIcons.USER : ApplicationIcons.SIGN_FORBIDDEN;
+				BaseTemplateRecord<Long> record = new BaseTemplateRecord<>(icon, caption, description, entry.getValue());
+				activeUserData.add(record);
+			}
+		}
+		return activeUserData;
 	}
 
 	private ManagedApplicationGroup getOrCreateUnspecifiedApplicationGroup() {
@@ -259,5 +282,13 @@ public class SystemRegistry {
 
 	public void setCluster(Cluster cluster) {
 		this.cluster = cluster;
+	}
+
+	public ServerRegistry getServerRegistry() {
+		return serverRegistry;
+	}
+
+	public SessionManager getSessionManager() {
+		return sessionManager;
 	}
 }

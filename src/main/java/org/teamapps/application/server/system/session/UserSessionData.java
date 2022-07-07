@@ -23,6 +23,7 @@ import org.teamapps.application.api.desktop.ApplicationDesktop;
 import org.teamapps.application.api.localization.ApplicationLocalizationProvider;
 import org.teamapps.application.api.privilege.ApplicationPrivilegeProvider;
 import org.teamapps.application.api.user.SessionUser;
+import org.teamapps.application.server.system.bootstrap.ApplicationRootPanel;
 import org.teamapps.application.server.system.bootstrap.SystemRegistry;
 import org.teamapps.application.server.system.launcher.MobileApplicationNavigation;
 import org.teamapps.application.server.system.localization.SessionApplicationLocalizationProvider;
@@ -46,7 +47,7 @@ public class UserSessionData {
 	private final User user;
 	private final SessionContext context;
 	private final SystemRegistry registry;
-	private final RootPanel rootPanel;
+	private final ApplicationRootPanel rootPanel;
 	private UserPrivileges userPrivileges;
 	private final SessionUser sessionUser;
 	private final SessionIconProvider iconProvider;
@@ -55,14 +56,15 @@ public class UserSessionData {
 	private Supplier<ApplicationDesktop> applicationDesktopSupplier;
 	private Function<Component, Component> rootWrapperComponentFunction;
 	private final ApplicationLocalizationProvider localizationProvider;
+	private boolean darkTheme;
 
-	public UserSessionData(User user, SessionContext context, SystemRegistry registry, RootPanel rootPanel) {
+	public UserSessionData(User user, SessionContext context, SystemRegistry registry, ApplicationRootPanel rootPanel) {
 		this.user = user;
 		this.context = context;
 		this.registry = registry;
 		this.rootPanel = rootPanel;
 		this.userPrivileges = new UserPrivileges(user, registry);
-		this.sessionUser = new SessionUserImpl(user, context);
+		this.sessionUser = new SessionUserImpl(this);
 		this.localizationRankedLanguages = createLocalizationRankedLanguages();
 		this.iconProvider = context.getIconProvider();
 		this.localizationProvider = new SessionApplicationLocalizationProvider(null, localizationRankedLanguages, registry.getGlobalLocalizationProvider());
@@ -123,7 +125,7 @@ public class UserSessionData {
 		return registry;
 	}
 
-	public RootPanel getRootPanel() {
+	public ApplicationRootPanel getRootPanel() {
 		return rootPanel;
 	}
 
@@ -170,5 +172,13 @@ public class UserSessionData {
 
 	public void setApplicationDesktopSupplier(Supplier<ApplicationDesktop> applicationDesktopSupplier) {
 		this.applicationDesktopSupplier = applicationDesktopSupplier;
+	}
+
+	public boolean isDarkTheme() {
+		return user.isDarkTheme() || darkTheme;
+	}
+
+	public void setDarkTheme(boolean darkTheme) {
+		this.darkTheme = darkTheme;
 	}
 }
