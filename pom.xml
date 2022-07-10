@@ -16,8 +16,8 @@
         <apache-commons-io>2.11.0</apache-commons-io>
     </properties>
 
-    <name>TeamApps Control Center</name>
-    <description>Base control center for TeamApps Application Server</description>
+    <name>TeamApps Core System</name>
+    <description>Core System for TeamApps Application Server</description>
     <url>https://github.com/teamapps-org/teamapps-core-system</url>
     <licenses>
         <license>
@@ -89,7 +89,7 @@
 
     <profiles>
         <profile>
-            <id>Build Control Center Jar</id>
+            <id>Build Core System Jar</id>
             <dependencies>
 
                 <dependency>
