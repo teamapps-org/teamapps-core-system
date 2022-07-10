@@ -34,6 +34,7 @@ import org.teamapps.application.api.ui.UiComponentFactory;
 import org.teamapps.application.api.user.SessionUser;
 import org.teamapps.application.server.system.bootstrap.SystemRegistry;
 import org.teamapps.application.server.system.utils.LogUtils;
+import org.teamapps.event.Event;
 import org.teamapps.model.controlcenter.*;
 import org.teamapps.application.server.system.bootstrap.LoadedApplication;
 import org.teamapps.reporting.convert.DocumentConverter;
@@ -186,10 +187,14 @@ public class UnmanagedApplicationSessionData implements ApplicationInstanceData 
 	}
 
 	@Override
-	public <ENTITY> void registerEntity(EntityBuilder<ENTITY> entityBuilder, Consumer<EntityUpdate<ENTITY>> listener) {
+	public <ENTITY> void registerEntityUpdateListener(EntityBuilder<ENTITY> entityBuilder, Consumer<EntityUpdate<ENTITY>> listener) {
 		userSessionData.getRegistry().registerEntity(entityBuilder, userSessionData.getUser().getId(), listener);
 	}
 
+	@Override
+	public <TYPE> Event<TYPE> getApplicationEvent(String name) {
+		return userSessionData.getApplicationEvent(name);
+	}
 
 	@Override
 	public String getLocalized(String s, Object... objects) {

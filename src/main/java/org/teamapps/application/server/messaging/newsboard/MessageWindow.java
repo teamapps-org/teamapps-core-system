@@ -24,7 +24,7 @@ import org.teamapps.application.api.application.AbstractApplicationView;
 import org.teamapps.application.api.application.ApplicationInstanceData;
 import org.teamapps.application.api.localization.Dictionary;
 import org.teamapps.application.api.theme.ApplicationIcons;
-import org.teamapps.application.server.messaging.MessagingPrivileges;
+import org.teamapps.application.server.controlcenter.Privileges;
 import org.teamapps.application.server.messaging.newsboard.views.EditorView;
 import org.teamapps.application.server.messaging.newsboard.views.ImageListView;
 import org.teamapps.application.server.messaging.newsboard.views.LanguageSelectionView;
@@ -245,7 +245,7 @@ public class MessageWindow extends AbstractApplicationView {
 			}
 		});
 
-		if (!isAllowed(MessagingPrivileges.NEWS_BOARD_ADMIN_ACCESS)) {
+		if (!isAllowed(Privileges.NEWS_BOARD_ADMIN_ACCESS)) {
 			return;
 		}
 		application.showPerspective(perspective);

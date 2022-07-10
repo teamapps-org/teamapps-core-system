@@ -29,6 +29,7 @@ import org.teamapps.application.server.system.launcher.MobileApplicationNavigati
 import org.teamapps.application.server.system.localization.SessionApplicationLocalizationProvider;
 import org.teamapps.application.server.system.privilege.PrivilegeApplicationKey;
 import org.teamapps.application.server.system.privilege.UserPrivileges;
+import org.teamapps.event.Event;
 import org.teamapps.icons.Icon;
 import org.teamapps.icons.SessionIconProvider;
 import org.teamapps.model.controlcenter.Application;
@@ -39,6 +40,7 @@ import org.teamapps.ux.component.rootpanel.RootPanel;
 import org.teamapps.ux.session.SessionContext;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -57,6 +59,7 @@ public class UserSessionData {
 	private Function<Component, Component> rootWrapperComponentFunction;
 	private final ApplicationLocalizationProvider localizationProvider;
 	private boolean darkTheme;
+	private Map<String, Event<?>> applicationEventByName;
 
 	public UserSessionData(User user, SessionContext context, SystemRegistry registry, ApplicationRootPanel rootPanel) {
 		this.user = user;
@@ -181,4 +184,10 @@ public class UserSessionData {
 	public void setDarkTheme(boolean darkTheme) {
 		this.darkTheme = darkTheme;
 	}
+
+	public <TYPE> Event<TYPE> getApplicationEvent(String name) {
+		applicationEventByName = new ConcurrentHashMap<>();
+		return (Event<TYPE>) applicationEventByName.computeIfAbsent(name, s -> new Event<>());
+	}
+
 }

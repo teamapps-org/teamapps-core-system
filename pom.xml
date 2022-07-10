@@ -5,25 +5,49 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.teamapps</groupId>
-    <artifactId>teamapps-control-center</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>teamapps-core-system</artifactId>
+    <version>0.3-SNAPSHOT</version>
 
 
     <properties>
         <maven.compiler.source>14</maven.compiler.source>
         <maven.compiler.target>14</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <teamapps-version>0.9.151</teamapps-version>
-        <universal-db-version>0.5.23-SNAPSHOT</universal-db-version>
+        <teamapps-version>0.9.153</teamapps-version>
+        <universal-db-version>0.5.24-SNAPSHOT</universal-db-version>
         <apache-commons-io>2.11.0</apache-commons-io>
     </properties>
 
+    <name>TeamApps Control Center</name>
+    <description>Base control center for TeamApps Application Server</description>
+    <url>https://github.com/teamapps-org/teamapps-core-system</url>
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <name>Matthias Bernstein</name>
+            <email>matthias.bernstein@teamapps.org</email>
+            <id>matthias-bernstein</id>
+        </developer>
+    </developers>
 
     <dependencies>
         <dependency>
             <groupId>org.teamapps</groupId>
+            <artifactId>teamapps-core-system-model</artifactId>
+            <version>0.1-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.teamapps</groupId>
             <artifactId>teamapps-application-api</artifactId>
-            <version>0.69-SNAPSHOT</version>
+            <version>0.70-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -40,36 +64,12 @@
 
         <dependency>
             <groupId>org.teamapps</groupId>
-            <artifactId>teamapps-application-server-core</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <artifactId>teamapps-application-server</artifactId>
+            <version>0.30-SNAPSHOT</version>
         </dependency>
 
     </dependencies>
 
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.teamapps</groupId>
-                <artifactId>universal-db-maven-plugin</artifactId>
-                <version>1.2</version>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>generate-model</goal>
-                        </goals>
-                        <configuration>
-                            <modelSourceDirectory>${project.basedir}/src/main/model</modelSourceDirectory>
-                            <modelClasses>
-                                <modelClass>Model</modelClass>
-                            </modelClasses>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 
     <profiles>
         <profile>
@@ -80,6 +80,12 @@
                     <groupId>org.teamapps</groupId>
                     <artifactId>teamapps-application-server-core</artifactId>
                     <version>1.0-SNAPSHOT</version>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>*</groupId>
+                            <artifactId>*</artifactId>
+                        </exclusion>
+                    </exclusions>
                 </dependency>
 
                 <dependency>
@@ -112,6 +118,27 @@
 
                 <dependency>
                     <groupId>org.teamapps</groupId>
+                    <artifactId>teamapps-reporting</artifactId>
+                    <version>1.8</version>
+                    <scope>provided</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>com.ibm.icu</groupId>
+                    <artifactId>icu4j</artifactId>
+                    <version>71.1</version>
+                    <scope>provided</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>com.google.cloud</groupId>
+                    <artifactId>google-cloud-translate</artifactId>
+                    <version>2.1.13</version>
+                    <scope>provided</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.teamapps</groupId>
                     <artifactId>universal-db</artifactId>
                     <version>0.5.23-SNAPSHOT</version>
                     <exclusions>
@@ -121,7 +148,6 @@
                         </exclusion>
                     </exclusions>
                 </dependency>
-
 
 
                 <dependency>
@@ -191,7 +217,6 @@
                 </dependency>
 
 
-
             </dependencies>
             <build>
                 <plugins>
@@ -208,12 +233,25 @@
                                 <configuration>
                                     <finalName>app-${project.artifactId}</finalName>
                                     <artifactSet>
-<!--                                        <includes>-->
-<!--                                            <include>org.teamapps:teamapps-application-api</include>-->
-<!--                                        </includes>-->
-<!--                                        <excludes>-->
-<!--                                            <exclude>org.teamapps</exclude>-->
-<!--                                        </excludes>-->
+                                        <excludes>
+                                            <exclude>org.teamapps:teamapps-application-server</exclude>
+                                            <exclude>org.teamapps:teamapps-icons</exclude>
+                                            <exclude>org.teamapps:universal-db</exclude>
+                                            <exclude>org.teamapps:teamapps-cluster</exclude>
+                                            <exclude>org.teamapps:teamapps-protocol-schema</exclude>
+                                            <exclude>org.teamapps:teamapps-material-icon-provider</exclude>
+                                            <exclude>org.teamapps:teamapps-flags-icon-provider</exclude>
+                                            <exclude>org.teamapps:teamapps-fontawesome-icon-provider</exclude>
+                                            <exclude>org.teamapps:teamapps-antu-icon-provider:jar</exclude>
+                                            <exclude>org.slf4j</exclude>
+                                            <exclude>com.fasterxml.jackson.core</exclude>
+                                            <exclude>com.fasterxml.jackson.datatype</exclude>
+                                            <exclude>com.googlecode.libphonenumber</exclude>
+                                            <exclude>nl.basjes.collections</exclude>
+                                            <exclude>org.apache.httpcomponents.core5</exclude>
+                                            <exclude>one.util</exclude>
+                                            <exclude>io.jsonwebtoken</exclude>
+                                        </excludes>
                                     </artifactSet>
                                     <filters>
                                         <filter>

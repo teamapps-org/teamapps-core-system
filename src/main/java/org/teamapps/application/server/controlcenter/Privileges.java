@@ -64,6 +64,10 @@ public class Privileges {
 
 	public final static StandardPrivilegeGroup CLUSTER_PERSPECTIVE = PRIVILEGE_BUILDER.addStandardPrivilegeGroup("clusterPerspective", ApplicationIcons.RACK_SERVER_NETWORK, "cluster.launch", "cluster.desc", READ, CREATE, UPDATE, DELETE);
 
+	public final static SimplePrivilege LAUNCH_PERSPECTIVE_NEWS_BOARD = PRIVILEGE_BUILDER.addSimplePrivilege("launchPerspectiveNewsBoard", CompositeIcon.of(ApplicationIcons.KEY, ApplicationIcons.WORKER), "newsBoard.launchNewsBoardPerspective", "newsBoard.launchNewsBoardPerspective");
+	public final static SimplePrivilege NEWS_BOARD_ADMIN_ACCESS = PRIVILEGE_BUILDER.addSimplePrivilege("newsBoardAdminAccess", ApplicationIcons.PILOT, "newsBoard.newsBoardAdmin", "newsBoard.newsBoardAdmin");
+
+
 	public final static OrganizationalPrivilegeGroup ORGANIZATION_CHART_PERSPECTIVE = PRIVILEGE_BUILDER.addOrganizationalPrivilegeGroup("organizationChartPerspective", ApplicationIcons.PIECES, "organizationChart.title", "organizationChart.desc",
 			OrganizationChartPerspective.SHOW_UPWARDS_LEADERS,
 			OrganizationChartPerspective.SHOW_UPWARDS_ALL_ROLES,

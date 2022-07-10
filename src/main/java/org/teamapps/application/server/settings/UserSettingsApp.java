@@ -70,40 +70,7 @@ public class UserSettingsApp extends AbstractApplicationBuilder {
 				new LocalizationLanguages(
 						Locale.ENGLISH
 				).setMachineTranslatedLanguages(
-						Locale.GERMAN,
-						Locale.FRENCH,
-						Locale.ITALIAN,
-						Locale.JAPANESE,
-						Locale.CHINESE,
-						Locale.forLanguageTag("bg"),
-						Locale.forLanguageTag("cs"),
-						Locale.forLanguageTag("da"),
-						Locale.forLanguageTag("el"),
-						Locale.forLanguageTag("es"),
-						Locale.forLanguageTag("et"),
-						Locale.forLanguageTag("fi"),
-						Locale.forLanguageTag("hu"),
-						Locale.forLanguageTag("lt"),
-						Locale.forLanguageTag("lv"),
-						Locale.forLanguageTag("nl"),
-						Locale.forLanguageTag("pl"),
-						Locale.forLanguageTag("pt"),
-						Locale.forLanguageTag("ro"),
-						Locale.forLanguageTag("ru"),
-						Locale.forLanguageTag("sk"),
-						Locale.forLanguageTag("sl"),
-						Locale.forLanguageTag("sv"),
-						Locale.forLanguageTag("fa"),
-						Locale.forLanguageTag("iw"), //he
-						Locale.forLanguageTag("hi"),
-						Locale.forLanguageTag("hr"),
-						Locale.forLanguageTag("in"), //id
-						Locale.forLanguageTag("ko"),
-						Locale.forLanguageTag("mk"),
-						Locale.forLanguageTag("mn"),
-						Locale.forLanguageTag("sr"),
-						Locale.forLanguageTag("tr"),
-						Locale.forLanguageTag("vi")
+						Locale.GERMAN
 				));
 	}
 

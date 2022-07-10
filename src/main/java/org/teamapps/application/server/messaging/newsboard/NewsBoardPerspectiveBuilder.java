@@ -24,9 +24,8 @@ import org.teamapps.application.api.application.perspective.AbstractPerspectiveB
 import org.teamapps.application.api.application.perspective.ApplicationPerspective;
 import org.teamapps.application.api.privilege.ApplicationPrivilegeProvider;
 import org.teamapps.application.api.theme.ApplicationIcons;
-import org.teamapps.application.server.messaging.MessagingPrivileges;
+import org.teamapps.application.server.controlcenter.Privileges;
 import org.teamapps.databinding.MutableValue;
-import org.teamapps.icons.Icon;
 
 public class NewsBoardPerspectiveBuilder extends AbstractPerspectiveBuilder {
 
@@ -41,7 +40,7 @@ public class NewsBoardPerspectiveBuilder extends AbstractPerspectiveBuilder {
 
 	@Override
 	public boolean isPerspectiveAccessible(ApplicationPrivilegeProvider privilegeProvider) {
-		return privilegeProvider.isAllowed(MessagingPrivileges.LAUNCH_PERSPECTIVE_NEWS_BOARD);
+		return privilegeProvider.isAllowed(Privileges.LAUNCH_PERSPECTIVE_NEWS_BOARD);
 	}
 
 	@Override

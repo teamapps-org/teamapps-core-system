@@ -30,7 +30,6 @@ import org.teamapps.application.server.EntityUpdateEventHandler;
 import org.teamapps.application.server.ServerRegistry;
 import org.teamapps.application.server.SessionManager;
 import org.teamapps.application.server.system.auth.AuthenticationHandler;
-import org.teamapps.application.server.system.auth.UrlAuthenticationHandler;
 import org.teamapps.application.server.system.bootstrap.installer.ApplicationInstaller;
 import org.teamapps.application.server.system.config.DocumentConversionConfig;
 import org.teamapps.application.server.system.config.MachineTranslationConfig;

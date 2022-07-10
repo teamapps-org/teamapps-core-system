@@ -51,6 +51,8 @@ import org.teamapps.application.server.controlcenter.systemlog.SystemLogPerspect
 import org.teamapps.application.server.controlcenter.systenconfig.ApplicationConfigurationPerspectiveBuilder;
 import org.teamapps.application.server.controlcenter.translations.TranslationsPerspectiveBuilder;
 import org.teamapps.application.server.controlcenter.users.UsersPerspectiveBuilder;
+import org.teamapps.application.server.messaging.newsboard.NewsBoardPerspectiveBuilder;
+import org.teamapps.application.server.settings.UserLanguageSettingsPerspectiveBuilder;
 import org.teamapps.application.server.system.config.SystemConfig;
 import org.teamapps.model.ControlCenterSchema;
 import org.teamapps.universaldb.schema.SchemaInfoProvider;
@@ -87,6 +89,9 @@ public class ControlCenterAppBuilder extends AbstractApplicationBuilder {
 				new SystemLogPerspectiveBuilder(),
 				new MonitoringPerspectiveBuilder(),
 				new DataBasePerspectiveBuilder(),
+
+				new NewsBoardPerspectiveBuilder(),
+				new UserLanguageSettingsPerspectiveBuilder(),
 
 				new AppLocalAdministrationPerspectiveBuilder(),
 				new ApplicationGroupsPerspectiveBuilder(),

@@ -29,7 +29,6 @@ import org.teamapps.application.server.ServerRegistry;
 import org.teamapps.application.server.SessionHandler;
 import org.teamapps.application.server.SessionManager;
 import org.teamapps.application.server.controlcenter.ControlCenterAppBuilder;
-import org.teamapps.application.server.messaging.MessagingApplication;
 import org.teamapps.application.server.settings.UserSettingsApp;
 import org.teamapps.application.server.system.auth.LoginHandler;
 import org.teamapps.application.server.system.bootstrap.installer.ApplicationInstaller;
@@ -159,8 +158,7 @@ public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 
 	public List<ApplicationBuilder> getSystemApplications() {
 		return Arrays.asList(
-				new UserSettingsApp(),
-				new MessagingApplication()
+				new UserSettingsApp()
 		);
 	}
 

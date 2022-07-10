@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,19 +21,16 @@ package org.teamapps.application.server.system.launcher;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-//import org.teamapps.application.api.application.perspective.ApplicationPerspective;
-import org.teamapps.application.api.application.perspective.ApplicationPerspective;
 import org.teamapps.application.api.desktop.ApplicationDesktop;
 import org.teamapps.application.api.localization.Dictionary;
 import org.teamapps.application.api.theme.ApplicationIcons;
-import org.teamapps.application.server.system.application.AbstractManagedApplicationPerspective;
+import org.teamapps.application.server.DatabaseLogAppender;
+import org.teamapps.application.server.system.auth.LoginHandler;
 import org.teamapps.application.server.system.bootstrap.LoadedApplication;
 import org.teamapps.application.server.system.bootstrap.LogoutHandler;
 import org.teamapps.application.server.system.bootstrap.SystemRegistry;
 import org.teamapps.application.server.system.config.ThemingConfig;
-import org.teamapps.application.server.system.auth.LoginHandler;
 import org.teamapps.application.server.system.session.ManagedApplicationSessionData;
-import org.teamapps.application.server.system.session.PerspectiveSessionData;
 import org.teamapps.application.server.system.session.UserSessionData;
 import org.teamapps.application.server.system.template.PropertyProviders;
 import org.teamapps.application.ux.UiUtils;
@@ -44,30 +41,18 @@ import org.teamapps.model.controlcenter.*;
 import org.teamapps.universaldb.UniversalDB;
 import org.teamapps.ux.application.ResponsiveApplication;
 import org.teamapps.ux.application.assembler.DesktopApplicationAssembler;
-import org.teamapps.ux.application.layout.StandardLayout;
-import org.teamapps.ux.application.perspective.Perspective;
-import org.teamapps.ux.application.view.View;
 import org.teamapps.ux.component.Component;
-import org.teamapps.ux.component.animation.PageTransition;
 import org.teamapps.ux.component.dialogue.FormDialogue;
 import org.teamapps.ux.component.field.FieldEditingMode;
 import org.teamapps.ux.component.field.TemplateField;
 import org.teamapps.ux.component.field.TextField;
-import org.teamapps.ux.component.flexcontainer.VerticalLayout;
 import org.teamapps.ux.component.itemview.SimpleItem;
 import org.teamapps.ux.component.itemview.SimpleItemGroup;
 import org.teamapps.ux.component.itemview.SimpleItemView;
-import org.teamapps.ux.component.mobile.MobileLayout;
 import org.teamapps.ux.component.panel.Panel;
 import org.teamapps.ux.component.tabpanel.Tab;
 import org.teamapps.ux.component.tabpanel.TabPanel;
 import org.teamapps.ux.component.template.BaseTemplate;
-import org.teamapps.ux.component.template.BaseTemplateRecord;
-import org.teamapps.ux.component.toolbar.Toolbar;
-import org.teamapps.ux.component.toolbar.ToolbarButton;
-import org.teamapps.ux.component.toolbar.ToolbarButtonGroup;
-import org.teamapps.ux.component.tree.Tree;
-import org.teamapps.ux.model.ListTreeModel;
 import org.teamapps.ux.session.ClientInfo;
 import org.teamapps.ux.session.SessionConfiguration;
 import org.teamapps.ux.session.SessionContext;
@@ -81,8 +66,6 @@ import java.util.stream.Collectors;
 public class ApplicationLauncher {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-	public static final ThreadLocal<ManagedApplication> THREAD_LOCAL_APPLICATION = new ThreadLocal<>();
-	public static final ThreadLocal<ManagedApplicationPerspective> THREAD_LOCAL_MANAGED_PERSPECTIVE = new ThreadLocal<>();
 
 	private final UserSessionData userSessionData;
 	private final LogoutHandler logoutHandler;
@@ -119,8 +102,9 @@ public class ApplicationLauncher {
 		userSessionData.getContext().addExecutionDecorator(runnable -> {
 			try {
 				UniversalDB.setUserId(userSessionData.getUser().getId());
-				THREAD_LOCAL_APPLICATION.set(selectedApplication.get());
-				THREAD_LOCAL_MANAGED_PERSPECTIVE.set(selectedPerspective.get());
+				DatabaseLogAppender.THREAD_LOCAL_MANAGED_APPLICATION.set(selectedApplication.get() != null ? selectedApplication.get().getId() : 0);
+				DatabaseLogAppender.THREAD_LOCAL_APPLICATION_VERSION.set(getCurrentApplicationVersion(selectedApplication.get()));
+				DatabaseLogAppender.THREAD_LOCAL_MANAGED_PERSPECTIVE.set(selectedPerspective.get() != null ? selectedPerspective.get().getId() : 0);
 				activityCount++;
 				runnable.run();
 			} catch (Throwable e) {
@@ -128,17 +112,27 @@ public class ApplicationLauncher {
 				handleSessionException(e);
 			} finally {
 				UniversalDB.setUserId(0);
-				THREAD_LOCAL_APPLICATION.set(null);
-				THREAD_LOCAL_MANAGED_PERSPECTIVE.set(null);
+				DatabaseLogAppender.THREAD_LOCAL_MANAGED_APPLICATION.set(null);
+				DatabaseLogAppender.THREAD_LOCAL_APPLICATION_VERSION.set(null);
+				DatabaseLogAppender.THREAD_LOCAL_MANAGED_PERSPECTIVE.set(null);
 			}
 		}, false);
 		selectedApplication.onChanged().addListener(this::handleApplicationSelection);
+		selectedPerspective.onChanged().addListener(this::handlePerspectiveSelection);
 		userSessionData.getUser().setLastLogin(Instant.now()).save();
 		setTheme(userSessionData.isDarkTheme());
 		userSessionData.setApplicationDesktopSupplier(this::createApplicationDesktop);
 		initApplicationData();
 		createApplicationLauncher();
 		createMainView();
+	}
+
+	private String getCurrentApplicationVersion(ManagedApplication managedApplication) {
+		if (managedApplication != null && managedApplication.getMainApplication() != null && managedApplication.getMainApplication().getInstalledVersion() !=  null) {
+			return managedApplication.getMainApplication().getInstalledVersion().getVersion();
+		} else {
+			return null;
+		}
 	}
 
 	private Login createLoginData(UserSessionData userSessionData, ClientInfo clientInfo) {
@@ -154,7 +148,7 @@ public class ApplicationLauncher {
 
 	private void handleSessionException(Throwable e) {
 		ManagedApplication managedApplication = selectedApplication.get();
-		ManagedApplicationPerspective perspective = THREAD_LOCAL_MANAGED_PERSPECTIVE.get();
+		ManagedApplicationPerspective perspective = selectedPerspective.get();
 		closeApplication(managedApplication);
 		FormDialogue dialogue = FormDialogue.create(ApplicationIcons.SIGN_WARNING, getLocalized(Dictionary.ERROR), getLocalized(Dictionary.SENTENCE_ERROR_THE_ACTIVE_APPLICATION_CAUSED__));
 		TemplateField<ManagedApplication> managedApplicationField = UiUtils.createTemplateField(BaseTemplate.LIST_ITEM_SMALL_ICON_SINGLE_LINE, PropertyProviders.createManagedApplicationPropertyProvider(userSessionData));
@@ -178,9 +172,18 @@ public class ApplicationLauncher {
 		if (application == null) {
 			return;
 		}
-		THREAD_LOCAL_APPLICATION.set(application);
+		DatabaseLogAppender.THREAD_LOCAL_MANAGED_APPLICATION.set(application.getId());
+		DatabaseLogAppender.THREAD_LOCAL_APPLICATION_VERSION.set(getCurrentApplicationVersion(application));
+		DatabaseLogAppender.THREAD_LOCAL_MANAGED_PERSPECTIVE.set(null);
 		setTheme(application.isDarkTheme() || userSessionData.isDarkTheme());
 		selectedThemeIsDarkTheme = application.getDarkTheme();
+	}
+
+	private void handlePerspectiveSelection(ManagedApplicationPerspective perspective) {
+		ManagedApplication application = perspective.getManagedApplication();
+		DatabaseLogAppender.THREAD_LOCAL_MANAGED_APPLICATION.set(application != null ? application.getId() : 0);
+		DatabaseLogAppender.THREAD_LOCAL_APPLICATION_VERSION.set(getCurrentApplicationVersion(application));
+		DatabaseLogAppender.THREAD_LOCAL_MANAGED_PERSPECTIVE.set(perspective.getId());
 	}
 
 	private void setTheme(boolean dark) {
@@ -326,7 +329,6 @@ public class ApplicationLauncher {
 
 	private void openApplication(ApplicationData applicationData) {
 		selectedApplication.set(applicationData.getManagedApplication());
-		THREAD_LOCAL_APPLICATION.set(selectedApplication.get());
 		applicationOpenCount++;
 		LOGGER.info("Open app: " + (selectedPerspective.get() != null ? selectedPerspective.get().getApplicationPerspective().getQualifiedName() : null));
 		if (openedApplications.contains(applicationData)) {
@@ -412,7 +414,7 @@ public class ApplicationLauncher {
 		applicationsSearchField.onTextInput().addListener(applicationLauncher::setFilter);
 		panel.setRightHeaderField(applicationsSearchField);
 		panel.setContent(applicationLauncher);
-		panel.setBodyBackgroundColor(userSessionData.isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.7f));
+		panel.setBodyBackgroundColor(userSessionData.isDarkTheme() ? Color.fromRgba(30, 30, 30, .7f) : Color.WHITE.withAlpha(0.7f));
 		if (mobileView) {
 			return panel;
 		}

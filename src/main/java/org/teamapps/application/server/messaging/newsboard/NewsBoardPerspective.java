@@ -22,7 +22,7 @@ package org.teamapps.application.server.messaging.newsboard;
 import org.teamapps.application.api.application.ApplicationInstanceData;
 import org.teamapps.application.api.localization.Dictionary;
 import org.teamapps.application.api.theme.ApplicationIcons;
-import org.teamapps.application.server.messaging.MessagingPrivileges;
+import org.teamapps.application.server.controlcenter.Privileges;
 import org.teamapps.application.server.messaging.newsboard.views.MessageView;
 import org.teamapps.application.server.system.application.AbstractManagedApplicationPerspective;
 import org.teamapps.application.server.system.session.PerspectiveSessionData;
@@ -60,7 +60,7 @@ public class NewsBoardPerspective extends AbstractManagedApplicationPerspective 
 
 		updateMessages();
 
-		if (isAllowed(MessagingPrivileges.NEWS_BOARD_ADMIN_ACCESS)) {
+		if (isAllowed(Privileges.NEWS_BOARD_ADMIN_ACCESS)) {
 			Button<BaseTemplateRecord> addButton = Button.create(ApplicationIcons.ADD, getLocalized(Dictionary.ADD));
 			masterView.getPanel().setRightHeaderField(addButton);
 			addButton.onClicked.addListener(() -> showMessageWindow(null));
@@ -91,7 +91,7 @@ public class NewsBoardPerspective extends AbstractManagedApplicationPerspective 
 
 
 	private void showMessageWindow(NewsBoardMessage message) {
-		if (!isAllowed(MessagingPrivileges.NEWS_BOARD_ADMIN_ACCESS)) {
+		if (!isAllowed(Privileges.NEWS_BOARD_ADMIN_ACCESS)) {
 			return;
 		}
 		if (message == null) {

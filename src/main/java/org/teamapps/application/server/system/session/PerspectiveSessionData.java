@@ -37,6 +37,7 @@ import org.teamapps.application.server.system.organization.OrganizationUtils;
 import org.teamapps.application.server.system.utils.LogUtils;
 import org.teamapps.application.server.system.utils.RoleUtils;
 import org.teamapps.application.ux.IconUtils;
+import org.teamapps.event.Event;
 import org.teamapps.icons.Icon;
 import org.teamapps.model.controlcenter.*;
 import org.teamapps.reporting.convert.DocumentConverter;
@@ -229,8 +230,13 @@ public class PerspectiveSessionData implements ApplicationInstanceData {
 	}
 
 	@Override
-	public <ENTITY> void registerEntity(EntityBuilder<ENTITY> entityBuilder, Consumer<EntityUpdate<ENTITY>> listener) {
+	public <ENTITY> void registerEntityUpdateListener(EntityBuilder<ENTITY> entityBuilder, Consumer<EntityUpdate<ENTITY>> listener) {
 		userSessionData.getRegistry().registerEntity(entityBuilder, userSessionData.getUser().getId(), listener);
+	}
+
+	@Override
+	public <TYPE> Event<TYPE> getApplicationEvent(String name) {
+		return userSessionData.getApplicationEvent(name);
 	}
 
 	public static List<Integer> getOrganizationUsersWithRole(OrganizationUnitView orgUnit, UserRoleType userRoleType, OrganizationFieldView organizationFieldView) {
