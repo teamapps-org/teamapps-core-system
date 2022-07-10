@@ -14,7 +14,7 @@
         <maven.compiler.target>14</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <teamapps-version>0.9.153</teamapps-version>
-        <universal-db-version>0.5.24-SNAPSHOT</universal-db-version>
+        <universal-db-version>0.5.24</universal-db-version>
         <apache-commons-io>2.11.0</apache-commons-io>
     </properties>
 
@@ -37,17 +37,35 @@
         </developer>
     </developers>
 
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
+    <scm>
+        <url>https://github.com/teamapps-org/teamapps-core-system</url>
+        <connection>scm:git:git@github.com:teamapps-org/teamapps-core-system.git</connection>
+        <developerConnection>scm:git:git@github.com:teamapps-org/teamapps-core-system.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
     <dependencies>
         <dependency>
             <groupId>org.teamapps</groupId>
             <artifactId>teamapps-core-system-model</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <version>0.1</version>
         </dependency>
 
         <dependency>
             <groupId>org.teamapps</groupId>
             <artifactId>teamapps-application-api</artifactId>
-            <version>0.70-SNAPSHOT</version>
+            <version>0.70</version>
         </dependency>
 
         <dependency>
@@ -65,7 +83,7 @@
         <dependency>
             <groupId>org.teamapps</groupId>
             <artifactId>teamapps-application-server</artifactId>
-            <version>0.30-SNAPSHOT</version>
+            <version>0.30</version>
         </dependency>
 
     </dependencies>
@@ -78,8 +96,8 @@
 
                 <dependency>
                     <groupId>org.teamapps</groupId>
-                    <artifactId>teamapps-application-server-core</artifactId>
-                    <version>1.0-SNAPSHOT</version>
+                    <artifactId>teamapps-application-server</artifactId>
+                    <version>0.30</version>
                     <exclusions>
                         <exclusion>
                             <groupId>*</groupId>
@@ -140,7 +158,7 @@
                 <dependency>
                     <groupId>org.teamapps</groupId>
                     <artifactId>universal-db</artifactId>
-                    <version>0.5.23-SNAPSHOT</version>
+                    <version>0.5.24</version>
                     <exclusions>
                         <exclusion>
                             <groupId>*</groupId>
@@ -153,7 +171,7 @@
                 <dependency>
                     <groupId>org.teamapps</groupId>
                     <artifactId>teamapps-cluster</artifactId>
-                    <version>0.6-SNAPSHOT</version>
+                    <version>0.6</version>
                     <exclusions>
                         <exclusion>
                             <groupId>*</groupId>
@@ -165,7 +183,7 @@
                 <dependency>
                     <groupId>org.teamapps</groupId>
                     <artifactId>teamapps-protocol-schema</artifactId>
-                    <version>0.4-SNAPSHOT</version>
+                    <version>0.4</version>
                     <exclusions>
                         <exclusion>
                             <groupId>*</groupId>
@@ -271,6 +289,152 @@
             </build>
         </profile>
 
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-release-plugin</artifactId>
+                        <version>2.5.3</version>
+                        <configuration>
+                            <!-- see https://docs.sonatype.org/display/Repository/How+To+Generate+PGP+Signatures+With+Maven -->
+                            <mavenExecutorId>forked-path</mavenExecutorId>
+                            <useReleaseProfile>false</useReleaseProfile>
+                            <!--<arguments>-Psonatype-oss-release -D${gpg.arguments}</arguments>-->
+                            <autoVersionSubmodules>true</autoVersionSubmodules>
+                            <tagNameFormat>v@{version}</tagNameFormat>
+                            <releaseProfiles>javadoc-jar,sources-jar,license-handling</releaseProfiles>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.8</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>javadoc-jar</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>3.0.1</version>
+                        <executions>
+                            <execution>
+                                <id>generate-javadoc-jar</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>sources-jar</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>3.0.1</version>
+                        <executions>
+                            <execution>
+                                <id>generate-sources-jar</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>license-handling</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>license-maven-plugin</artifactId>
+                        <version>1.19</version>
+                        <executions>
+                            <execution>
+                                <id>download-licenses</id>
+                                <goals>
+                                    <goal>download-licenses</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>update-project-license</id>
+                                <goals>
+                                    <goal>update-project-license</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>update-file-header</id>
+                                <phase>process-sources</phase>
+                                <goals>
+                                    <goal>update-file-header</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <projectName>TeamApps Core System</projectName>
+                            <organizationName>TeamApps.org</organizationName>
+                            <inceptionYear>2020</inceptionYear>
+                            <licenseName>apache_v2</licenseName>
+                            <processStartTag>========================LICENSE_START=================================
+                            </processStartTag>
+                            <processEndTag>=========================LICENSE_END==================================
+                            </processEndTag>
+                            <sectionDelimiter>---</sectionDelimiter>
+                            <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
+                            <canUpdateCopyright>true</canUpdateCopyright>
+                            <canUpdateDescription>true</canUpdateDescription>
+                            <canUpdateLicense>true</canUpdateLicense>
+                            <roots>
+                                <root>src/main</root>
+                                <root>src/test</root>
+                                <root>target/generated-sources</root>
+                                <root>target/generated-resources</root>
+                            </roots>
+                            <excludes>
+                                <exclude>**/*.json</exclude>
+                                <exclude>**/*.svg</exclude>
+                                <exclude>**/*.txt</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
 </project>
