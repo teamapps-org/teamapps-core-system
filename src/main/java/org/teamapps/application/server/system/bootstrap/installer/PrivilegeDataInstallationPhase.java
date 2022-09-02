@@ -59,7 +59,7 @@ public class PrivilegeDataInstallationPhase implements ApplicationInstallationPh
 			BaseApplicationBuilder baseApplicationBuilder = applicationInfo.getBaseApplicationBuilder();
 			List<PrivilegeGroup> privilegeGroups = baseApplicationBuilder.getPrivilegeGroups();
 			if (privilegeGroups == null) {
-				applicationInfo.addError("Missing privileges");
+				applicationInfo.addWarning("Missing privileges");
 				return;
 			}
 
@@ -106,6 +106,9 @@ public class PrivilegeDataInstallationPhase implements ApplicationInstallationPh
 	public void installApplication(ApplicationInfo applicationInfo) {
 		BaseApplicationBuilder baseApplicationBuilder = applicationInfo.getBaseApplicationBuilder();
 		List<PrivilegeGroup> privilegeGroups = baseApplicationBuilder.getPrivilegeGroups();
+		if (privilegeGroups == null) {
+			return;
+		}
 		Application application = applicationInfo.getApplication();
 		List<ApplicationPrivilegeGroup> applicationPrivilegeGroups = getApplicationPrivilegeGroups(application);
 

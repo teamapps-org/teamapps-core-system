@@ -61,16 +61,15 @@ public class LocalizationDataInstallationPhase implements ApplicationInstallatio
 			BaseApplicationBuilder baseApplicationBuilder = applicationInfo.getBaseApplicationBuilder();
 			LocalizationData localizationData = baseApplicationBuilder.getLocalizationData();
 			if (localizationData == null) {
-				applicationInfo.addError("Missing localization data");
+				applicationInfo.addWarning("Missing localization data");
 				return;
 			}
 			List<LocalizationEntrySet> localizationEntrySets = localizationData.getLocalizationEntrySets();
 			if (!localizationData.containsAnyLanguage(localizationConfig.getAllowedSourceLanguages())) {
-				applicationInfo.addError("Error: no supported language!:" + localizationEntrySets
+				applicationInfo.addWarning("Error: no supported language!:" + localizationEntrySets
 						.stream()
 						.map(LocalizationEntrySet::getLanguage)
 						.collect(Collectors.joining(", ")));
-				return;
 			}
 			ApplicationInfoDataElement dataInfo = new ApplicationInfoDataElement();
 			dataInfo.setData(String.join("\n", getAllEntries(localizationEntrySets)));
@@ -116,6 +115,9 @@ public class LocalizationDataInstallationPhase implements ApplicationInstallatio
 	@Override
 	public void installApplication(ApplicationInfo applicationInfo) {
 		LocalizationData localizationData = applicationInfo.getBaseApplicationBuilder().getLocalizationData();
+		if (localizationData == null) {
+			return;
+		}
 		Application application = applicationInfo.getApplication();
 		LocalizationKeyType localizationKeyType = LocalizationKeyType.APPLICATION_RESOURCE_KEY;
 		LocalizationUtil.synchronizeLocalizationData(localizationData, application, localizationKeyType, localizationConfig);
