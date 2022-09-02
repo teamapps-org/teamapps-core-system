@@ -19,10 +19,12 @@
  */
 package org.teamapps.application.server.system.session;
 
+import net.coobird.thumbnailator.Thumbnailator;
 import org.teamapps.application.api.application.ApplicationInstanceData;
 import org.teamapps.application.api.ui.FormMetaFields;
 import org.teamapps.application.api.ui.TranslationKeyField;
 import org.teamapps.application.api.ui.UiComponentFactory;
+import org.teamapps.application.server.EmbeddedResourceStore;
 import org.teamapps.application.server.system.bootstrap.BaseResourceLinkProvider;
 import org.teamapps.application.server.system.bootstrap.SystemRegistry;
 import org.teamapps.application.server.system.template.PropertyProviders;
@@ -37,9 +39,14 @@ import org.teamapps.model.controlcenter.OrganizationUnitView;
 import org.teamapps.ux.component.field.TemplateField;
 import org.teamapps.ux.component.field.combobox.ComboBox;
 import org.teamapps.ux.component.field.combobox.TagComboBox;
+import org.teamapps.ux.component.field.richtext.RichTextEditor;
 import org.teamapps.ux.component.template.BaseTemplate;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -100,5 +107,36 @@ public class SessionUiComponentFactory implements UiComponentFactory {
 	@Override
 	public String createUserAvatarLink(int userId, boolean large) {
 		return baseResourceLinkProvider.getUserProfilePictureLink(userId, large);
+	}
+
+	@Override
+	public RichTextEditor createEmbeddedImagesEnabledRichTextEditor(String bucket) {
+		RichTextEditor editor = new RichTextEditor();
+		editor.setLocale(applicationInstanceData.getUser().getLocale());
+		editor.setMaxImageFileSizeInBytes(Integer.MAX_VALUE);
+		editor.setImageUploadEnabled(true);
+		editor.setUploadedFileToUrlConverter(uploadedFile -> {
+			System.out.println("New file:" + uploadedFile.getUuid() + ", " + uploadedFile.getName() + ", " + uploadedFile.getSizeInBytes() + ", " + uploadedFile.getAsFile().getPath());
+			try {
+				String link = null;
+				if (uploadedFile.getSizeInBytes() > 300_000) {
+					File newFile = Files.createTempFile("temp", ".jpg").toFile();
+					Thumbnailator.createThumbnail(uploadedFile.getAsFile(), newFile, 1200, 800);
+					System.out.println("Resized: " + newFile.length());
+					link = createLink(newFile, uploadedFile.getName());
+				} else {
+					link = createLink(uploadedFile.getAsFile(), uploadedFile.getName());
+				}
+				System.out.println("LINK:" + link);
+				return link;
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		});
+		return editor;
+	}
+
+	private static String createLink(File file, String name) throws IOException {
+		return EmbeddedResourceStore.getInstance().saveResource("ui-test", "editor", file) + "/" + name;
 	}
 }
