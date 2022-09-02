@@ -116,20 +116,20 @@ public class UsersPerspective extends AbstractManagedApplicationPerspective {
 		TemplateField<User> userTableField = UiUtils.createTemplateField(BaseTemplate.LIST_ITEM_MEDIUM_ICON_SINGLE_LINE, PropertyProviders.createUserPropertyProvider(getApplicationInstanceData()));
 		TemplateField<UserAccountStatus> accountStatusTableField = UiUtils.createTemplateField(BaseTemplate.LIST_ITEM_SMALL_ICON_SINGLE_LINE, createAccountStatusPropertyProvider());
 		InstantDateTimeField lastLogin = new InstantDateTimeField();
-		TagComboBox<Language> languagesTableField = Language.createTagComboBox(getApplicationInstanceData());
+		ComboBox<Language> languageComboBox = Language.createComboBox(getApplicationInstanceData());
 		TextField rolesTableField = new TextField();
 
 		table.addColumn(User.FIELD_LAST_NAME, getLocalized("users.user"), userTableField).setDefaultWidth(250);
 		table.addColumn(User.FIELD_USER_ACCOUNT_STATUS, getLocalized("users.accountStatus"), accountStatusTableField).setDefaultWidth(120);
 		table.addColumn(User.FIELD_LAST_LOGIN, getLocalized("users.lastLogin"), lastLogin).setDefaultWidth(200);
-		table.addColumn(User.FIELD_LANGUAGES, getLocalized("users.languages"), languagesTableField).setDefaultWidth(350);
+		table.addColumn(User.FIELD_LANGUAGE, getLocalized(Dictionary.LANGUAGE), languageComboBox).setDefaultWidth(350);
 		table.addColumn(User.FIELD_ROLE_ASSIGNMENTS, getLocalized("users.roles"), rolesTableField).setDefaultWidth(300);
 
 		table.setPropertyExtractor((user, propertyName) -> switch (propertyName) {
 			case User.FIELD_LAST_NAME -> user;
 			case User.FIELD_USER_ACCOUNT_STATUS -> user.getUserAccountStatus();
 			case User.FIELD_LAST_LOGIN -> user.getLastLogin();
-			case User.FIELD_LANGUAGES -> getLanguages(user.getLanguages());
+			case User.FIELD_LANGUAGE -> user.getLanguage() == null ? null : Language.getLanguageByIsoCode(user.getLanguage());
 			case User.FIELD_ROLE_ASSIGNMENTS -> getRolesString(user.getRoleAssignments(), 5);
 			default -> null;
 		});
@@ -155,9 +155,7 @@ public class UsersPerspective extends AbstractManagedApplicationPerspective {
 
 		TextField firstNameField = new TextField();
 		TextField lastNameField = new TextField();
-		TagComboBox<Language> languagesField = Language.createTagComboBox(getApplicationInstanceData());
-		languagesField.setWrappingMode(TagBoxWrappingMode.SINGLE_TAG_PER_LINE);
-		languagesField.setShowClearButton(true);
+		ComboBox<Language> languageField = languageComboBox;
 		TextField emailField = new TextField();
 		TextField mobileField = new TextField();
 		TextField loginField = new TextField();
@@ -185,7 +183,7 @@ public class UsersPerspective extends AbstractManagedApplicationPerspective {
 		formLayout.addLabelAndField(null, getLocalized("users.profilePicture"), pictureChooser);
 		formLayout.addLabelAndField(null, getLocalized(Dictionary.FIRST_NAME), firstNameField);
 		formLayout.addLabelAndField(null, getLocalized(Dictionary.LAST_NAME), lastNameField);
-		formLayout.addLabelAndField(null, getLocalized("users.languages"), languagesField);
+		formLayout.addLabelAndField(null, getLocalized(Dictionary.LANGUAGE), languageField);
 		formLayout.addLabelAndField(null, getLocalized(Dictionary.E_MAIL), emailField);
 		formLayout.addLabelAndField(null, getLocalized(Dictionary.MOBILE_NUMBER), mobileField);
 		formLayout.addLabelAndField(null, getLocalized(Dictionary.USER_NAME), loginField);
@@ -206,7 +204,7 @@ public class UsersPerspective extends AbstractManagedApplicationPerspective {
 		formController.addPhoneOrEmptyNumber(mobileField);
 		formController.addMinCharactersOrEmpty(loginField, 2);
 		formController.addMinCharactersOrEmpty(passwordField, 9);
-		formController.addNotEmptyList(languagesField);
+		formController.addNotEmptyList(languageField);
 		formController.addValidator(organizationUnitViewField, unit -> unit != null && OrganizationUtils.convert(unit).getType().isAllowUsers() ? null : getLocalized("users.wrongOrMissingOrgUnit"));
 
 		masterDetailController.createViews(getPerspective(), table, formLayout);
@@ -235,7 +233,7 @@ public class UsersPerspective extends AbstractManagedApplicationPerspective {
 			user
 					.setFirstName(firstNameField.getValue())
 					.setLastName(lastNameField.getValue())
-					.setLanguages(getCompressedLanguages(languagesField.getValue()))
+					.setLanguage(languageField.getValue().getIsoCode())
 					.setEmail(emailField.getValue())
 					.setMobile(mobileField.getValue())
 					.setLogin(loginField.getValue())
@@ -252,7 +250,7 @@ public class UsersPerspective extends AbstractManagedApplicationPerspective {
 			pictureChooser.setValue(user.getProfilePicture() != null ? new ByteArrayResource(user.getProfilePicture(), "image.jpg") : null);
 			firstNameField.setValue(user.getFirstName());
 			lastNameField.setValue(user.getLastName());
-			languagesField.setValue(getLanguages(user.getLanguages()));
+			languageField.setValue(Language.getLanguageByIsoCode(user.getLanguage()));
 			emailField.setValue(user.getEmail());
 			mobileField.setValue(user.getMobile());
 			loginField.setValue(user.getLogin());
@@ -318,21 +316,6 @@ public class UsersPerspective extends AbstractManagedApplicationPerspective {
 				.map(assignment -> getLocalized(assignment.getRole().getTitle()))
 				.limit(limit)
 				.collect(Collectors.joining(", "));
-	}
-
-	public List<Language> getLanguages(String compressedValue) {
-		return ValueConverterUtils.decompressToStringList(compressedValue)
-				.stream()
-				.map(Language::getLanguageByIsoCode)
-				.collect(Collectors.toList());
-	}
-
-	public String getCompressedLanguages(List<Language> languages) {
-		return ValueConverterUtils.compressStringList(
-				languages.stream()
-						.map(Language::getIsoCode)
-						.collect(Collectors.toList())
-		);
 	}
 
 	private ComboBox<UserAccountStatus> createAccountStatusComboBox() {
