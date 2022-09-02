@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.teamapps</groupId>
@@ -57,31 +58,13 @@
         <dependency>
             <groupId>org.teamapps</groupId>
             <artifactId>teamapps-core-system-model</artifactId>
-            <version>0.1</version>
+            <version>0.2</version>
         </dependency>
 
         <dependency>
             <groupId>org.teamapps</groupId>
             <artifactId>teamapps-application-api</artifactId>
-            <version>0.70</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.twilio.sdk</groupId>
-            <artifactId>twilio</artifactId>
-            <version>8.29.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.github.classgraph</groupId>
-            <artifactId>classgraph</artifactId>
-            <version>4.8.147</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.teamapps</groupId>
-            <artifactId>teamapps-application-server</artifactId>
-            <version>0.30</version>
+            <version>0.71</version>
         </dependency>
 
     </dependencies>
@@ -91,11 +74,10 @@
         <profile>
             <id>Build Core System Jar</id>
             <dependencies>
-
                 <dependency>
                     <groupId>org.teamapps</groupId>
                     <artifactId>teamapps-application-server</artifactId>
-                    <version>0.30</version>
+                    <version>0.31</version>
                     <exclusions>
                         <exclusion>
                             <groupId>*</groupId>
@@ -140,6 +122,34 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.teamapps</groupId>
+                    <artifactId>teamapps-material-icon-provider</artifactId>
+                    <version>${teamapps-version}</version>
+                    <scope>provided</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.teamapps</groupId>
+                    <artifactId>teamapps-flags-icon-provider</artifactId>
+                    <version>0.9.12</version>
+                    <scope>provided</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.teamapps</groupId>
+                    <artifactId>teamapps-fontawesome-icon-provider</artifactId>
+                    <version>0.9.9</version>
+                    <scope>provided</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.teamapps</groupId>
+                    <artifactId>teamapps-antu-icon-provider</artifactId>
+                    <version>1.1.1</version>
+                    <scope>provided</scope>
+                </dependency>
+
+                <dependency>
                     <groupId>com.ibm.icu</groupId>
                     <artifactId>icu4j</artifactId>
                     <version>71.1</version>
@@ -150,6 +160,27 @@
                     <groupId>com.google.cloud</groupId>
                     <artifactId>google-cloud-translate</artifactId>
                     <version>2.1.13</version>
+                    <scope>provided</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>com.twilio.sdk</groupId>
+                    <artifactId>twilio</artifactId>
+                    <version>8.29.1</version>
+                    <scope>provided</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-text</artifactId>
+                    <version>1.9</version>
+                    <scope>provided</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>io.github.classgraph</groupId>
+                    <artifactId>classgraph</artifactId>
+                    <version>4.8.147</version>
                     <scope>provided</scope>
                 </dependency>
 
@@ -194,42 +225,49 @@
                     <groupId>com.thoughtworks.xstream</groupId>
                     <artifactId>xstream</artifactId>
                     <version>1.4.19</version>
+                    <scope>provided</scope>
                 </dependency>
 
                 <dependency>
                     <groupId>org.apache.commons</groupId>
                     <artifactId>commons-lang3</artifactId>
                     <version>3.12.0</version>
+                    <scope>provided</scope>
                 </dependency>
 
                 <dependency>
                     <groupId>org.apache.commons</groupId>
                     <artifactId>commons-collections4</artifactId>
                     <version>4.4</version>
+                    <scope>provided</scope>
                 </dependency>
 
                 <dependency>
                     <groupId>commons-io</groupId>
                     <artifactId>commons-io</artifactId>
                     <version>${apache-commons-io}</version>
+                    <scope>provided</scope>
                 </dependency>
 
                 <dependency>
                     <groupId>org.apache.commons</groupId>
                     <artifactId>commons-csv</artifactId>
                     <version>1.9.0</version>
+                    <scope>provided</scope>
                 </dependency>
 
                 <dependency>
                     <groupId>org.apache.poi</groupId>
                     <artifactId>poi-scratchpad</artifactId>
                     <version>5.2.2</version>
+                    <scope>provided</scope>
                 </dependency>
 
                 <dependency>
                     <groupId>org.apache.poi</groupId>
                     <artifactId>poi-ooxml</artifactId>
                     <version>5.2.2</version>
+                    <scope>provided</scope>
                 </dependency>
 
 
