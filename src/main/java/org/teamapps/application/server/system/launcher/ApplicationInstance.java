@@ -22,6 +22,7 @@ package org.teamapps.application.server.system.launcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.teamapps.application.api.application.perspective.ApplicationPerspective;
+import org.teamapps.application.api.application.perspective.PerspectiveBuilder;
 import org.teamapps.application.api.localization.Dictionary;
 import org.teamapps.application.api.theme.ApplicationIcons;
 import org.teamapps.application.server.system.application.AbstractManagedApplicationPerspective;
@@ -32,6 +33,7 @@ import org.teamapps.common.format.Color;
 import org.teamapps.databinding.MutableValue;
 import org.teamapps.model.controlcenter.ManagedApplicationPerspective;
 import org.teamapps.ux.application.ResponsiveApplication;
+import org.teamapps.ux.application.assembler.DesktopApplicationAssembler;
 import org.teamapps.ux.application.layout.StandardLayout;
 import org.teamapps.ux.application.perspective.Perspective;
 import org.teamapps.ux.application.view.View;
@@ -41,6 +43,7 @@ import org.teamapps.ux.component.flexcontainer.VerticalLayout;
 import org.teamapps.ux.component.itemview.SimpleItemGroup;
 import org.teamapps.ux.component.itemview.SimpleItemView;
 import org.teamapps.ux.component.mobile.MobileLayout;
+import org.teamapps.ux.component.tabpanel.Tab;
 import org.teamapps.ux.component.template.BaseTemplate;
 import org.teamapps.ux.component.template.BaseTemplateRecord;
 import org.teamapps.ux.component.toolbar.Toolbar;
@@ -48,6 +51,7 @@ import org.teamapps.ux.component.toolbar.ToolbarButton;
 import org.teamapps.ux.component.toolbar.ToolbarButtonGroup;
 import org.teamapps.ux.component.tree.Tree;
 import org.teamapps.ux.model.ListTreeModel;
+import org.teamapps.ux.session.SessionContext;
 
 import java.lang.invoke.MethodHandles;
 import java.util.*;
@@ -83,16 +87,31 @@ public class ApplicationInstance implements PerspectiveByNameLauncher {
 				.sorted(Comparator.comparingInt(ManagedApplicationPerspective::getListingPosition))
 				.collect(Collectors.toList());
 		for (ManagedApplicationPerspective managedApplicationPerspective : managedApplicationPerspectives) {
-			if (managedApplicationPerspective.getApplicationPerspective() != null) {
-				PerspectiveSessionData perspectiveSessionData = applicationSessionData.createPerspectiveSessionData(managedApplicationPerspective, this);
-				if (perspectiveSessionData == null) {
-					LOGGER.error("Missing application loader for:" + managedApplicationPerspective.getApplicationPerspective());
-				}
-				if (perspectiveSessionData != null && perspectiveSessionData.getPerspectiveBuilder() != null && perspectiveSessionData.getPerspectiveBuilder().isPerspectiveAccessible(perspectiveSessionData)) {
-					sortedPerspectives.add(perspectiveSessionData);
-				}
+			PerspectiveSessionData perspectiveSessionData = createPerspectiveSessionData(managedApplicationPerspective);
+			if (perspectiveSessionData != null) {
+				sortedPerspectives.add(perspectiveSessionData);
 			}
 		}
+	}
+
+	public PerspectiveSessionData createPerspectiveSessionData(ManagedApplicationPerspective managedApplicationPerspective) {
+		if (managedApplicationPerspective != null && managedApplicationPerspective.getApplicationPerspective() != null) {
+			PerspectiveSessionData perspectiveSessionData = applicationData.getApplicationSessionData().createPerspectiveSessionData(managedApplicationPerspective, this);
+			if (perspectiveSessionData == null) {
+				LOGGER.error("Missing application loader for:" + managedApplicationPerspective.getApplicationPerspective());
+			}
+			if (perspectiveSessionData != null && perspectiveSessionData.getPerspectiveBuilder() != null && perspectiveSessionData.getPerspectiveBuilder().isPerspectiveAccessible(perspectiveSessionData)) {
+				return perspectiveSessionData;
+			}
+		}
+		return null;
+	}
+
+	public ManagedApplicationPerspective getMatchingManagedApplicationPerspective(PerspectiveBuilder perspectiveBuilder) {
+		return applicationData.getManagedApplication().getPerspectives().stream()
+				.filter(mp -> mp.getApplicationPerspective() != null && mp.getApplicationPerspective().getName().equals(perspectiveBuilder.getName()))
+				.findFirst()
+				.orElse(null);
 	}
 
 	public Component createApplication() {

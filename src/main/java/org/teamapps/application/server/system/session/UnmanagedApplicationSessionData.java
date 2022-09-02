@@ -27,16 +27,15 @@ import org.teamapps.application.api.application.perspective.ApplicationPerspecti
 import org.teamapps.application.api.config.ApplicationConfig;
 import org.teamapps.application.api.desktop.ApplicationDesktop;
 import org.teamapps.application.api.localization.ApplicationLocalizationProvider;
-
 import org.teamapps.application.api.organization.UserRoleType;
 import org.teamapps.application.api.privilege.*;
 import org.teamapps.application.api.ui.UiComponentFactory;
 import org.teamapps.application.api.user.SessionUser;
+import org.teamapps.application.server.system.bootstrap.LoadedApplication;
 import org.teamapps.application.server.system.bootstrap.SystemRegistry;
 import org.teamapps.application.server.system.utils.LogUtils;
 import org.teamapps.event.Event;
 import org.teamapps.model.controlcenter.*;
-import org.teamapps.application.server.system.bootstrap.LoadedApplication;
 import org.teamapps.reporting.convert.DocumentConverter;
 import org.teamapps.universaldb.index.translation.TranslatableText;
 import org.teamapps.universaldb.record.EntityBuilder;

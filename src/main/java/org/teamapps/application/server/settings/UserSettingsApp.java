@@ -66,12 +66,7 @@ public class UserSettingsApp extends AbstractApplicationBuilder {
 
 	@Override
 	public LocalizationData getLocalizationData() {
-		return LocalizationData.createFromPropertyFiles("org.teamapps.application.server.i18n.userSettings", getClass().getClassLoader(),
-				new LocalizationLanguages(
-						Locale.ENGLISH
-				).setMachineTranslatedLanguages(
-						Locale.GERMAN
-				));
+		return null; //todo
 	}
 
 	@Override

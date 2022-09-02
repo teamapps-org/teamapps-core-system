@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.teamapps.application.api.annotation.TeamAppsBootableClass;
 import org.teamapps.application.api.application.ApplicationBuilder;
+import org.teamapps.application.api.application.BaseApplicationBuilder;
 import org.teamapps.application.api.config.ApplicationConfig;
 import org.teamapps.application.api.password.SecurePasswordHash;
 import org.teamapps.application.server.ServerRegistry;
@@ -43,12 +44,10 @@ import org.teamapps.icon.flags.FlagIcon;
 import org.teamapps.icon.fontawesome.FontAwesomeIcon;
 import org.teamapps.icon.material.MaterialIcon;
 import org.teamapps.model.ControlCenterSchema;
-import org.teamapps.model.controlcenter.Application;
-import org.teamapps.model.controlcenter.ApplicationVersion;
-import org.teamapps.model.controlcenter.User;
-import org.teamapps.model.controlcenter.UserAccountStatus;
+import org.teamapps.model.controlcenter.*;
 import org.teamapps.universaldb.UniversalDB;
 import org.teamapps.universaldb.index.file.FileValue;
+import org.teamapps.universaldb.index.translation.TranslatableText;
 import org.teamapps.ux.component.template.BaseTemplateRecord;
 import org.teamapps.ux.session.SessionContext;
 
@@ -142,13 +141,27 @@ public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 	}
 
 	public void createInitialUser() {
+		createInitialUser("admin", "teamapps!", false);
+	}
+
+	public void createInitialUser(String login, String password, boolean darkTheme) {
+		OrganizationUnit organizationUnit = OrganizationUnit.getById(1).isStored() ? OrganizationUnit.getById(1) : OrganizationUnit.create()
+				.setName(TranslatableText.create("Organization", "en"))
+				.setType(
+						OrganizationUnitType.create()
+								.setName(TranslatableText.create("Standard", "en"))
+								.setAllowUsers(true)
+				)
+				.save();
 		User.create()
 				.setFirstName("Super")
 				.setLastName("Admin")
-				.setLogin("admin")
-				.setPassword(SecurePasswordHash.createDefault().createSecureHash("teamapps!"))
+				.setLogin(login)
+				.setPassword(SecurePasswordHash.createDefault().createSecureHash(password))
 				.setUserAccountStatus(UserAccountStatus.SUPER_ADMIN)
-				.setLanguages(ValueConverterUtils.compressStringList(Arrays.asList("en", "fr", "de")))
+				.setLanguage("en")
+				.setOrganizationUnit(organizationUnit)
+				.setDarkTheme(darkTheme)
 				.save();
 	}
 

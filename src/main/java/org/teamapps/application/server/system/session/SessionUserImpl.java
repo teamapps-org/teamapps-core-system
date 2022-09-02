@@ -48,9 +48,10 @@ public class SessionUserImpl implements SessionUser {
 	}
 
 	private void init() {
-		List<String> languages = ValueConverterUtils.decompressToStringList(user.getLanguages());
-		if (languages == null || languages.isEmpty()) {
-			languages = new ArrayList<>();
+		List<String> languages = new ArrayList<>();
+		if (user.getLanguage() != null) {
+			languages.add(user.getLanguage());
+		} else {
 			languages.add(context.getLocale().getLanguage());
 		}
 		rankedLanguages.addAll(languages);

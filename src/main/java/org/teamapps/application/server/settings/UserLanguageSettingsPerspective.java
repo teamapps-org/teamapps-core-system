@@ -70,7 +70,7 @@ public class UserLanguageSettingsPerspective extends AbstractApplicationPerspect
 		saveButton.onClicked.addListener(() -> {
 			Language lang = languageComboBox.getValue();
 			if (lang != null) {
-				user.setLanguages(lang.getIsoCode()).save();
+				user.setLanguage(lang.getIsoCode()).save();
 				UiUtils.showSaveNotification(true, getApplicationInstanceData());
 			}
 		});
