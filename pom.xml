@@ -11,8 +11,8 @@
         <maven.compiler.source>14</maven.compiler.source>
         <maven.compiler.target>14</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <teamapps-version>0.9.153</teamapps-version>
-        <universal-db-version>0.5.24</universal-db-version>
+        <teamapps-version>0.9.154</teamapps-version>
+        <universal-db-version>0.5.26</universal-db-version>
         <apache-commons-io>2.11.0</apache-commons-io>
     </properties>
 
@@ -58,12 +58,18 @@
             <groupId>org.teamapps</groupId>
             <artifactId>teamapps-core-system-model</artifactId>
             <version>0.2</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.teamapps</groupId>
             <artifactId>teamapps-application-api</artifactId>
-            <version>0.71</version>
+            <version>0.72</version>
         </dependency>
 
     </dependencies>
@@ -76,7 +82,7 @@
                 <dependency>
                     <groupId>org.teamapps</groupId>
                     <artifactId>teamapps-application-server</artifactId>
-                    <version>0.31</version>
+                    <version>0.32</version>
                     <exclusions>
                         <exclusion>
                             <groupId>*</groupId>
