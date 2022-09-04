@@ -29,6 +29,7 @@ import org.teamapps.application.api.desktop.ApplicationDesktop;
 import org.teamapps.application.api.localization.ApplicationLocalizationProvider;
 import org.teamapps.application.api.organization.UserRoleType;
 import org.teamapps.application.api.privilege.*;
+import org.teamapps.application.api.state.ReplicatedStateMachine;
 import org.teamapps.application.api.ui.UiComponentFactory;
 import org.teamapps.application.api.user.SessionUser;
 import org.teamapps.application.server.system.bootstrap.LoadedApplication;
@@ -193,6 +194,11 @@ public class UnmanagedApplicationSessionData implements ApplicationInstanceData 
 	@Override
 	public <TYPE> Event<TYPE> getApplicationEvent(String name) {
 		return userSessionData.getApplicationEvent(name);
+	}
+
+	@Override
+	public ReplicatedStateMachine getReplicatedStateMachine(String name) {
+		return userSessionData.getReplicatedStateMachine(name);
 	}
 
 	@Override

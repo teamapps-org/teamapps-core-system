@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,7 +26,6 @@ import org.teamapps.application.api.privilege.ApplicationRole;
 import org.teamapps.application.api.privilege.Privilege;
 import org.teamapps.application.api.privilege.PrivilegeGroup;
 import org.teamapps.application.api.privilege.PrivilegeObject;
-import org.teamapps.application.api.theme.ApplicationIcons;
 import org.teamapps.application.server.system.bootstrap.SystemRegistry;
 import org.teamapps.application.server.system.session.UserSessionData;
 import org.teamapps.application.ux.IconUtils;
@@ -39,7 +38,6 @@ import org.teamapps.ux.component.template.BaseTemplate;
 import org.teamapps.ux.session.SessionContext;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -212,6 +210,19 @@ public class PropertyProviders {
 		};
 	}
 
+	public static PropertyProvider<Integer> createCountPropertyProvider(Icon icon, boolean asBadge) {
+		return (value, propertyNames) -> {
+			Map<String, Object> map = new HashMap<>();
+			if (asBadge) {
+				map.put(BaseTemplate.PROPERTY_BADGE, "" + value);
+			} else {
+				map.put(BaseTemplate.PROPERTY_ICON, icon);
+				map.put(BaseTemplate.PROPERTY_CAPTION, "" + value);
+			}
+			return map;
+		};
+	}
+
 	public static PropertyProvider<OrganizationUnitType> creatOrganizationUnitTypePropertyProvider(ApplicationInstanceData applicationInstanceData) {
 		Function<TranslatableText, String> translatableTextExtractor = TranslatableTextUtils.createTranslatableTextExtractor(applicationInstanceData);
 		return (unitType, propertyNames) -> {
@@ -288,7 +299,7 @@ public class PropertyProviders {
 			while (parent != null && level < 3) {
 				Map<String, Object> parentMap = unitPropertyProvider.getValues(parent, propertyNames);
 				path = parentMap.get(BaseTemplate.PROPERTY_CAPTION) + "/" + path;
-						level++;
+				level++;
 				parent = parent.getParent();
 			}
 			map.put(BaseTemplate.PROPERTY_DESCRIPTION, path);
@@ -375,8 +386,8 @@ public class PropertyProviders {
 		};
 	}
 
-	public static PropertyProvider<UserRoleAssignment> createUserRoleAssignmentPropertyProviderNoUserDisplay(UserSessionData userSessionData) {
-		Function<TranslatableText, String> translatableTextExtractor = TranslatableTextUtils.createTranslatableTextExtractor(userSessionData.getRankedLanguages());
+	public static PropertyProvider<UserRoleAssignment> createUserRoleAssignmentPropertyProviderNoUserDisplay(ApplicationInstanceData applicationInstanceData) {
+		Function<TranslatableText, String> translatableTextExtractor = TranslatableTextUtils.createTranslatableTextExtractor(applicationInstanceData.getUser().getRankedLanguages());
 		return (assignment, propertyNames) -> {
 			Map<String, Object> map = new HashMap<>();
 			map.put(BaseTemplate.PROPERTY_ICON, assignment.getRole() != null ? IconUtils.decodeIcon(assignment.getRole().getIcon()) : null);

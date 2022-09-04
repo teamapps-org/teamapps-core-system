@@ -19,9 +19,6 @@
  */
 package org.teamapps.application.server.system.config;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
-
-@XStreamAlias("config")
 public class SystemConfig {
 
 	private ThemingConfig themingConfig = new ThemingConfig();

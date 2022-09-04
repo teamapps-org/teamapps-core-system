@@ -22,6 +22,7 @@ package org.teamapps.application.server.system.session;
 import org.teamapps.application.api.desktop.ApplicationDesktop;
 import org.teamapps.application.api.localization.ApplicationLocalizationProvider;
 import org.teamapps.application.api.privilege.ApplicationPrivilegeProvider;
+import org.teamapps.application.api.state.ReplicatedStateMachine;
 import org.teamapps.application.api.user.SessionUser;
 import org.teamapps.application.server.system.bootstrap.ApplicationRootPanel;
 import org.teamapps.application.server.system.bootstrap.SystemRegistry;
@@ -60,6 +61,7 @@ public class UserSessionData {
 	private final ApplicationLocalizationProvider localizationProvider;
 	private boolean darkTheme;
 	private Map<String, Event<?>> applicationEventByName;
+	private Map<String, ReplicatedStateMachine> replicatedStateMachineMap = new HashMap<>();
 
 	public UserSessionData(User user, SessionContext context, SystemRegistry registry, ApplicationRootPanel rootPanel) {
 		this.user = user;
@@ -189,5 +191,16 @@ public class UserSessionData {
 		applicationEventByName = new ConcurrentHashMap<>();
 		return (Event<TYPE>) applicationEventByName.computeIfAbsent(name, s -> new Event<>());
 	}
+
+	public synchronized ReplicatedStateMachine getReplicatedStateMachine(String name) {
+		if (replicatedStateMachineMap.containsKey(name)) {
+			return replicatedStateMachineMap.get(name);
+		} else {
+			ReplicatedStateMachine replicatedStateMachine = registry.getReplicatedStateMachine(name, SessionContext.current());
+			replicatedStateMachineMap.put(name, replicatedStateMachine);
+			return replicatedStateMachine;
+		}
+	}
+
 
 }

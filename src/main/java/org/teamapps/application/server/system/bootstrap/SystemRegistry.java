@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,6 +25,8 @@ import org.teamapps.application.api.application.BaseApplicationBuilder;
 import org.teamapps.application.api.application.entity.EntityUpdate;
 import org.teamapps.application.api.config.ApplicationConfig;
 import org.teamapps.application.api.localization.Dictionary;
+import org.teamapps.application.api.state.MultiStateHandler;
+import org.teamapps.application.api.state.ReplicatedStateMachine;
 import org.teamapps.application.api.theme.ApplicationIcons;
 import org.teamapps.application.server.EntityUpdateEventHandler;
 import org.teamapps.application.server.ServerRegistry;
@@ -50,6 +52,7 @@ import org.teamapps.reporting.convert.DocumentConverter;
 import org.teamapps.universaldb.UniversalDB;
 import org.teamapps.universaldb.record.EntityBuilder;
 import org.teamapps.ux.component.template.BaseTemplateRecord;
+import org.teamapps.ux.session.SessionContext;
 
 import java.io.File;
 import java.lang.invoke.MethodHandles;
@@ -80,6 +83,7 @@ public class SystemRegistry {
 	private ServerRegistry serverRegistry;
 	private final SessionManager sessionManager;
 	private final WeakHashMap<UserSessionData, Long> activeUsersMap = new WeakHashMap<>();
+	private Map<String, MultiStateHandler> stateHandlerMap = new HashMap<>();
 
 	public SystemRegistry(BootstrapSessionHandler bootstrapSessionHandler, ServerRegistry serverRegistry, SessionManager sessionManager, ApplicationConfig<SystemConfig> applicationConfig) {
 		this.serverRegistry = serverRegistry;
@@ -290,4 +294,19 @@ public class SystemRegistry {
 	public SessionManager getSessionManager() {
 		return sessionManager;
 	}
+
+	public synchronized ReplicatedStateMachine getReplicatedStateMachine(String name, SessionContext context) {
+		if (context == null) {
+			return null;
+		}
+		MultiStateHandler multiStateHandler = stateHandlerMap.get(name);
+		if (multiStateHandler == null) {
+			multiStateHandler = new MultiStateHandler(name);
+			stateHandlerMap.put(name, multiStateHandler);
+		}
+		ReplicatedStateMachine replicatedStateMachine = new ReplicatedStateMachine(multiStateHandler.getReplicatedState());
+		multiStateHandler.addStateHandler(replicatedStateMachine, context);
+		return replicatedStateMachine;
+	}
+
 }
