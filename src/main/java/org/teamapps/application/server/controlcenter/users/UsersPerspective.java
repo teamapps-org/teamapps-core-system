@@ -63,6 +63,7 @@ import org.teamapps.ux.component.field.datetime.InstantDateTimeField;
 import org.teamapps.ux.component.field.upload.PictureChooser;
 import org.teamapps.ux.component.form.ResponsiveForm;
 import org.teamapps.ux.component.form.ResponsiveFormLayout;
+import org.teamapps.ux.component.format.VerticalElementAlignment;
 import org.teamapps.ux.component.itemview.SimpleItemView;
 import org.teamapps.ux.component.table.Table;
 import org.teamapps.ux.component.table.TableColumn;
@@ -110,33 +111,34 @@ public class UsersPerspective extends AbstractManagedApplicationPerspective {
 		ResponsiveForm<User> form = masterDetailController.getResponsiveForm();
 
 		Table<User> table = entityModelBuilder.createListTable(false);
-		table.setRowHeight(32);
+		table.setRowHeight(30);
 		entityModelBuilder.updateModels();
 
-		TemplateField<User> userTableField = UiUtils.createTemplateField(BaseTemplate.LIST_ITEM_MEDIUM_ICON_SINGLE_LINE, PropertyProviders.createUserPropertyProvider(getApplicationInstanceData()));
+		TemplateField<User> userTableField = UiUtils.createTemplateField(BaseTemplate.createTreeSingleLineNodeTemplate(28, VerticalElementAlignment.CENTER, 30), PropertyProviders.createUserPropertyProvider(getApplicationInstanceData()));
+		TemplateField<OrganizationUnit> orgUnitTableField = UiUtils.createTemplateField(BaseTemplate.LIST_ITEM_MEDIUM_ICON_SINGLE_LINE, PropertyProviders.creatOrganizationUnitPropertyProvider(getApplicationInstanceData()));
 		TemplateField<UserAccountStatus> accountStatusTableField = UiUtils.createTemplateField(BaseTemplate.LIST_ITEM_SMALL_ICON_SINGLE_LINE, createAccountStatusPropertyProvider());
 		InstantDateTimeField lastLogin = new InstantDateTimeField();
 		ComboBox<Language> languageComboBox = Language.createComboBox(getApplicationInstanceData());
-		TextField rolesTableField = new TextField();
+		TagComboBox<UserRoleAssignment> userRoleAssignmentTableField = UiUtils.createTagComboBox(BaseTemplate.LIST_ITEM_SMALL_ICON_SINGLE_LINE, PropertyProviders.createUserRoleAssignmentPropertyProviderNoUserDisplay(getApplicationInstanceData()));
 
 		table.addColumn(User.FIELD_LAST_NAME, getLocalized("users.user"), userTableField).setDefaultWidth(250);
+		table.addColumn(User.FIELD_ORGANIZATION_UNIT, getLocalized("users.organizationUnit"), orgUnitTableField).setDefaultWidth(150);
 		table.addColumn(User.FIELD_USER_ACCOUNT_STATUS, getLocalized("users.accountStatus"), accountStatusTableField).setDefaultWidth(120);
 		table.addColumn(User.FIELD_LAST_LOGIN, getLocalized("users.lastLogin"), lastLogin).setDefaultWidth(200);
 		table.addColumn(User.FIELD_LANGUAGE, getLocalized(Dictionary.LANGUAGE), languageComboBox).setDefaultWidth(350);
-		table.addColumn(User.FIELD_ROLE_ASSIGNMENTS, getLocalized("users.roles"), rolesTableField).setDefaultWidth(300);
+		table.addColumn(User.FIELD_ROLE_ASSIGNMENTS, getLocalized("users.roles"), userRoleAssignmentTableField).setDefaultWidth(1500);
 
 		table.setPropertyExtractor((user, propertyName) -> switch (propertyName) {
 			case User.FIELD_LAST_NAME -> user;
+			case User.FIELD_ORGANIZATION_UNIT -> user.getOrganizationUnit();
 			case User.FIELD_USER_ACCOUNT_STATUS -> user.getUserAccountStatus();
 			case User.FIELD_LAST_LOGIN -> user.getLastLogin();
 			case User.FIELD_LANGUAGE -> user.getLanguage() == null ? null : Language.getLanguageByIsoCode(user.getLanguage());
-			case User.FIELD_ROLE_ASSIGNMENTS -> getRolesString(user.getRoleAssignments(), 5);
+			case User.FIELD_ROLE_ASSIGNMENTS -> user.getRoleAssignments();
 			default -> null;
 		});
 
-
 		ResponsiveFormLayout formLayout = form.addResponsiveFormLayout(450);
-
 
 		ToolbarButtonGroup buttonGroup = new ToolbarButtonGroup();
 		ToolbarButton updatePasswordButton = buttonGroup.addButton(ToolbarButton.createSmall(ApplicationIcons.KEYS, getLocalized(Dictionary.RESET_PASSWORD)));
@@ -146,7 +148,6 @@ public class UsersPerspective extends AbstractManagedApplicationPerspective {
 		ToolbarButton userPrivilegesButton = buttonGroup.addButton(ToolbarButton.createSmall(ApplicationIcons.LOCK_OPEN, getLocalized(Dictionary.PRIVILEGES)));
 		formController.addToolbarButtonGroup(buttonGroup);
 
-
 		PictureChooser pictureChooser = new PictureChooser();
 		pictureChooser.setImageDisplaySize(120, 120);
 		pictureChooser.setTargetImageSize(240, 240);
@@ -155,13 +156,13 @@ public class UsersPerspective extends AbstractManagedApplicationPerspective {
 
 		TextField firstNameField = new TextField();
 		TextField lastNameField = new TextField();
-		ComboBox<Language> languageField = languageComboBox;
+		ComboBox<Language> languageField = Language.createComboBox(getApplicationInstanceData());
 		TextField emailField = new TextField();
 		TextField mobileField = new TextField();
 		TextField loginField = new TextField();
 		PasswordField passwordField = new PasswordField();
 		ComboBox<UserAccountStatus> accountStatusComboBox = createAccountStatusComboBox();
-		AbstractField<OrganizationUnitView> organizationUnitViewField = formController.getOrganizationUnitViewField();
+		AbstractField<OrganizationUnitView> organizationUnitViewField = formController.getOrganizationUnitViewField(BaseTemplate.LIST_ITEM_MEDIUM_ICON_TWO_LINES, false);
 
 		EntityListModelBuilder<UserRoleAssignment> userRoleAssignmentModelBuilder = new EntityListModelBuilder<>(getApplicationInstanceData(), userRoleAssignment ->  userRoleAssignment.getRole().getTitle().getText() + " " + userRoleAssignment.getOrganizationUnit().getName().getText());
 		Table<UserRoleAssignment> roleMemberTable = userRoleAssignmentModelBuilder.createListTable(true);
@@ -203,8 +204,8 @@ public class UsersPerspective extends AbstractManagedApplicationPerspective {
 		formController.addEmailOrEmpty(emailField);
 		formController.addPhoneOrEmptyNumber(mobileField);
 		formController.addMinCharactersOrEmpty(loginField, 2);
-		formController.addMinCharactersOrEmpty(passwordField, 9);
-		formController.addNotEmptyList(languageField);
+		//formController.addMinCharactersOrEmpty(passwordField, 9);
+		formController.addNotNull(languageField);
 		formController.addValidator(organizationUnitViewField, unit -> unit != null && OrganizationUtils.convert(unit).getType().isAllowUsers() ? null : getLocalized("users.wrongOrMissingOrgUnit"));
 
 		masterDetailController.createViews(getPerspective(), table, formLayout);
@@ -224,12 +225,12 @@ public class UsersPerspective extends AbstractManagedApplicationPerspective {
 		});
 
 		formController.setSaveEntityHandler(user -> {
-			if (!addressForm.validateAddress() || !addressForm.getAddress().equals(user.getAddress())) {
+			if (!addressForm.validateAddress() || (user.getAddress() != null && user.getAddress().isStored() && !addressForm.getAddress().equals(user.getAddress()))) {
 				return false;
 			}
 			OrganizationUnit organizationUnit = OrganizationUtils.convert(organizationUnitViewField.getValue());
 			byte[] picture = readUserPicture(pictureChooser);
-			addressForm.getAddress().save();
+			Address address = addressForm.getAddress().save();
 			user
 					.setFirstName(firstNameField.getValue())
 					.setLastName(lastNameField.getValue())
@@ -239,6 +240,7 @@ public class UsersPerspective extends AbstractManagedApplicationPerspective {
 					.setLogin(loginField.getValue())
 					.setUserAccountStatus(accountStatusComboBox.getValue())
 					.setOrganizationUnit(organizationUnit)
+					.setAddress(address)
 			;
 			if (picture != null && picture.length != user.getProfilePictureLength()) {
 				user.setProfilePicture(picture);
