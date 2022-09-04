@@ -92,6 +92,7 @@ public class RolesPerspective extends AbstractManagedApplicationPerspective {
 
 		TemplateField<Role> roleTableField = UiUtils.createTemplateField(BaseTemplate.LIST_ITEM_SMALL_ICON_SINGLE_LINE, PropertyProviders.createRolePropertyProvider(getApplicationInstanceData()));
 		TemplateField<OrganizationField> organizationFieldTableField = UiUtils.createTemplateField(BaseTemplate.LIST_ITEM_SMALL_ICON_SINGLE_LINE, PropertyProviders.createOrganizationFieldPropertyProvider(getApplicationInstanceData()));
+		TemplateField<Integer> memberCountTableField = UiUtils.createTemplateField(BaseTemplate.LIST_ITEM_SMALL_ICON_SINGLE_LINE, PropertyProviders.createCountPropertyProvider(ApplicationIcons.USERS, false));
 		TagComboBox<OrganizationUnitType> allowedOrganizationUnitTypesTableField = UiUtils.createTagComboBox(BaseTemplate.LIST_ITEM_SMALL_ICON_SINGLE_LINE, PropertyProviders.creatOrganizationUnitTypePropertyProvider(getApplicationInstanceData()));
 		CheckBox noDirectMembershipsTableField = new CheckBox(getLocalized("roles.noDirectMemberships"));
 
@@ -99,6 +100,7 @@ public class RolesPerspective extends AbstractManagedApplicationPerspective {
 		if (!isAppFilter()) {
 			table.addColumn(Role.FIELD_ORGANIZATION_FIELD, getLocalized("organizationField.organizationField"), organizationFieldTableField).setDefaultWidth(130);
 		}
+		table.addColumn("countMember", getLocalized(Dictionary.COUNT), memberCountTableField).setDefaultWidth(50);
 		table.addColumn(Role.FIELD_ALLOWED_ORGANIZATION_UNIT_TYPES, getLocalized("roles.allowedOrganizationUnitTypes"), allowedOrganizationUnitTypesTableField).setDefaultWidth(350);
 		table.addColumn(Role.FIELD_NO_DIRECT_MEMBERSHIPS, getLocalized("roles.noMemberships"), noDirectMembershipsTableField).setDefaultWidth(200);
 
@@ -107,6 +109,7 @@ public class RolesPerspective extends AbstractManagedApplicationPerspective {
 			case Role.FIELD_ORGANIZATION_FIELD -> role.getOrganizationField();
 			case Role.FIELD_ALLOWED_ORGANIZATION_UNIT_TYPES -> role.getAllowedOrganizationUnitTypes();
 			case Role.FIELD_NO_DIRECT_MEMBERSHIPS -> role.getNoDirectMemberships();
+			case "countMember" -> role.getUserRoleAssignmentsCount();
 			default -> null;
 		});
 
