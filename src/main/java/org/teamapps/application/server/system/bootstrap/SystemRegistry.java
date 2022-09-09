@@ -108,7 +108,7 @@ public class SystemRegistry {
 		SystemConfig config = applicationConfig.getConfig();
 		DocumentConversionConfig documentConversionConfig = config.getDocumentConversionConfig();
 		if (documentConversionConfig.isActive()) {
-			documentConverter = DocumentConverter.createRemoteConverter(documentConversionConfig.getHost(), documentConversionConfig.getUser(), documentConversionConfig.getPassword());
+			documentConverter = DocumentConverter.createRemoteConverter(documentConversionConfig.getHost(), documentConversionConfig.getUser(), documentConversionConfig.getPassword(), documentConversionConfig.getProxyHost(), documentConversionConfig.getProxyPort());
 		}
 		MachineTranslationConfig machineTranslationConfig = config.getMachineTranslationConfig();
 		if (machineTranslationConfig.isActive()) {

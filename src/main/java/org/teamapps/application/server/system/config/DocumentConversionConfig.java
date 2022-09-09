@@ -24,6 +24,8 @@ public class DocumentConversionConfig {
 	private String host = "host";
 	private String user = "user";
 	private String password = "password";
+	private String proxyHost = null;
+	private int proxyPort = 8080;
 
 	public DocumentConversionConfig() {
 	}
@@ -58,5 +60,21 @@ public class DocumentConversionConfig {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public String getProxyHost() {
+		return proxyHost;
+	}
+
+	public void setProxyHost(String proxyHost) {
+		this.proxyHost = proxyHost;
+	}
+
+	public int getProxyPort() {
+		return proxyPort;
+	}
+
+	public void setProxyPort(int proxyPort) {
+		this.proxyPort = proxyPort;
 	}
 }
