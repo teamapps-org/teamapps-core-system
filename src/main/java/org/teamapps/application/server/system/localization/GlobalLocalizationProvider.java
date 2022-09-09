@@ -93,6 +93,9 @@ public class GlobalLocalizationProvider {
 					return value.getCurrentDisplayValue();
 				}
 			}
+			if (!languageValueMap.isEmpty()) {
+				return languageValueMap.entrySet().iterator().next().getValue().getCurrentDisplayValue();
+			}
 		}
 		return key;
 	}
