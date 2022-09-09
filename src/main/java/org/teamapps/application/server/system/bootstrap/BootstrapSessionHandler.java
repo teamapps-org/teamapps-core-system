@@ -141,10 +141,10 @@ public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 	}
 
 	public void createInitialUser() {
-		createInitialUser("admin", "teamapps!", false);
+		createInitialUser("admin", "teamapps!", "en", false);
 	}
 
-	public void createInitialUser(String login, String password, boolean darkTheme) {
+	public void createInitialUser(String login, String password, String language, boolean darkTheme) {
 		OrganizationUnit organizationUnit = OrganizationUnit.getById(1).isStored() ? OrganizationUnit.getById(1) : OrganizationUnit.create()
 				.setName(TranslatableText.create("Organization", "en"))
 				.setType(
@@ -156,6 +156,7 @@ public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 		User.create()
 				.setFirstName("Super")
 				.setLastName("Admin")
+				.setLanguage(language)
 				.setLogin(login)
 				.setPassword(SecurePasswordHash.createDefault().createSecureHash(password))
 				.setUserAccountStatus(UserAccountStatus.SUPER_ADMIN)
