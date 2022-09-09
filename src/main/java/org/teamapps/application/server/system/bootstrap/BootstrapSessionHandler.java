@@ -145,7 +145,8 @@ public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 	}
 
 	public void createInitialUser(String login, String password, String language, boolean darkTheme) {
-		OrganizationUnit organizationUnit = OrganizationUnit.getById(1).isStored() ? OrganizationUnit.getById(1) : OrganizationUnit.create()
+		OrganizationUnit existingUnit = OrganizationUnit.getAll().stream().filter(unit -> unit.getType().isAllowUsers()).findFirst().orElse(null);
+		OrganizationUnit organizationUnit = existingUnit != null ? existingUnit : OrganizationUnit.create()
 				.setName(TranslatableText.create("Organization", "en"))
 				.setType(
 						OrganizationUnitType.create()
@@ -160,7 +161,6 @@ public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 				.setLogin(login)
 				.setPassword(SecurePasswordHash.createDefault().createSecureHash(password))
 				.setUserAccountStatus(UserAccountStatus.SUPER_ADMIN)
-				.setLanguage("en")
 				.setOrganizationUnit(organizationUnit)
 				.setDarkTheme(darkTheme)
 				.save();
