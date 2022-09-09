@@ -81,7 +81,7 @@ public class SessionUiComponentFactory implements UiComponentFactory {
 
 	@Override
 	public TemplateField<OrganizationUnitView> createOrganizationUnitTemplateField() {
-		return UiUtils.createTemplateField(BaseTemplate.LIST_ITEM_MEDIUM_ICON_SINGLE_LINE, OrganizationViewUtils.creatOrganizationUnitViewPropertyProvider(applicationInstanceData));
+		return UiUtils.createTemplateField(BaseTemplate.LIST_ITEM_MEDIUM_ICON_SINGLE_LINE, OrganizationViewUtils.creatOrganizationUnitPropertyProvider(applicationInstanceData));
 	}
 
 	@Override
