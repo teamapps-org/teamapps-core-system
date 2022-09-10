@@ -164,6 +164,7 @@ public class UserSessionData {
 	}
 
 	public void invalidate() {
+		sessionUser.onUserLogout().fire();
 		userPrivileges = null;
 	}
 

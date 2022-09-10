@@ -22,6 +22,7 @@ package org.teamapps.application.server.system.session;
 import com.ibm.icu.util.ULocale;
 import org.teamapps.application.api.user.SessionUser;
 import org.teamapps.application.server.system.utils.ValueConverterUtils;
+import org.teamapps.event.Event;
 import org.teamapps.model.controlcenter.User;
 import org.teamapps.universaldb.context.UserContext;
 import org.teamapps.ux.session.SessionContext;
@@ -37,7 +38,7 @@ public class SessionUserImpl implements SessionUser {
 	private final SessionContext context;
 	private final List<String> rankedLanguages;
 	private UserSessionData userSessionData;
-
+	private Event<Void> onLogout = new Event<>();
 
 	public SessionUserImpl(UserSessionData userSessionData) {
 		this.userSessionData = userSessionData;
@@ -83,12 +84,12 @@ public class SessionUserImpl implements SessionUser {
 
 	@Override
 	public String getProfilePictureLink() {
-		return null; //todo - link must be the same vor all users?
+		return userSessionData.getRegistry().getBaseResourceLinkProvider().getUserProfilePictureLink(user);
 	}
 
 	@Override
 	public String getLargeProfilePictureLink() {
-		return null; //todo
+		return userSessionData.getRegistry().getBaseResourceLinkProvider().getUserProfilePictureLink(user.getId(), true);
 	}
 
 	@Override
@@ -98,7 +99,7 @@ public class SessionUserImpl implements SessionUser {
 
 	@Override
 	public ULocale getULocale() {
-		return null;
+		return ULocale.forLocale(getLocale());
 	}
 
 	@Override
@@ -114,6 +115,11 @@ public class SessionUserImpl implements SessionUser {
 	@Override
 	public boolean isDarkTheme() {
 		return userSessionData.isDarkTheme();
+	}
+
+	@Override
+	public Event<Void> onUserLogout() {
+		return onLogout;
 	}
 
 }
