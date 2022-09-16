@@ -69,8 +69,18 @@ public class SessionUserImpl implements SessionUser {
 	}
 
 	@Override
+	public String getFirstNameTranslated() {
+		return user.getFirstNameTranslated();
+	}
+
+	@Override
 	public String getLastName() {
 		return user.getLastName();
+	}
+
+	@Override
+	public String getLastNameTranslated() {
+		return user.getLastNameTranslated();
 	}
 
 	@Override
@@ -80,6 +90,18 @@ public class SessionUserImpl implements SessionUser {
 		} else {
 			return user.getFirstName() + " " + user.getLastName();
 		}
+	}
+
+	@Override
+	public String getDescription() {
+		String description = "";
+		if (user.getAddress() != null) {
+			description = user.getAddress().getCountry() + " ";
+		}
+		if (user.getOrganizationUnit() != null) {
+			description += user.getOrganizationUnit().getName().getText();
+		}
+		return description;
 	}
 
 	@Override

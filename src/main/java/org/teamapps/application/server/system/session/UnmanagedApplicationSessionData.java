@@ -46,6 +46,7 @@ import org.teamapps.ux.component.progress.MultiProgressDisplay;
 
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class UnmanagedApplicationSessionData implements ApplicationInstanceData {
@@ -214,6 +215,11 @@ public class UnmanagedApplicationSessionData implements ApplicationInstanceData 
 	@Override
 	public String getLocalized(TranslatableText translatableText) {
 		return localizationProvider.getLocalized(translatableText);
+	}
+
+	@Override
+	public Function<TranslatableText, String> getTranslatableTextExtractor() {
+		return localizationProvider.getTranslatableTextExtractor();
 	}
 
 	@Override

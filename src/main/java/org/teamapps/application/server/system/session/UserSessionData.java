@@ -73,6 +73,7 @@ public class UserSessionData {
 		this.localizationRankedLanguages = createLocalizationRankedLanguages();
 		this.iconProvider = context.getIconProvider();
 		this.localizationProvider = new SessionApplicationLocalizationProvider(null, localizationRankedLanguages, registry.getGlobalLocalizationProvider());
+		context.onDestroyed.addListener(this::invalidate);
 	}
 
 	private List<String> createLocalizationRankedLanguages() {

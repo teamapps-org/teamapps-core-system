@@ -20,21 +20,25 @@
 package org.teamapps.application.server.system.localization;
 
 import org.teamapps.application.api.localization.ApplicationLocalizationProvider;
+import org.teamapps.application.ux.localize.TranslatableTextUtils;
 import org.teamapps.model.controlcenter.Application;
 import org.teamapps.universaldb.index.translation.TranslatableText;
 
 import java.util.List;
+import java.util.function.Function;
 
 public class SessionApplicationLocalizationProvider implements ApplicationLocalizationProvider {
 
 	private final Application application;
 	private final List<String> rankedLanguages;
 	private final GlobalLocalizationProvider localizationProvider;
+	private final Function<TranslatableText, String> translatableTextExtractor;
 
 	public SessionApplicationLocalizationProvider(Application application, List<String> rankedLanguages, GlobalLocalizationProvider localizationProvider) {
 		this.application = application;
 		this.rankedLanguages = rankedLanguages;
 		this.localizationProvider = localizationProvider;
+		this.translatableTextExtractor = TranslatableTextUtils.createTranslatableTextExtractor(rankedLanguages);
 	}
 
 	public String getLocalized(Application application, String key) {
@@ -54,5 +58,10 @@ public class SessionApplicationLocalizationProvider implements ApplicationLocali
 	@Override
 	public String getLocalized(TranslatableText translatableText) {
 		return localizationProvider.getLocalized(translatableText, rankedLanguages);
+	}
+
+	@Override
+	public Function<TranslatableText, String> getTranslatableTextExtractor() {
+		return translatableTextExtractor;
 	}
 }
