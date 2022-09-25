@@ -314,6 +314,11 @@ public class PropertyProviders {
 				.collect(Collectors.joining(", "));
 	}
 
+	public static String getUserImageLink(User user, ApplicationInstanceData applicationInstanceData) {
+		String link = applicationInstanceData.getComponentFactory().createUserAvatarLink(user.getId(), false);
+		return link != null ? link : "/ta-media/user-silhouette.png";
+	}
+
 	public static User getOrgUnitLeader(OrganizationUnit unit, OrganizationField organizationField) {
 		//todo change when model update is active (back reference from unit to assignment)
 		List<UserRoleAssignment> assignments = UserRoleAssignment.filter().organizationUnit(NumericFilter.equalsFilter(unit.getId())).execute();
@@ -370,12 +375,7 @@ public class PropertyProviders {
 	public static PropertyProvider<User> createUserPropertyProvider(ApplicationInstanceData applicationInstanceData) {
 		return (user, propertyNames) -> {
 			Map<String, Object> map = new HashMap<>();
-			String userProfilePictureLink = applicationInstanceData.getComponentFactory().createUserAvatarLink(user.getId(), false);
-			if (userProfilePictureLink != null) {
-				map.put(BaseTemplate.PROPERTY_IMAGE, userProfilePictureLink);
-			} else {
-				map.put(BaseTemplate.PROPERTY_IMAGE, "/ta-media/user-silhouette.png");
-			}
+			map.put(BaseTemplate.PROPERTY_IMAGE, getUserImageLink(user, applicationInstanceData));
 			map.put(BaseTemplate.PROPERTY_CAPTION, getUserCaptionWithTranslation(user));
 			map.put(BaseTemplate.PROPERTY_DESCRIPTION, getUserDescription(user, applicationInstanceData));
 			return map;
@@ -389,12 +389,7 @@ public class PropertyProviders {
 			if (!user.isStored()) {
 				return map;
 			}
-			String userProfilePictureLink = applicationInstanceData.getComponentFactory().createUserAvatarLink(userId, false);
-			if (userProfilePictureLink != null) {
-				map.put(BaseTemplate.PROPERTY_IMAGE, userProfilePictureLink);
-			} else {
-				map.put(BaseTemplate.PROPERTY_IMAGE, "/ta-media/user-silhouette.png");
-			}
+			map.put(BaseTemplate.PROPERTY_IMAGE, getUserImageLink(user, applicationInstanceData));
 			map.put(BaseTemplate.PROPERTY_CAPTION, getUserCaptionWithTranslation(user));
 			map.put(BaseTemplate.PROPERTY_DESCRIPTION, getUserDescription(user, applicationInstanceData));
 			return map;
