@@ -20,6 +20,7 @@
 package org.teamapps.application.server.system.session;
 
 import com.ibm.icu.util.ULocale;
+import org.teamapps.application.api.user.LocalizedFormatter;
 import org.teamapps.application.api.user.SessionUser;
 import org.teamapps.application.server.system.utils.ValueConverterUtils;
 import org.teamapps.event.Event;
@@ -38,6 +39,8 @@ public class SessionUserImpl implements SessionUser {
 	private final SessionContext context;
 	private final List<String> rankedLanguages;
 	private UserSessionData userSessionData;
+	private Locale locale;
+	private LocalizedFormatter localizedFormatter;
 	private Event<Void> onLogout = new Event<>();
 
 	public SessionUserImpl(UserSessionData userSessionData) {
@@ -46,14 +49,17 @@ public class SessionUserImpl implements SessionUser {
 		this.context = userSessionData.getContext();
 		rankedLanguages = new ArrayList<>();
 		init();
+		localizedFormatter = new LocalizedFormatter(locale, context.getTimeZone());
 	}
 
 	private void init() {
 		List<String> languages = new ArrayList<>();
 		if (user.getLanguage() != null) {
 			languages.add(user.getLanguage());
+			locale = Locale.forLanguageTag(user.getLanguage());
 		} else {
 			languages.add(context.getLocale().getLanguage());
+			locale = context.getLocale();
 		}
 		rankedLanguages.addAll(languages);
 	}
@@ -126,7 +132,7 @@ public class SessionUserImpl implements SessionUser {
 
 	@Override
 	public Locale getLocale() {
-		return context.getLocale();
+		return locale;
 	}
 
 	@Override
@@ -137,6 +143,11 @@ public class SessionUserImpl implements SessionUser {
 	@Override
 	public boolean isDarkTheme() {
 		return userSessionData.isDarkTheme();
+	}
+
+	@Override
+	public LocalizedFormatter getLocalizedFormatter() {
+		return localizedFormatter;
 	}
 
 	@Override
