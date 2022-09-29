@@ -60,8 +60,8 @@ public class UserSessionData {
 	private Function<Component, Component> rootWrapperComponentFunction;
 	private final ApplicationLocalizationProvider localizationProvider;
 	private boolean darkTheme;
-	private Map<String, Event<?>> applicationEventByName;
-	private Map<String, ReplicatedStateMachine> replicatedStateMachineMap = new HashMap<>();
+	private final Map<String, Event<?>> applicationEventByName = new ConcurrentHashMap<>();
+	private final Map<String, ReplicatedStateMachine> replicatedStateMachineMap = new HashMap<>();
 
 	public UserSessionData(User user, SessionContext context, SystemRegistry registry, ApplicationRootPanel rootPanel) {
 		this.user = user;
@@ -190,7 +190,6 @@ public class UserSessionData {
 	}
 
 	public <TYPE> Event<TYPE> getApplicationEvent(String name) {
-		applicationEventByName = new ConcurrentHashMap<>();
 		return (Event<TYPE>) applicationEventByName.computeIfAbsent(name, s -> new Event<>());
 	}
 
