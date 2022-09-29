@@ -245,6 +245,17 @@ public class PropertyProviders {
 		};
 	}
 
+	public static PropertyProvider<OrganizationUnit> createOrganizationUnitWithLeaderPropertyProvider(OrganizationField organizationField, ApplicationInstanceData applicationInstanceData) {
+		return (unit, propertyNames) -> {
+			User leader = getOrgUnitLeader(unit, organizationField);
+			Map<String, Object> map = new HashMap<>();
+			map.put(BaseTemplate.PROPERTY_IMAGE, getUserImageLink(leader, applicationInstanceData));
+			map.put(BaseTemplate.PROPERTY_CAPTION, getOrganizationUnitTitle(unit, applicationInstanceData));
+			map.put(BaseTemplate.PROPERTY_DESCRIPTION, getUserCaptionWithTranslation(leader));
+			return map;
+		};
+	}
+
 	public static String getOrganizationUnitTitle(OrganizationUnit unit, ApplicationInstanceData applicationInstanceData) {
 		if (unit == null) {
 			return null;
@@ -266,6 +277,9 @@ public class PropertyProviders {
 
 	public static String getUserCaptionWithTranslation(User user) {
 		StringBuilder sb = new StringBuilder();
+		if (user == null) {
+			return null;
+		}
 		sb.append(user.getFirstName()).append(" ").append(user.getLastName());
 		if (user.getFirstNameTranslated() != null || user.getLastNameTranslated() != null) {
 			sb.append(" (");
@@ -287,7 +301,7 @@ public class PropertyProviders {
 		StringBuilder sb = new StringBuilder();
 		Address address = user.getAddress();
 		if (address != null) {
-			sb.append(address.getCountry()).append("-").append(address.getCity()).append(", ").append(address.getStreet());
+			sb.append(address.getCountry()).append(" ").append(address.getCity()).append(", ").append(address.getStreet());
 		}
 		return sb.toString();
 	}
@@ -315,8 +329,12 @@ public class PropertyProviders {
 	}
 
 	public static String getUserImageLink(User user, ApplicationInstanceData applicationInstanceData) {
-		String link = applicationInstanceData.getComponentFactory().createUserAvatarLink(user.getId(), false);
-		return link != null ? link : "/ta-media/user-silhouette.png";
+		if (user == null) {
+			return "/ta-media/user-silhouette.png";
+		} else {
+			String link = applicationInstanceData.getComponentFactory().createUserAvatarLink(user.getId(), false);
+			return link != null ? link : "/ta-media/user-silhouette.png";
+		}
 	}
 
 	public static User getOrgUnitLeader(OrganizationUnit unit, OrganizationField organizationField) {
