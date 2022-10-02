@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,14 +29,14 @@ import org.teamapps.application.server.system.bootstrap.ApplicationInfoDataEleme
 import org.teamapps.application.server.system.session.PerspectiveSessionData;
 import org.teamapps.application.server.system.session.UserSessionData;
 import org.teamapps.application.server.system.template.PropertyProviders;
-import org.teamapps.application.ux.IconUtils;
-import org.teamapps.application.ux.UiUtils;
 import org.teamapps.application.tools.EntityListModelBuilder;
 import org.teamapps.application.tools.EntityModelBuilder;
+import org.teamapps.application.ux.IconUtils;
+import org.teamapps.application.ux.UiUtils;
 import org.teamapps.common.format.Color;
 import org.teamapps.databinding.MutableValue;
-import org.teamapps.databinding.TwoWayBindableValue;
 import org.teamapps.model.controlcenter.*;
+import org.teamapps.universaldb.index.file.FileValue;
 import org.teamapps.ux.application.layout.StandardLayout;
 import org.teamapps.ux.application.view.View;
 import org.teamapps.ux.component.field.*;
@@ -48,6 +48,7 @@ import org.teamapps.ux.component.table.Table;
 import org.teamapps.ux.component.template.BaseTemplate;
 import org.teamapps.ux.component.toolbar.ToolbarButton;
 import org.teamapps.ux.component.toolbar.ToolbarButtonGroup;
+import org.teamapps.ux.session.SessionContext;
 
 import java.util.Arrays;
 import java.util.List;
@@ -86,7 +87,8 @@ public class ApplicationsPerspective extends AbstractManagedApplicationPerspecti
 		View applicationsView = getPerspective().addView(View.createView(StandardLayout.CENTER, ApplicationIcons.BOX_SOFTWARE, getLocalized(Dictionary.APPLICATIONS), null));
 		View applicationVersionsView = getPerspective().addView(View.createView(StandardLayout.CENTER_BOTTOM, ApplicationIcons.BOX_SOFTWARE, getLocalized("applications.versions"), null));
 		View applicationDetailsView = getPerspective().addView(View.createView(StandardLayout.RIGHT, ApplicationIcons.BOX_SOFTWARE, getLocalized("applications.application"), null));
-		applicationDetailsView.getPanel().setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.9f));
+		View applicationVersionDetailsView = getPerspective().addView(View.createView(StandardLayout.RIGHT_BOTTOM, ApplicationIcons.BOX_SOFTWARE, getLocalized("applications.appVersion"), null));
+		applicationDetailsView.getPanel().setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30, .7f) : Color.WHITE.withAlpha(0.9f));
 
 		EntityModelBuilder<Application> applicationModelBuilder = new EntityModelBuilder<>(Application::filter, getApplicationInstanceData());
 		Table<Application> applicationsTable = applicationModelBuilder.createTemplateFieldTableList(BaseTemplate.LIST_ITEM_VERY_LARGE_ICON_TWO_LINES, PropertyProviders.createApplicationPropertyProvider(userSessionData), 60);
@@ -97,15 +99,16 @@ public class ApplicationsPerspective extends AbstractManagedApplicationPerspecti
 		applicationModelBuilder.getOnSelectionEvent().addListener(app -> perspectiveComponents.getSelectedApplication().set(app));
 
 		EntityListModelBuilder<ApplicationVersion> applicationVersionModelBuilder = new EntityListModelBuilder<>(getApplicationInstanceData());
-		Table<ApplicationVersion> applicationVersinTable = applicationVersionModelBuilder.createTemplateFieldTableList(BaseTemplate.LIST_ITEM_LARGE_ICON_TWO_LINES, PropertyProviders.createApplicationVersionPropertyProvider(userSessionData), 36);
+		Table<ApplicationVersion> applicationVersionTable = applicationVersionModelBuilder.createTemplateFieldTableList(BaseTemplate.LIST_ITEM_LARGE_ICON_TWO_LINES, PropertyProviders.createApplicationVersionPropertyProvider(userSessionData), 36);
 		applicationVersionModelBuilder.attachSearchField(applicationVersionsView);
 		applicationVersionModelBuilder.attachViewCountHandler(applicationVersionsView, () -> getLocalized("applications.versions"));
 		applicationVersionModelBuilder.updateModels();
-		applicationVersionsView.setComponent(applicationVersinTable);
+		applicationVersionsView.setComponent(applicationVersionTable);
 
 
 		ResponsiveForm applicationForm = new ResponsiveForm(100, 0, 0);
 		ResponsiveFormLayout formLayout = applicationForm.addResponsiveFormLayout(400);
+		CheckBox uninstalledField = new CheckBox(getLocalized("applications.uninstalled"));
 		TextField appNameField = new TextField();
 		TextField appTitleField = new TextField();
 		TextField appDescriptionField = new TextField();
@@ -121,6 +124,7 @@ public class ApplicationsPerspective extends AbstractManagedApplicationPerspecti
 
 		TextField appVersionField = new TextField();
 		DisplayField releaseField = new DisplayField(false, false);
+		TextField versionHashField = new TextField();
 
 		TemplateField<String> dataModelChangesField = UiUtils.createIconFixedIconTemplateField(ApplicationIcons.DATA_CLOUD);
 		TemplateField<String> localizationChangesField = UiUtils.createIconFixedIconTemplateField(ApplicationIcons.EARTH);
@@ -133,6 +137,8 @@ public class ApplicationsPerspective extends AbstractManagedApplicationPerspecti
 		DisplayField perspectiveChangesDisplayField = new DisplayField(true, true);
 
 		List<AbstractField<?>> fields = Arrays.asList(
+				uninstalledField,
+				versionHashField,
 				appNameField,
 				appTitleField,
 				appDescriptionField,
@@ -147,6 +153,7 @@ public class ApplicationsPerspective extends AbstractManagedApplicationPerspecti
 
 		formLayout.addSection(ApplicationIcons.BOX_SOFTWARE, getLocalized("applications.application")).setDrawHeaderLine(false);
 		formLayout.addLabelAndComponent(null, getLocalized("applications.appName"), appNameField);
+		formLayout.addLabelAndComponent(null, getLocalized("applications.uninstalled"), uninstalledField);
 		formLayout.addLabelAndComponent(null, getLocalized("applications.appTitle"), appTitleField);
 		formLayout.addLabelAndComponent(null, getLocalized("applications.appDescription"), appDescriptionField);
 		formLayout.addLabelAndComponent(null, getLocalized("applications.appType"), appTypeField);
@@ -155,9 +162,17 @@ public class ApplicationsPerspective extends AbstractManagedApplicationPerspecti
 		formLayout.addLabelAndComponent(null, getLocalized("applications.installedAsMainApp"), asMainAppCombo);
 		formLayout.addLabelAndComponent(null, getLocalized("applications.usdInApplications"), usedInCombo);
 
+
+		FormMetaFields formMetaFields = getApplicationInstanceData().getComponentFactory().createFormMetaFields();
+		formMetaFields.addMetaFields(formLayout, false);
+		applicationModelBuilder.getOnSelectionEvent().addListener(formMetaFields::updateEntity);
+
+		ResponsiveForm applicationVersionForm = new ResponsiveForm(100, 0, 0);
+		formLayout = applicationVersionForm.addResponsiveFormLayout(400);
 		formLayout.addSection(ApplicationIcons.BOX_SOFTWARE, getLocalized("applications.appVersion")).setDrawHeaderLine(true);
 		formLayout.addLabelAndComponent(null, getLocalized("applications.appVersion"), appVersionField);
 		formLayout.addLabelAndComponent(null, getLocalized("applications.releaseNotes"), releaseField);
+		formLayout.addLabelAndComponent(null, getLocalized("applications.fileHash"), versionHashField);
 
 		formLayout.addLabelAndComponent(null, getLocalized("applications.dataModelChanges"), dataModelChangesField);
 		formLayout.addLabelAndComponent(null, getLocalized("applications.localizationDataChanges"), localizationChangesField);
@@ -176,11 +191,14 @@ public class ApplicationsPerspective extends AbstractManagedApplicationPerspecti
 		formLayout.addSection(ApplicationIcons.WINDOWS, getLocalized("applications.perspectivesDataChanges")).setDrawHeaderLine(true).setCollapsed(true);
 		formLayout.addLabelAndComponent(perspectiveChangesDisplayField);
 
-		FormMetaFields formMetaFields = getApplicationInstanceData().getComponentFactory().createFormMetaFields();
-		formMetaFields.addMetaFields(formLayout, false);
-		applicationModelBuilder.getOnSelectionEvent().addListener(formMetaFields::updateEntity);
+		FormMetaFields versionFormMetaFields = getApplicationInstanceData().getComponentFactory().createFormMetaFields();
+		versionFormMetaFields.addMetaFields(formLayout, false);
+		applicationVersionModelBuilder.getOnSelectionEvent().addListener(versionFormMetaFields::updateEntity);
 
 		applicationVersionModelBuilder.getOnSelectionEvent().addListener(version -> {
+			appVersionField.setValue(version.getVersion());
+			releaseField.setValue(version.getReleaseNotes());
+			versionHashField.setValue(version.getBinaryHash());
 			dataModelChangesField.setValue(ApplicationInfoDataElement.getChangeString(version.getDataModelData()));
 			localizationChangesField.setValue(ApplicationInfoDataElement.getChangeString(version.getLocalizationData()));
 			privilegeChangesField.setValue(ApplicationInfoDataElement.getChangeString(version.getPrivilegeData()));
@@ -194,6 +212,7 @@ public class ApplicationsPerspective extends AbstractManagedApplicationPerspecti
 		applicationModelBuilder.getOnSelectionEvent().addListener(app -> {
 			applicationVersionModelBuilder.setRecords(app.getVersions());
 			appNameField.setValue(app.getName());
+			uninstalledField.setValue(app.isUninstalled());
 			appTitleField.setValue(getLocalized(app.getTitleKey()));
 			appDescriptionField.setValue(getLocalized(app.getDescriptionKey()));
 			appTypeField.setValue(app.getUnmanagedApplication());
@@ -214,6 +233,10 @@ public class ApplicationsPerspective extends AbstractManagedApplicationPerspecti
 			applicationVersionModelBuilder.setSelectedRecord(app.getInstalledVersion());
 		});
 
+		applicationVersionModelBuilder.getOnSelectionEvent().addListener(version -> {
+			applicationVersionModelBuilder.setSelectedRecord(version);
+		});
+
 
 		ToolbarButtonGroup buttonGroup = applicationDetailsView.addLocalButtonGroup(new ToolbarButtonGroup());
 		buttonGroup.addButton(ToolbarButton.createSmall(ApplicationIcons.UPLOAD, getLocalized("applications.installUpdate"))).onClick.addListener(() -> {
@@ -221,9 +244,42 @@ public class ApplicationsPerspective extends AbstractManagedApplicationPerspecti
 		});
 
 		buttonGroup = applicationDetailsView.addLocalButtonGroup(new ToolbarButtonGroup());
+		ToolbarButton uninstallAppButton = buttonGroup.addButton(ToolbarButton.createSmall(ApplicationIcons.UNINSTALL, getLocalized("applications.uninstallApplication")));
+		ToolbarButton reactivateAppButton = buttonGroup.addButton(ToolbarButton.createSmall(ApplicationIcons.INSTALL, getLocalized("applications.reactivateApplication")));
+		reactivateAppButton.setVisible(false);
+		applicationModelBuilder.getOnSelectionEvent().addListener(app -> {
+			uninstallAppButton.setVisible(!app.isUninstalled());
+			reactivateAppButton.setVisible(app.isUninstalled());
+		});
+
+		uninstallAppButton.onClick.addListener(() -> {
+			Application application = applicationModelBuilder.getSelectedRecord();
+			application.setUninstalled(true).save();
+			userSessionData.getRegistry().uninstallApplication(application);
+			applicationModelBuilder.onDataChanged.fire();
+		});
+
+		reactivateAppButton.onClick.addListener(() -> {
+			Application application = applicationModelBuilder.getSelectedRecord();
+			application.setUninstalled(false).save();
+			applicationModelBuilder.onDataChanged.fire();
+		});
+
+
+		buttonGroup = applicationDetailsView.addLocalButtonGroup(new ToolbarButtonGroup());
 		ToolbarButton rollbackButton = buttonGroup.addButton(ToolbarButton.createSmall(ApplicationIcons.SIGN_WARNING_HARMFUL, getLocalized("applications.performRollback")));
 		rollbackButton.onClick.addListener(() -> {
 
+		});
+
+		buttonGroup = applicationVersionDetailsView.addLocalButtonGroup(new ToolbarButtonGroup());
+		ToolbarButton downloadAppButton = buttonGroup.addButton(ToolbarButton.createSmall(ApplicationIcons.DOWNLOAD, getLocalized(Dictionary.DOWNLOAD)));
+		downloadAppButton.onClick.addListener(() -> {
+			ApplicationVersion version = applicationVersionModelBuilder.getSelectedRecord();
+			FileValue versionBinary = version.getBinary();
+			if (versionBinary != null) {
+				SessionContext.current().download(versionBinary.retrieveFile(), versionBinary.getFileName());
+			}
 		});
 
 		buttonGroup = applicationDetailsView.addWorkspaceButtonGroup(new ToolbarButtonGroup());
@@ -244,8 +300,8 @@ public class ApplicationsPerspective extends AbstractManagedApplicationPerspecti
 		});
 
 		applicationDetailsView.setComponent(applicationForm);
+		applicationVersionDetailsView.setComponent(applicationVersionForm);
 	}
-
 
 
 	public void showInstallBaseSystemDialogue() {
