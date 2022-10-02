@@ -24,6 +24,7 @@ import org.teamapps.model.controlcenter.LogLevel;
 
 public class LogUtils {
 
+
 	public static LogLevel convert(Level level) {
 		switch (level) {
 			case ERROR -> {

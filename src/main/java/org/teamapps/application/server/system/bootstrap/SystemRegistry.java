@@ -161,6 +161,15 @@ public class SystemRegistry {
 		}
 	}
 
+	public void uninstallApplication(Application application) {
+		for (ManagedApplication managedApplication : application.getInstalledAsMainApplication()) {
+			//managedApplication.setHidden(true);
+		}
+		loadedApplicationMap.remove(application);
+
+
+	}
+
 	public ApplicationInstaller createJarInstaller(File jarFile) {
 		return ApplicationInstaller.createJarInstaller(jarFile, universalDB, translationService, getSystemConfig().getLocalizationConfig());
 	}

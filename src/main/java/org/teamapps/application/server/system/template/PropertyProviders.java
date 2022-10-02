@@ -26,12 +26,14 @@ import org.teamapps.application.api.privilege.ApplicationRole;
 import org.teamapps.application.api.privilege.Privilege;
 import org.teamapps.application.api.privilege.PrivilegeGroup;
 import org.teamapps.application.api.privilege.PrivilegeObject;
+import org.teamapps.application.api.theme.ApplicationIcons;
 import org.teamapps.application.server.system.bootstrap.SystemRegistry;
 import org.teamapps.application.server.system.session.UserSessionData;
 import org.teamapps.application.ux.IconUtils;
 import org.teamapps.application.ux.localize.TranslatableTextUtils;
 import org.teamapps.data.extract.PropertyProvider;
 import org.teamapps.icons.Icon;
+import org.teamapps.icons.composite.CompositeIcon;
 import org.teamapps.model.controlcenter.*;
 import org.teamapps.universaldb.index.numeric.NumericFilter;
 import org.teamapps.universaldb.index.translation.TranslatableText;
@@ -49,7 +51,11 @@ public class PropertyProviders {
 		return (application, propertyNames) -> {
 			ApplicationLocalizationProvider localizationProvider = userSessionData.getApplicationLocalizationProvider(application);
 			Map<String, Object> map = new HashMap<>();
-			map.put(BaseTemplate.PROPERTY_ICON, userSessionData.decodeIcon(application.getIcon()));
+			Icon icon = IconUtils.decodeIcon(application.getIcon());
+			if (application.isUninstalled()) {
+				icon = CompositeIcon.of(icon, ApplicationIcons.ERROR);
+			}
+			map.put(BaseTemplate.PROPERTY_ICON, icon);
 			map.put(BaseTemplate.PROPERTY_CAPTION, localizationProvider.getLocalized(application.getTitleKey()));
 			map.put(BaseTemplate.PROPERTY_DESCRIPTION, localizationProvider.getLocalized(application.getDescriptionKey()));
 			return map;
