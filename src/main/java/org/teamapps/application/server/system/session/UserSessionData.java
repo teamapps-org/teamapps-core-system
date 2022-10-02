@@ -37,7 +37,6 @@ import org.teamapps.model.controlcenter.Application;
 import org.teamapps.model.controlcenter.ManagedApplication;
 import org.teamapps.model.controlcenter.User;
 import org.teamapps.ux.component.Component;
-import org.teamapps.ux.component.rootpanel.RootPanel;
 import org.teamapps.ux.session.SessionContext;
 
 import java.util.*;
@@ -60,7 +59,7 @@ public class UserSessionData {
 	private Function<Component, Component> rootWrapperComponentFunction;
 	private final ApplicationLocalizationProvider localizationProvider;
 	private boolean darkTheme;
-	private final Map<String, Event<?>> applicationEventByName = new ConcurrentHashMap<>();
+	private final Map<String, Event<?>> userSessionEventByName = new ConcurrentHashMap<>();
 	private final Map<String, ReplicatedStateMachine> replicatedStateMachineMap = new HashMap<>();
 
 	public UserSessionData(User user, SessionContext context, SystemRegistry registry, ApplicationRootPanel rootPanel) {
@@ -189,8 +188,8 @@ public class UserSessionData {
 		this.darkTheme = darkTheme;
 	}
 
-	public <TYPE> Event<TYPE> getApplicationEvent(String name) {
-		return (Event<TYPE>) applicationEventByName.computeIfAbsent(name, s -> new Event<>());
+	public <TYPE> Event<TYPE> getUserSessionEvent(String name) {
+		return (Event<TYPE>) userSessionEventByName.computeIfAbsent(name, s -> new Event<>());
 	}
 
 	public synchronized ReplicatedStateMachine getReplicatedStateMachine(String name) {
