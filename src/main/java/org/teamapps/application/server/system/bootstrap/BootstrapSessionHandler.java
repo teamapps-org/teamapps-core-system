@@ -117,6 +117,10 @@ public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 		}
 
 		for (Application application : Application.getAll()) {
+			if (application.isUninstalled()) {
+				LOGGER.info("Skipping uninstalled app:" + application.getName());
+				continue;
+			}
 			LOGGER.info("Loading app:" + application.getName());
 			ApplicationVersion installedVersion = application.getInstalledVersion();
 			if (installedVersion == null) {
