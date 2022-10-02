@@ -116,18 +116,15 @@ public class SessionUiComponentFactory implements UiComponentFactory {
 		editor.setMaxImageFileSizeInBytes(Integer.MAX_VALUE);
 		editor.setImageUploadEnabled(true);
 		editor.setUploadedFileToUrlConverter(uploadedFile -> {
-			System.out.println("New file:" + uploadedFile.getUuid() + ", " + uploadedFile.getName() + ", " + uploadedFile.getSizeInBytes() + ", " + uploadedFile.getAsFile().getPath());
 			try {
 				String link = null;
 				if (uploadedFile.getSizeInBytes() > 300_000) {
 					File newFile = Files.createTempFile("temp", ".jpg").toFile();
 					Thumbnailator.createThumbnail(uploadedFile.getAsFile(), newFile, 1200, 800);
-					System.out.println("Resized: " + newFile.length());
-					link = createLink(newFile, uploadedFile.getName());
+					link = createLink(newFile, bucket, uploadedFile.getName());
 				} else {
-					link = createLink(uploadedFile.getAsFile(), uploadedFile.getName());
+					link = createLink(uploadedFile.getAsFile(), bucket, uploadedFile.getName());
 				}
-				System.out.println("LINK:" + link);
 				return link;
 			} catch (IOException e) {
 				throw new RuntimeException(e);
@@ -136,7 +133,7 @@ public class SessionUiComponentFactory implements UiComponentFactory {
 		return editor;
 	}
 
-	private static String createLink(File file, String name) throws IOException {
-		return EmbeddedResourceStore.getInstance().saveResource("ui-test", "editor", file) + "/" + name;
+	private String createLink(File file, String bucket, String name) throws IOException {
+		return EmbeddedResourceStore.getInstance().saveResource(application.getName(), bucket, file) + "/" + name;
 	}
 }
