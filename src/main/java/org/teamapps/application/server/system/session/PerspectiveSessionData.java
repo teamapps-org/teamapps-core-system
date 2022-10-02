@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,23 +33,26 @@ import org.teamapps.application.api.privilege.*;
 import org.teamapps.application.api.state.ReplicatedStateMachine;
 import org.teamapps.application.api.ui.UiComponentFactory;
 import org.teamapps.application.api.user.SessionUser;
+import org.teamapps.application.server.DatabaseLogAppender;
+import org.teamapps.application.server.PublicLinkResourceProvider;
 import org.teamapps.application.server.system.launcher.PerspectiveByNameLauncher;
 import org.teamapps.application.server.system.organization.OrganizationUtils;
-import org.teamapps.application.server.system.utils.LogUtils;
 import org.teamapps.application.server.system.utils.RoleUtils;
 import org.teamapps.application.ux.IconUtils;
 import org.teamapps.event.Event;
 import org.teamapps.icons.Icon;
 import org.teamapps.model.controlcenter.*;
+import org.teamapps.protocol.system.SystemLogEntry;
 import org.teamapps.reporting.convert.DocumentConverter;
 import org.teamapps.universaldb.index.numeric.NumericFilter;
 import org.teamapps.universaldb.index.translation.TranslatableText;
 import org.teamapps.universaldb.record.EntityBuilder;
 import org.teamapps.ux.application.perspective.Perspective;
 import org.teamapps.ux.component.progress.MultiProgressDisplay;
+import org.teamapps.ux.resource.Resource;
 
+import java.time.Duration;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -175,34 +178,34 @@ public class PerspectiveSessionData implements ApplicationInstanceData {
 
 	@Override
 	public void writeActivityLog(Level level, String title, String data) {
-		LogLevel logLevel = LogUtils.convert(level);
-		if (logLevel == null) {
-			return;
-		}
-		SystemLog.create()
-				.setManagedApplication(managedApplication)
-				.setManagedPerspective(managedApplicationPerspective)
-				.setApplication(managedApplicationPerspective.getApplicationPerspective().getApplication())
-				.setLogLevel(logLevel)
-				.setMessage(title)
-				.setDetails(data)
-				.save();
+		SystemLogEntry logEntry = new SystemLogEntry()
+				.setUserId(getUser().getId())
+				.setTimestamp(System.currentTimeMillis())
+				.setLogLevel(DatabaseLogAppender.getLogLevel(level))
+				.setApplicationVersion(managedApplicationPerspective.getApplicationPerspective().getApplication().getInstalledVersion().getVersion())
+				.setThreadName(Thread.currentThread().getName())
+				.setManagedApplicationId(managedApplication.getId())
+				.setManagedApplicationPerspectiveId(managedApplicationPerspective.getId())
+				.setTitle(title)
+				.setMessage(data);
+		userSessionData.getRegistry().getServerRegistry().getSystemLogMessageStore().addMessage(logEntry);
 	}
 
 	@Override
 	public void writeExceptionLog(Level level, String title, Throwable throwable) {
-		LogLevel logLevel = LogUtils.convert(level);
-		if (logLevel == null) {
-			return;
-		}
-		SystemLog.create()
-				.setManagedApplication(managedApplication)
-				.setManagedPerspective(managedApplicationPerspective)
-				.setApplication(managedApplicationPerspective.getApplicationPerspective().getApplication())
-				.setLogLevel(logLevel)
-				.setMessage(title)
-				.setDetails(ExceptionUtils.getStackTrace(throwable))
-				.save();
+		String message = ExceptionUtils.getMessage(throwable);
+		SystemLogEntry logEntry = new SystemLogEntry()
+				.setUserId(getUser().getId())
+				.setTimestamp(System.currentTimeMillis())
+				.setLogLevel(DatabaseLogAppender.getLogLevel(level))
+				.setApplicationVersion(managedApplicationPerspective.getApplicationPerspective().getApplication().getInstalledVersion().getVersion())
+				.setThreadName(Thread.currentThread().getName())
+				.setManagedApplicationId(managedApplication.getId())
+				.setManagedApplicationPerspectiveId(managedApplicationPerspective.getId())
+				.setTitle(title)
+				.setMessage(message)
+				.setStackTrace(ExceptionUtils.getStackTrace(throwable));
+		userSessionData.getRegistry().getServerRegistry().getSystemLogMessageStore().addMessage(logEntry);
 	}
 
 	@Override
@@ -237,14 +240,20 @@ public class PerspectiveSessionData implements ApplicationInstanceData {
 	}
 
 	@Override
-	public <TYPE> Event<TYPE> getApplicationEvent(String name) {
-		return userSessionData.getApplicationEvent(name);
+	public <TYPE> Event<TYPE> getUserSessionEvent(String name) {
+		return userSessionData.getUserSessionEvent(name);
 	}
 
 	@Override
 	public ReplicatedStateMachine getReplicatedStateMachine(String name) {
 		return userSessionData.getReplicatedStateMachine(name);
 	}
+
+	@Override
+	public String createPublicLinkForResource(Resource resource, Duration availabilityDuration) {
+		return PublicLinkResourceProvider.getInstance().createLinkForResource(resource, availabilityDuration);
+	}
+
 
 	public static List<Integer> getOrganizationUsersWithRole(OrganizationUnitView orgUnit, UserRoleType userRoleType, OrganizationFieldView organizationFieldView) {
 		if (userRoleType == null) {
