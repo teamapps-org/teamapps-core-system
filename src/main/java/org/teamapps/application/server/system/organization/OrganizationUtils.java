@@ -36,6 +36,7 @@ import org.teamapps.ux.model.ListTreeModel;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class OrganizationUtils {
@@ -109,6 +110,10 @@ public class OrganizationUtils {
 		return path;
 	}
 
+	public static Set<OrganizationUnit> getAllUnits(OrganizationUnit unit) {
+		return getAllUnits(unit, null);
+	}
+
 	public static Set<OrganizationUnit> getAllUnits(OrganizationUnit unit, Collection<OrganizationUnitType> unitTypesFilter) {
 		return getAllUnits(unit, unitTypesFilter, false);
 	}
@@ -135,6 +140,21 @@ public class OrganizationUtils {
 			if (!traversedNodes.contains(child)) {
 				traversedNodes.add(child);
 				calculateAllUnits(child, unitTypesFilter, traversedNodes, result);
+			}
+		}
+	}
+
+	public static Set<OrganizationUnitType> getAllTypesInHierarchy(OrganizationUnitType type) {
+		Set<OrganizationUnitType> resultSet = new HashSet<>();
+		calculateAllChildrenTypes(type, resultSet);
+		return resultSet;
+	}
+
+	private static void calculateAllChildrenTypes(OrganizationUnitType type, Set<OrganizationUnitType> resultSet) {
+		resultSet.add(type);
+		for (OrganizationUnitType childrenType : type.getPossibleChildrenTypes()) {
+			if (!resultSet.contains(childrenType)) {
+				calculateAllChildrenTypes(childrenType, resultSet);
 			}
 		}
 	}
@@ -185,11 +205,15 @@ public class OrganizationUtils {
 	}
 
 	public static ComboBox<OrganizationUnit> createOrganizationComboBox(Template template, Collection<OrganizationUnit> allowedUnits, boolean withPath, ApplicationInstanceData applicationInstanceData) {
+		return createOrganizationComboBox(template, () -> allowedUnits, withPath, applicationInstanceData);
+	}
+
+	public static ComboBox<OrganizationUnit> createOrganizationComboBox(Template template, Supplier<Collection<OrganizationUnit>> allowedUnitsSupplier, boolean withPath, ApplicationInstanceData applicationInstanceData) {
 		ComboBox<OrganizationUnit> comboBox = new ComboBox<>(template);
 		ComboBoxModel<OrganizationUnit> model = new ComboBoxModel<>() {
 			@Override
 			public List<OrganizationUnit> getRecords(String query) {
-				return queryOrganizationUnits(query, allowedUnits);
+				return queryOrganizationUnits(query, allowedUnitsSupplier.get());
 			}
 
 			@Override
