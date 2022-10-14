@@ -256,6 +256,10 @@ public class SystemRegistry {
 		return translationService;
 	}
 
+	public Supplier<TranslationService> getTranslationServiceSupplier() {
+		return () -> translationService;
+	}
+
 	public BaseResourceLinkProvider getBaseResourceLinkProvider() {
 		return baseResourceLinkProvider;
 	}

@@ -25,10 +25,14 @@ import org.teamapps.application.api.localization.Dictionary;
 import org.teamapps.application.api.theme.ApplicationIcons;
 import org.teamapps.databinding.TwoWayBindableValue;
 import org.teamapps.model.controlcenter.Address;
+import org.teamapps.ux.component.field.AbstractField;
 import org.teamapps.ux.component.field.NumberField;
 import org.teamapps.ux.component.field.TextField;
 import org.teamapps.ux.component.field.combobox.ComboBox;
 import org.teamapps.ux.component.form.ResponsiveFormLayout;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class AddressForm {
 
@@ -75,6 +79,7 @@ public class AddressForm {
 	private ComboBox<Country> countryComboBox;
 	private NumberField latitudeField;
 	private NumberField longitudeField;
+	private List<AbstractField<?>> fields = new ArrayList<>();
 
 	public AddressForm(ApplicationInstanceData applicationInstanceData) {
 		this.applicationInstanceData = applicationInstanceData;
@@ -92,6 +97,11 @@ public class AddressForm {
 		countryComboBox = Country.createComboBox(applicationInstanceData);
 		latitudeField = new NumberField(7);
 		longitudeField = new NumberField(7);
+		fields.addAll(List.of(nameField, organizationField, stateField, dependentLocalityField, postalCodeField, cityField, stateField, countryComboBox, latitudeField, longitudeField));
+	}
+
+	public List<AbstractField<?>> getFields() {
+		return fields;
 	}
 
 	public void createAddressSection(ResponsiveFormLayout formLayout) {

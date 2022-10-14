@@ -110,6 +110,16 @@ public class OrganizationUtils {
 		return path;
 	}
 
+	public static Set<OrganizationUnit> getUnitWithAllParents(OrganizationUnit unit) {
+		Set<OrganizationUnit> units = new HashSet<>();
+		OrganizationUnit parent = unit;
+		while (parent != null) {
+			units.add(parent);
+			parent = parent.getParent();
+		}
+		return units;
+	}
+
 	public static Set<OrganizationUnit> getAllUnits(OrganizationUnit unit) {
 		return getAllUnits(unit, null);
 	}
