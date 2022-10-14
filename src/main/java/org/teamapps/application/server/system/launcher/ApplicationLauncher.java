@@ -21,6 +21,9 @@ package org.teamapps.application.server.system.launcher;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.teamapps.application.api.application.BaseApplicationBuilder;
+import org.teamapps.application.api.application.UserProfileApplicationBuilder;
+import org.teamapps.application.api.application.perspective.PerspectiveBuilder;
 import org.teamapps.application.api.desktop.ApplicationDesktop;
 import org.teamapps.application.api.localization.Dictionary;
 import org.teamapps.application.api.theme.ApplicationIcons;
@@ -42,6 +45,7 @@ import org.teamapps.universaldb.UniversalDB;
 import org.teamapps.ux.application.ResponsiveApplication;
 import org.teamapps.ux.application.assembler.DesktopApplicationAssembler;
 import org.teamapps.ux.component.Component;
+import org.teamapps.ux.component.absolutelayout.Length;
 import org.teamapps.ux.component.dialogue.FormDialogue;
 import org.teamapps.ux.component.field.FieldEditingMode;
 import org.teamapps.ux.component.field.TemplateField;
@@ -53,6 +57,7 @@ import org.teamapps.ux.component.panel.Panel;
 import org.teamapps.ux.component.tabpanel.Tab;
 import org.teamapps.ux.component.tabpanel.TabPanel;
 import org.teamapps.ux.component.template.BaseTemplate;
+import org.teamapps.ux.component.toolbutton.ToolButton;
 import org.teamapps.ux.session.ClientInfo;
 import org.teamapps.ux.session.SessionConfiguration;
 import org.teamapps.ux.session.SessionContext;
@@ -84,6 +89,7 @@ public class ApplicationLauncher {
 	private int applicationOpenCount;
 	private final Login loginData;
 	private Tab applicationLauncherTab;
+	private ApplicationData userProfileApp;
 
 	public ApplicationLauncher(UserSessionData userSessionData, LogoutHandler logoutHandler) {
 		this.userSessionData = userSessionData;
@@ -213,6 +219,9 @@ public class ApplicationLauncher {
 					ManagedApplicationSessionData applicationSessionData = userSessionData.createManageApplicationSessionData(managedApplication, new MobileApplicationNavigation());
 					ApplicationData applicationData = new ApplicationData(managedApplication, loadedApplication, applicationSessionData);
 					applicationGroupData.addApplicationData(applicationData);
+					if (applicationData.getLoadedApplication().getBaseApplicationBuilder() instanceof UserProfileApplicationBuilder) {
+						userProfileApp = applicationData;
+					}
 				}
 			}
 		}
@@ -290,8 +299,25 @@ public class ApplicationLauncher {
 			Tab logoutTab = new Tab(ApplicationIcons.LOG_OUT, getLocalized(Dictionary.LOGOUT), null);
 			logoutTab.setLazyLoading(true);
 			logoutTab.setRightSide(true);
-			applicationsTabPanel.addTab(logoutTab, false);
-			logoutTab.onSelected.addListener(this::logout);
+			ToolButton profileButton = new ToolButton(ApplicationIcons.USER);
+			profileButton.setCaption(PropertyProviders.getUserCaptionWithTranslation(userSessionData.getUser()));
+			SimpleItemView<?> itemView = new SimpleItemView<>();
+			if (userProfileApp != null) {
+				BaseApplicationBuilder baseApplicationBuilder = userProfileApp.getLoadedApplication().getBaseApplicationBuilder();
+				UserProfileApplicationBuilder builder = (UserProfileApplicationBuilder) baseApplicationBuilder;
+				SimpleItemGroup<?> itemGroup = itemView.addSingleColumnGroup(baseApplicationBuilder.getApplicationIcon(), getLocalized(baseApplicationBuilder.getApplicationTitleKey()));
+				for (PerspectiveBuilder perspectiveBuilder : builder.getUserProfilePerspectiveBuilders()) {
+					itemGroup.addItem(perspectiveBuilder.getIcon(), getLocalized(perspectiveBuilder.getTitleKey()), getLocalized(perspectiveBuilder.getDescriptionKey())).onClick.addListener(() -> {
+						//todo open with perspective
+						openApplication(userProfileApp);
+					});
+				}
+			}
+			SimpleItemGroup<?> itemGroup = itemView.addSingleColumnGroup(ApplicationIcons.LOG_OUT, getLocalized(Dictionary.LOGOUT));
+			itemGroup.addItem(ApplicationIcons.LOG_OUT, getLocalized(Dictionary.LOGOUT), "Vom System abmelden").onClick.addListener(this::logout); //todo dictionary entry
+			profileButton.setDropDownComponent(itemView);
+			profileButton.setMinDropDownWidth(200);
+			applicationsTabPanel.addToolButton(profileButton);
 			userSessionData.setRootComponent(applicationsTabPanel);
 		}
 
