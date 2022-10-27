@@ -40,6 +40,7 @@ import org.teamapps.model.controlcenter.ManagedApplicationGroup;
 import org.teamapps.ux.application.layout.StandardLayout;
 import org.teamapps.ux.application.view.View;
 import org.teamapps.ux.component.field.Fields;
+import org.teamapps.ux.component.field.NumberField;
 import org.teamapps.ux.component.field.combobox.ComboBox;
 import org.teamapps.ux.component.form.ResponsiveForm;
 import org.teamapps.ux.component.form.ResponsiveFormLayout;
@@ -102,6 +103,8 @@ public class ApplicationGroupsPerspective extends AbstractManagedApplicationPers
 
 		LocalizationTranslationKeyField titleKeyField = new LocalizationTranslationKeyField(getLocalized("applications.createNewTitle"), getApplicationInstanceData(), userSessionData.getRegistry(), null);
 
+		NumberField positionField = new NumberField(0);
+
 		EntityListModelBuilder<ManagedApplication> applicationModelBuilder = new EntityListModelBuilder<>(getApplicationInstanceData());
 		Table<ManagedApplication> applicationTable = applicationModelBuilder.createTemplateFieldTableList(BaseTemplate.LIST_ITEM_SMALL_ICON_SINGLE_LINE, PropertyProviders.createManagedApplicationPropertyProvider(userSessionData), 26);
 		FormPanel formPanel = new FormPanel(getApplicationInstanceData());
@@ -113,6 +116,8 @@ public class ApplicationGroupsPerspective extends AbstractManagedApplicationPers
 		formLayout.addLabelAndComponent(null, getLocalized("applicationGroups.groupIcon"), iconComboBox);
 		formLayout.addLabelAndComponent(null, getLocalized("applicationGroups.groupTitle"), titleKeyField.getSelectionField());
 		formLayout.addLabelAndComponent(null, null, titleKeyField.getKeyLinkButton());
+		formLayout.addLabelAndComponent(null, getLocalized(Dictionary.POSITION), positionField);
+
 		formLayout.addLabelAndComponent(null, getLocalized(Dictionary.APPLICATIONS), formPanel.getPanel());
 
 		FormMetaFields formMetaFields = getApplicationInstanceData().getComponentFactory().createFormMetaFields();
@@ -133,6 +138,7 @@ public class ApplicationGroupsPerspective extends AbstractManagedApplicationPers
 		entityListModelBuilder.getOnSelectionEvent().addListener(group -> {
 			iconComboBox.setValue(IconUtils.decodeIcon(group.getIcon()));
 			titleKeyField.setKey(group.getTitleKey());
+			positionField.setValue(group.getListingPosition());
 			applicationModelBuilder.setRecords(group.getApplications());
 		});
 
@@ -144,6 +150,7 @@ public class ApplicationGroupsPerspective extends AbstractManagedApplicationPers
 			if (Fields.validateAll(iconComboBox, titleKeyField.getSelectionField())) {
 				group.setIcon(IconUtils.encodeNoStyle(iconComboBox.getValue()));
 				group.setTitleKey(titleKeyField.getKey());
+				group.setListingPosition(positionField.getValue() == null ? 0 : positionField.getValue().intValue());
 				group.save();
 				int pos = 0;
 				for (ManagedApplication application : applicationModelBuilder.getRecords()) {
