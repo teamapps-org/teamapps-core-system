@@ -335,4 +335,8 @@ public class UserPrivileges {
 	public Map<PrivilegeApplicationKey, Map<RoleAssignmentDelegatedCustomPrivilegeGroup, Map<Privilege, Set<PrivilegeObject>>>> getRoleAssignmentDelegatedCustomPrivilegeMap() {
 		return roleAssignmentDelegatedCustomPrivilegeMap;
 	}
+
+	public User getUser() {
+		return user;
+	}
 }

@@ -53,6 +53,10 @@ public class UserApplicationPrivilege implements ApplicationPrivilegeProvider {
 		delegatedCustomPrivilegeGroupMap = userPrivileges.getRoleAssignmentDelegatedCustomPrivilegeMap().get(privilegeApplicationKey);
 	}
 
+	public UserPrivileges getUserPrivileges() {
+		return userPrivileges;
+	}
+
 	@Override
 	public boolean isAllowed(SimplePrivilege simplePrivilege) {
 		if (simplePrivileges == null) {

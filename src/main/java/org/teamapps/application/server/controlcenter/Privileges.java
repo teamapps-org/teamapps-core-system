@@ -30,9 +30,9 @@ import static org.teamapps.application.api.privilege.Privilege.*;
 
 public class Privileges {
 
-	private final static ApplicationPrivilegeBuilder PRIVILEGE_BUILDER = new ApplicationPrivilegeBuilder();
+	protected final static ApplicationPrivilegeBuilder PRIVILEGE_BUILDER = new ApplicationPrivilegeBuilder();
 
-	private final static ApplicationRoleBuilder ROLE_BUILDER = new ApplicationRoleBuilder();
+	protected final static ApplicationRoleBuilder ROLE_BUILDER = new ApplicationRoleBuilder();
 
 	public final static SimplePrivilege LAUNCH_APPLICATION = PRIVILEGE_BUILDER.LAUNCH_APPLICATION;
 	public final static SimplePrivilege LAUNCH_PERSPECTIVE_APPLICATION_GROUPS = PRIVILEGE_BUILDER.addSimplePrivilege("launchPerspectiveApplicationGroups", ApplicationIcons.WINDOWS, "applicationGroups.launch", "applicationGroups.desc");

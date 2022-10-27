@@ -37,11 +37,11 @@ public class PrivilegeApplicationKey {
 	}
 
 	public static PrivilegeApplicationKey createUnmanagedKey(ManagedApplication managedApplication) {
-		return new PrivilegeApplicationKey(managedApplication.getMainApplication(), null);
+		return new PrivilegeApplicationKey(managedApplication.getMainApplication(), null); //OrganizationUtils.convert(managedApplication.getOrganizationField())
 	}
 
 	public static PrivilegeApplicationKey create(ManagedApplication managedApplication) {
-		return new PrivilegeApplicationKey(managedApplication.getMainApplication(), null);
+		return new PrivilegeApplicationKey(managedApplication.getMainApplication(), null); //OrganizationUtils.convert(managedApplication.getOrganizationField())
 	}
 
 
@@ -64,7 +64,7 @@ public class PrivilegeApplicationKey {
 	private PrivilegeApplicationKey(Application application, OrganizationFieldView organizationFieldView) {
 		this.application = application;
 		this.organizationFieldView = organizationFieldView;
-		this.key = organizationFieldView != null ? application.getId() + "-" + organizationFieldView.getId() : application.getId() + "";
+		this.key = organizationFieldView != null ? application.getId() + "-" + organizationFieldView.getId() : "#" + application.getId();
 	}
 
 	public Application getApplication() {
