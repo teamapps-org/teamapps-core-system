@@ -2,13 +2,10 @@ package org.teamapps.application.server.system.machinetranslation;
 
 import com.deepl.api.*;
 
-import java.io.File;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class DeepL2Translation {
+	public static final Set<String> SUPPORTED_LANGUAGES = new HashSet<>(Arrays.asList("BG", "CS", "DA", "DE", "EL", "EN", "ES", "ET", "FI", "FR", "HU", "ID", "IT", "JA", "LT", "LV", "NL", "PL", "PT", "RO", "RU", "SK", "SL", "SV", "TR", "UK", "ZH"));
 
 	private final String apiKey;
 
@@ -16,25 +13,45 @@ public class DeepL2Translation {
 		this.apiKey = apiKey;
 	}
 
+	public void printUsage() {
+		try {
+			Translator translator = new Translator(apiKey);
+			Usage usage = translator.getUsage();
+			System.out.println(usage);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public String translate(String text, String sourceLang, String targetLang) throws Exception {
+		TextTranslationOptions options = createDefaultXmlEnabledOptions();
+		return translate(text, sourceLang, targetLang, options);
+	}
+
+	public String translate(String text, String sourceLang, String targetLang, TextTranslationOptions options) throws Exception {
 		targetLang = fixTargetLang(targetLang);
 		Translator translator = new Translator(apiKey);
-		TextTranslationOptions options = createOptions();
 		TextResult result = translator.translateText(text, sourceLang, targetLang, options);
 		return result.getText();
 	}
 
-	private static String fixTargetLang(String targetLang) {
-		if (targetLang.equals("en")) {
+	public List<TextResult> translate(List<String> values, String sourceLang, String targetLang, TextTranslationOptions options) throws Exception {
+		targetLang = fixTargetLang(targetLang);
+		Translator translator = new Translator(apiKey);
+		return translator.translateText(values, sourceLang, targetLang, options);
+	}
+
+	private String fixTargetLang(String targetLang) {
+		if (targetLang.equalsIgnoreCase("en")) {
 			targetLang = "en-US";
 		}
-		if (targetLang.equals("pt")) {
+		if (targetLang.equalsIgnoreCase("pt")) {
 			targetLang = "pt-PT";
 		}
 		return targetLang;
 	}
 
-	private TextTranslationOptions createOptions() {
+	public static TextTranslationOptions createDefaultXmlEnabledOptions() {
 		TextTranslationOptions options = new TextTranslationOptions();
 		options.setSentenceSplittingMode(SentenceSplittingMode.NoNewlines);
 		options.setPreserveFormatting(true);
@@ -44,34 +61,16 @@ public class DeepL2Translation {
 		return options;
 	}
 
-	public void translatePropertyFile(File inputFile, File outputFile, String sourceLang, String targetLang) throws Exception {
-		long time = System.currentTimeMillis();
-		targetLang = fixTargetLang(targetLang);
-		Translator translator = new Translator(apiKey);
+	public static TextTranslationOptions createDefaultPlainTextOptions() {
 		TextTranslationOptions options = new TextTranslationOptions();
 		options.setSentenceSplittingMode(SentenceSplittingMode.NoNewlines);
 		options.setPreserveFormatting(true);
-		options.setFormality(Formality.Less);
-
-		List<String> lines = Files.readAllLines(inputFile.toPath(), StandardCharsets.UTF_8);
-		List<String> keys = new ArrayList<>();
-		List<String> values = new ArrayList<>();
-		for (String line : lines) {
-			if (!line.isBlank() && !line.startsWith("#") && line.contains("=")) {
-				String[] parts = line.split("=");
-				keys.add(parts[0]);
-				values.add(parts[1]);
-			}
-		}
-		List<TextResult> results = translator.translateText(values, sourceLang, targetLang, options);
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < keys.size(); i++) {
-			String text = results.get(i).getText();
-			String key = keys.get(i);
-			sb.append(key).append("=").append(text).append("\n");
-		}
-		Files.writeString(outputFile.toPath(), sb.toString(),StandardCharsets.UTF_8);
-		System.out.println("TIME:" + (System.currentTimeMillis() - time));
+		options.setFormality(Formality.PreferLess);
+		return options;
 	}
+
+	/*
+
+ */
 
 }
