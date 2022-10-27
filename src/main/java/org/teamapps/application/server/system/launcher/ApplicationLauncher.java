@@ -26,6 +26,7 @@ import org.teamapps.application.api.application.UserProfileApplicationBuilder;
 import org.teamapps.application.api.application.perspective.PerspectiveBuilder;
 import org.teamapps.application.api.desktop.ApplicationDesktop;
 import org.teamapps.application.api.localization.Dictionary;
+import org.teamapps.application.api.localization.Language;
 import org.teamapps.application.api.theme.ApplicationIcons;
 import org.teamapps.application.server.DatabaseLogAppender;
 import org.teamapps.application.server.system.auth.LoginHandler;
@@ -299,7 +300,8 @@ public class ApplicationLauncher {
 			Tab logoutTab = new Tab(ApplicationIcons.LOG_OUT, getLocalized(Dictionary.LOGOUT), null);
 			logoutTab.setLazyLoading(true);
 			logoutTab.setRightSide(true);
-			ToolButton profileButton = new ToolButton(ApplicationIcons.USER);
+			Language language = Language.getLanguageByIsoCode(userSessionData.getSessionUser().getLanguage());
+			ToolButton profileButton = new ToolButton(language.getIcon());
 			profileButton.setCaption(PropertyProviders.getUserCaptionWithTranslation(userSessionData.getUser()));
 			SimpleItemView<?> itemView = new SimpleItemView<>();
 			if (userProfileApp != null) {
@@ -317,6 +319,7 @@ public class ApplicationLauncher {
 			itemGroup.addItem(ApplicationIcons.LOG_OUT, getLocalized(Dictionary.LOGOUT), "Vom System abmelden").onClick.addListener(this::logout); //todo dictionary entry
 			profileButton.setDropDownComponent(itemView);
 			profileButton.setMinDropDownWidth(200);
+			profileButton.setIconSize(16);
 			applicationsTabPanel.addToolButton(profileButton);
 			userSessionData.setRootComponent(applicationsTabPanel);
 		}
