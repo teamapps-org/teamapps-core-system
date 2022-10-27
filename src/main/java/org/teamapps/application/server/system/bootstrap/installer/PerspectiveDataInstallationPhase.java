@@ -22,21 +22,25 @@ package org.teamapps.application.server.system.bootstrap.installer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.teamapps.application.api.application.ApplicationBuilder;
+import org.teamapps.application.api.application.ApplicationGroup;
 import org.teamapps.application.api.application.BaseApplicationBuilder;
 import org.teamapps.application.api.application.perspective.PerspectiveBuilder;
+import org.teamapps.application.api.localization.Dictionary;
+import org.teamapps.application.api.theme.ApplicationIcons;
 import org.teamapps.application.server.system.bootstrap.ApplicationInfo;
 import org.teamapps.application.server.system.bootstrap.ApplicationInfoDataElement;
 import org.teamapps.application.tools.KeyCompare;
 import org.teamapps.application.server.system.utils.ValueCompare;
 import org.teamapps.application.ux.IconUtils;
-import org.teamapps.model.controlcenter.Application;
-import org.teamapps.model.controlcenter.ApplicationPerspective;
+import org.teamapps.model.controlcenter.*;
 import org.teamapps.universaldb.index.numeric.NumericFilter;
+import org.teamapps.universaldb.index.text.TextFilter;
 import org.teamapps.universaldb.pojo.Entity;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class PerspectiveDataInstallationPhase implements ApplicationInstallationPhase {
@@ -55,9 +59,12 @@ public class PerspectiveDataInstallationPhase implements ApplicationInstallation
 			}
 			ApplicationBuilder applicationBuilder = (ApplicationBuilder) baseApplicationBuilder;
 			List<PerspectiveBuilder> perspectives = applicationBuilder.getPerspectiveBuilders();
-			if (perspectives == null || perspectives.isEmpty()) {
+			if (perspectives == null) {
 				applicationInfo.addError("Missing perspectives");
 				return;
+			}
+			if (perspectives.isEmpty() && applicationBuilder.getRequiredPerspectives().isEmpty()) {
+				applicationInfo.addWarning("No perspective available");
 			}
 			for (PerspectiveBuilder builder : perspectives) {
 				if (builder.getName() == null || builder.getTitleKey() == null) {
@@ -110,7 +117,10 @@ public class PerspectiveDataInstallationPhase implements ApplicationInstallation
 				.save());
 
 		List<ApplicationPerspective> removedPerspectives = keyCompare.getBEntriesNotInA();
-		removedPerspectives.forEach(Entity::delete);
+		removedPerspectives.forEach(perspective -> {
+			perspective.getManagedPerspectives().forEach(Entity::delete);
+			perspective.delete();
+		});
 
 		List<PerspectiveBuilder> existingPerspectives = keyCompare.getAEntriesInB();
 		for (PerspectiveBuilder perspective : existingPerspectives) {
@@ -131,7 +141,71 @@ public class PerspectiveDataInstallationPhase implements ApplicationInstallation
 						.setToolbarPerspectiveMenu(perspective.useToolbarPerspectiveMenu())
 						.save();
 			}
+		}
 
+		List<ManagedApplication> installedAsMainApplication = application.getInstalledAsMainApplication();
+
+		if (installedAsMainApplication.isEmpty()) {
+			ManagedApplicationGroup applicationGroup = getApplicationGroup(applicationBuilder.getPreferredApplicationGroup());
+			ManagedApplication managedApplication = ManagedApplication.create()
+					.setMainApplication(application)
+					.setApplicationGroup(applicationGroup)
+					.setSingleApplication(applicationInfo.isUnmanagedPerspectives())
+					.save();
+
+			List<ApplicationPerspective> autoProvisionPerspectives = application.getPerspectives().stream().filter(ApplicationPerspective::getAutoProvision).collect(Collectors.toList());
+			for (ApplicationPerspective perspective : autoProvisionPerspectives) {
+				ManagedApplicationPerspective.create()
+						.setManagedApplication(managedApplication)
+						.setApplicationPerspective(perspective)
+						.save();
+			}
+		}
+
+		installedAsMainApplication = application.getInstalledAsMainApplication();
+
+		List<String> requiredPerspectives = applicationBuilder.getRequiredPerspectives();
+		if (!requiredPerspectives.isEmpty()) {
+			for (ManagedApplication managedApplication : installedAsMainApplication) {
+				Set<String> availablePerspectives = managedApplication.getPerspectives().stream().map(p -> p.getApplicationPerspective().getName()).collect(Collectors.toSet());
+				for (int i = 0; i < requiredPerspectives.size(); i++) {
+					String perspectiveName = requiredPerspectives.get(i);
+					if (!availablePerspectives.contains(perspectiveName)) {
+						ApplicationPerspective perspective = getPerspective(perspectiveName, application);
+						ManagedApplicationPerspective.create()
+								.setManagedApplication(managedApplication)
+								.setApplicationPerspective(perspective)
+								.setListingPosition(i)
+								.save();
+					}
+				}
+			}
+		}
+
+	}
+
+	private ApplicationPerspective getPerspective(String name, Application preferredApplication) {
+		return preferredApplication.getPerspectives().stream().filter(p -> p.getName().equals(name)).findFirst().orElse(
+				ApplicationPerspective.filter().name(TextFilter.textEqualsFilter(name)).executeExpectSingleton()
+		);
+	}
+
+	private ManagedApplicationGroup getApplicationGroup(ApplicationGroup preferredGroup) {
+		if (preferredGroup == null && ManagedApplicationGroup.getCount() == 0) {
+			ManagedApplicationGroup.create().setIcon(IconUtils.encodeNoStyle(ApplicationIcons.HOME)).setTitleKey(Dictionary.APPLICATIONS).save();
+		}
+		if (preferredGroup == null) {
+			return ManagedApplicationGroup.getAll().get(0);
+		} else {
+			ManagedApplicationGroup applicationGroup = ManagedApplicationGroup.filter().name(TextFilter.textEqualsFilter(preferredGroup.getName())).executeExpectSingleton();
+			if (applicationGroup == null) {
+				applicationGroup = ManagedApplicationGroup.create()
+						.setName(preferredGroup.getName())
+						.setTitleKey(preferredGroup.getTitleKey())
+						.setIcon(IconUtils.encodeNoStyle(preferredGroup.getIcon()))
+						.save();
+			}
+			return applicationGroup;
 		}
 	}
 
@@ -139,4 +213,5 @@ public class PerspectiveDataInstallationPhase implements ApplicationInstallation
 	public void loadApplication(ApplicationInfo applicationInfo) {
 
 	}
+
 }

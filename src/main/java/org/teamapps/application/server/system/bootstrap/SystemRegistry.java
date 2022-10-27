@@ -181,24 +181,8 @@ public class SystemRegistry {
 
 	public boolean installAndLoadApplication(ApplicationInstaller applicationInstaller) {
 		if (!applicationInstaller.isInstalled()) {
-			if (applicationInstaller.installApplication()) {
-				ApplicationInfo applicationInfo = applicationInstaller.getApplicationInfo();
-				Application application = applicationInfo.getApplication();
-				if (application.getVersions().size() == 1) {
-					ManagedApplication managedApplication = ManagedApplication.create()
-							.setMainApplication(application)
-							.setApplicationGroup(unspecifiedApplicationGroup)
-							.setSingleApplication(applicationInfo.isUnmanagedPerspectives())
-							.save();
-					List<ApplicationPerspective> perspectives = application.getPerspectives().stream().filter(ApplicationPerspective::getAutoProvision).collect(Collectors.toList());
-					for (ApplicationPerspective perspective : perspectives) {
-						ManagedApplicationPerspective.create()
-								.setManagedApplication(managedApplication)
-								.setApplicationPerspective(perspective)
-								.save();
-					}
-				}
-			} else {
+			boolean success = applicationInstaller.installApplication();
+			if (!success) {
 				LOGGER.error("Error installing " + applicationInstaller.getApplicationInfo().getName() + ": " + applicationInstaller.getApplicationInfo().getErrorMessage() + "\n" + "Warnings:" + applicationInstaller.getApplicationInfo().getWarningMessage());
 				return false;
 			}
