@@ -156,7 +156,6 @@ public class LocalizationUtil {
 					String machineTranslation = localizationValue.getMachineTranslation();
 					if (applicationTranslation != null &&
 							!applicationTranslation.isBlank() &&
-							machineTranslation != null &&
 							!applicationTranslation.equals(machineTranslation)) {
 						localizationValue
 								.setMachineTranslation(applicationTranslation)
