@@ -74,7 +74,8 @@ public class GlobalLocalizationProvider {
 			return systemDictionary.getLocalizationValue(key, rankedLanguages);
 		} else {
 			if (application != null) {
-				return getLocalizationValue(key, applicationLocalizationMap.get(application), rankedLanguages);
+				String result = getLocalizationValue(key, applicationLocalizationMap.get(application), rankedLanguages);
+				return !key.equals(result) ? result : getLocalizationValue(key, allKeysMap, rankedLanguages);
 			} else {
 				return getLocalizationValue(key, allKeysMap, rankedLanguages);
 			}
