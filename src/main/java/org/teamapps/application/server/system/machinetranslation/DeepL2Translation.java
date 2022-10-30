@@ -69,8 +69,4 @@ public class DeepL2Translation {
 		return options;
 	}
 
-	/*
-
- */
-
 }
