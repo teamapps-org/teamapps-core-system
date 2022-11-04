@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 public class SessionUserImpl implements SessionUser {
 
@@ -48,21 +49,22 @@ public class SessionUserImpl implements SessionUser {
 		this.user = userSessionData.getUser();
 		this.context = userSessionData.getContext();
 		rankedLanguages = new ArrayList<>();
-		init();
-		localizedFormatter = new LocalizedFormatter(locale, context.getTimeZone());
-	}
-
-	private void init() {
 		List<String> languages = new ArrayList<>();
 		if (user.getLanguage() != null) {
 			languages.add(user.getLanguage());
-			locale = Locale.forLanguageTag(user.getLanguage());
-		} else {
-			languages.add(context.getLocale().getLanguage());
-			locale = context.getLocale();
 		}
-		rankedLanguages.addAll(languages);
+		user.getLanguageSettings().stream()
+				.filter(settings -> settings.getLanguage() != null && settings.getLanguageSkillLevel() != null)
+				.sorted(Comparator.comparingInt(o -> o.getLanguageSkillLevel().ordinal()))
+				.forEach(settings -> rankedLanguages.add(settings.getLanguage()));
+		if (languages.isEmpty()) {
+			languages.add(context.getLocale().getLanguage());
+		}
+		locale = Locale.forLanguageTag(languages.get(0));
+		rankedLanguages.addAll(languages.stream().distinct().collect(Collectors.toList()));
+		localizedFormatter = new LocalizedFormatter(locale, context.getTimeZone());
 	}
+
 
 	@Override
 	public int getId() {
