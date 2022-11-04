@@ -47,6 +47,7 @@ import org.teamapps.application.server.controlcenter.organization.OrganizationPe
 import org.teamapps.application.server.controlcenter.organization.OrganizationUnitTypePerspectiveBuilder;
 import org.teamapps.application.server.controlcenter.roles.RolesPerspectiveBuilder;
 import org.teamapps.application.server.controlcenter.roles.UserRoleAssignmentPerspectiveBuilder;
+import org.teamapps.application.server.controlcenter.sessions.SessionsOverviewPerspectiveBuilder;
 import org.teamapps.application.server.controlcenter.systemlog.SystemLogPerspectiveBuilder;
 import org.teamapps.application.server.controlcenter.systenconfig.ApplicationConfigurationPerspectiveBuilder;
 import org.teamapps.application.server.controlcenter.translations.TranslationsPerspectiveBuilder;
@@ -77,6 +78,8 @@ public class ControlCenterAppBuilder extends AbstractApplicationBuilder {
 	public List<PerspectiveBuilder> getPerspectiveBuilders() {
 		return Arrays.asList(
 				new UsersPerspectiveBuilder(),
+				new UserRoleAssignmentPerspectiveBuilder(),
+				new SessionsOverviewPerspectiveBuilder(),
 				new OrganizationPerspectiveBuilder(),
 				new RolesPerspectiveBuilder(),
 				new AccessControlPerspectiveBuilder(),
@@ -99,8 +102,7 @@ public class ControlCenterAppBuilder extends AbstractApplicationBuilder {
 				new ApplicationUpdatesPerspectiveBuilder(),
 				new OrganizationChartPerspectiveBuilder(),
 				new OrganizationFieldPerspectiveBuilder(),
-				new OrganizationUnitTypePerspectiveBuilder(),
-				new UserRoleAssignmentPerspectiveBuilder()
+				new OrganizationUnitTypePerspectiveBuilder()
 		);
 	}
 

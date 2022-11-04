@@ -91,16 +91,6 @@ public class UsersPerspective extends AbstractManagedApplicationPerspective {
 	}
 
 	private void createUi() {
-		UsersPerspectiveBuilder usersPerspectiveBuilder = new UsersPerspectiveBuilder();
-		PerspectiveMenuPanel menuPanel = PerspectiveMenuPanel.createMenuPanel(getApplicationInstanceData(),
-				usersPerspectiveBuilder,
-				new UserRoleAssignmentPerspectiveBuilder()
-		);
-
-		menuPanel.addInstantiatedPerspective(usersPerspectiveBuilder, this);
-		SimpleItemView<PerspectiveBuilder> buttonMenu = menuPanel.getButtonMenu();
-		setPerspectiveMenuPanel(menuPanel.getComponent(), buttonMenu);
-
 		List<OrganizationUnitView> allowedUnits = getAllowedUnits(Privileges.USERS_PERSPECTIVE, Privilege.READ);
 		Set<Integer> unitIdSet = allowedUnits.stream().map(Entity::getId).collect(Collectors.toSet());
 
@@ -111,7 +101,7 @@ public class UsersPerspective extends AbstractManagedApplicationPerspective {
 		ResponsiveForm<User> form = masterDetailController.getResponsiveForm();
 
 		Table<User> table = entityModelBuilder.createListTable(false);
-		table.setRowHeight(30);
+		table.setRowHeight(32);
 		entityModelBuilder.updateModels();
 
 		TemplateField<User> userTableField = UiUtils.createTemplateField(BaseTemplate.createTreeSingleLineNodeTemplate(28, VerticalElementAlignment.CENTER, 30), PropertyProviders.createUserPropertyProvider(getApplicationInstanceData()));
