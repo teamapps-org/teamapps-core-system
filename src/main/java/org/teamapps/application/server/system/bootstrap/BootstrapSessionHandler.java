@@ -72,16 +72,15 @@ public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 
 	public Event<SessionContext> onUserLogout = new Event<>();
 
-	private final SessionRegistryHandler sessionRegistryHandler;
+	private SessionRegistryHandler sessionRegistryHandler;
 	private ServerRegistry serverRegistry;
 	private UniversalDB universalDB;
 	private SystemRegistry systemRegistry;
 
 	public BootstrapSessionHandler() {
-		this(null);
 	}
 
-	public BootstrapSessionHandler(SessionRegistryHandler sessionRegistryHandler) {
+	public void setSessionRegistryHandler(SessionRegistryHandler sessionRegistryHandler) {
 		this.sessionRegistryHandler = sessionRegistryHandler;
 	}
 
@@ -182,21 +181,25 @@ public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 
 	@Override
 	public void handleSessionStart(SessionContext context) {
-		if (standardIconClass != null) {
-			context.getIconProvider().registerIconLibrary(standardIconClass);
-		}
+		registerIconProviders(context);
 		if (sessionRegistryHandler != null) {
 			sessionRegistryHandler.handleNewSession(context);
 		}
 
+
+		new LoginHandler(systemRegistry, this).handleNewSession(context);
+	}
+
+	private void registerIconProviders(SessionContext context) {
+		if (standardIconClass != null) {
+			context.getIconProvider().registerIconLibrary(standardIconClass);
+		}
 		context.getIconProvider().registerIconLibrary(FlagIcon.class);
 		context.getIconProvider().registerIconLibrary(MaterialIcon.class);
 		context.getIconProvider().registerIconLibrary(FontAwesomeIcon.class);
 		context.getIconProvider().registerIconLibrary(AntuIcon.class);
 		context.registerTemplates(Arrays.stream(Templates.values())
 				.collect(Collectors.toMap(Enum::name, Templates::getTemplate)));
-
-		new LoginHandler(systemRegistry, this).handleNewSession(context);
 	}
 
 	@Override

@@ -137,6 +137,17 @@ public class SystemRegistry {
 		activeUsersMap.put(userSessionData, System.currentTimeMillis());
 	}
 
+	public synchronized void removeActiveUser(UserSessionData userSessionData) {
+		activeUsersMap.remove(userSessionData);
+	}
+
+	public synchronized List<User> getOnlineUsers() {
+		return activeUsersMap.keySet().stream()
+				.filter(sessionData -> sessionData.getContext().isActive())
+				.map(UserSessionData::getUser)
+				.collect(Collectors.toList());
+	}
+
 	public synchronized List<BaseTemplateRecord<Long>> getActiveUsers() {
 		List<BaseTemplateRecord<Long>> activeUserData = new ArrayList<>();
 		for (Map.Entry<UserSessionData, Long> entry : activeUsersMap.entrySet()) {

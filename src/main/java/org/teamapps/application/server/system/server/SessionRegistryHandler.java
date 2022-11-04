@@ -20,7 +20,6 @@
 package org.teamapps.application.server.system.server;
 
 import org.teamapps.application.server.system.session.UserSessionData;
-import org.teamapps.model.controlcenter.User;
 import org.teamapps.ux.session.SessionContext;
 
 
@@ -28,5 +27,7 @@ public interface SessionRegistryHandler {
 
 	void handleNewSession(SessionContext context);
 
-	void handleAuthenticatedUser(UserSessionData userSessionDat, SessionContext context);
+	boolean acceptAuthenticatedUser(UserSessionData userSessionDat, SessionContext context);
+
+
 }

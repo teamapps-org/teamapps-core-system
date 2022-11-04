@@ -27,6 +27,7 @@ import org.teamapps.application.api.user.SessionUser;
 import org.teamapps.application.server.system.bootstrap.ApplicationRootPanel;
 import org.teamapps.application.server.system.bootstrap.SystemRegistry;
 import org.teamapps.application.server.system.launcher.MobileApplicationNavigation;
+import org.teamapps.application.server.system.launcher.OnlineUsersView;
 import org.teamapps.application.server.system.localization.SessionApplicationLocalizationProvider;
 import org.teamapps.application.server.system.privilege.PrivilegeApplicationKey;
 import org.teamapps.application.server.system.privilege.UserPrivileges;
@@ -61,6 +62,7 @@ public class UserSessionData {
 	private boolean darkTheme;
 	private final Map<String, Event<?>> userSessionEventByName = new ConcurrentHashMap<>();
 	private final Map<String, ReplicatedStateMachine> replicatedStateMachineMap = new HashMap<>();
+	private OnlineUsersView onlineUsersView;
 
 	public UserSessionData(User user, SessionContext context, SystemRegistry registry, ApplicationRootPanel rootPanel) {
 		this.user = user;
@@ -202,5 +204,11 @@ public class UserSessionData {
 		}
 	}
 
+	public OnlineUsersView getOnlineUsersView() {
+		return onlineUsersView;
+	}
 
+	public void setOnlineUsersView(OnlineUsersView onlineUsersView) {
+		this.onlineUsersView = onlineUsersView;
+	}
 }
