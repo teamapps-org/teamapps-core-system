@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -45,8 +45,10 @@ import org.teamapps.model.controlcenter.*;
 import org.teamapps.universaldb.UniversalDB;
 import org.teamapps.ux.application.ResponsiveApplication;
 import org.teamapps.ux.application.assembler.DesktopApplicationAssembler;
+import org.teamapps.ux.application.layout.StandardLayout;
+import org.teamapps.ux.application.perspective.Perspective;
+import org.teamapps.ux.application.view.View;
 import org.teamapps.ux.component.Component;
-import org.teamapps.ux.component.absolutelayout.Length;
 import org.teamapps.ux.component.dialogue.FormDialogue;
 import org.teamapps.ux.component.field.FieldEditingMode;
 import org.teamapps.ux.component.field.TemplateField;
@@ -59,6 +61,10 @@ import org.teamapps.ux.component.tabpanel.Tab;
 import org.teamapps.ux.component.tabpanel.TabPanel;
 import org.teamapps.ux.component.template.BaseTemplate;
 import org.teamapps.ux.component.toolbutton.ToolButton;
+import org.teamapps.ux.component.workspacelayout.SplitDirection;
+import org.teamapps.ux.component.workspacelayout.definition.SplitPaneDefinition;
+import org.teamapps.ux.component.workspacelayout.definition.SplitSize;
+import org.teamapps.ux.component.workspacelayout.definition.ViewGroupDefinition;
 import org.teamapps.ux.session.ClientInfo;
 import org.teamapps.ux.session.SessionConfiguration;
 import org.teamapps.ux.session.SessionContext;
@@ -91,6 +97,7 @@ public class ApplicationLauncher {
 	private final Login loginData;
 	private Tab applicationLauncherTab;
 	private ApplicationData userProfileApp;
+	private View launcherView;
 
 	public ApplicationLauncher(UserSessionData userSessionData, LogoutHandler logoutHandler) {
 		this.userSessionData = userSessionData;
@@ -135,7 +142,7 @@ public class ApplicationLauncher {
 	}
 
 	private String getCurrentApplicationVersion(ManagedApplication managedApplication) {
-		if (managedApplication != null && managedApplication.getMainApplication() != null && managedApplication.getMainApplication().getInstalledVersion() !=  null) {
+		if (managedApplication != null && managedApplication.getMainApplication() != null && managedApplication.getMainApplication().getInstalledVersion() != null) {
 			return managedApplication.getMainApplication().getInstalledVersion().getVersion();
 		} else {
 			return null;
@@ -202,6 +209,9 @@ public class ApplicationLauncher {
 
 	private void handleApplicationLauncherSelection() {
 		selectedApplication.set(null);
+		if (userSessionData.getOnlineUsersView() != null) {
+			userSessionData.getOnlineUsersView().refresh();
+		}
 		if (selectedThemeIsDarkTheme) {
 			setTheme(true);
 			selectedThemeIsDarkTheme = false;
@@ -247,7 +257,7 @@ public class ApplicationLauncher {
 			SimpleItem<ApplicationData> item = itemGroup.addItem(ApplicationIcons.LOG_OUT, getLocalized(Dictionary.LOGOUT), getLocalized(Dictionary.LOGOUT));
 			item.onClick.addListener(this::logout);
 		}
-		applicationLauncher = createLauncherView(itemView, mobileView);
+		createLauncherView(itemView, mobileView);
 	}
 
 	public void updateApplicationLauncher() {
@@ -263,6 +273,7 @@ public class ApplicationLauncher {
 		LOGGER.info("User logout: {}, {} {}", user.getId(), user.getFirstName(), user.getLastName());
 		registry.getBootstrapSessionHandler().onUserLogout.fire(userSessionData.getContext());
 		userSessionData.invalidate();
+		userSessionData.getRegistry().removeActiveUser(userSessionData);
 		SessionContext.current().clearExecutionDecorators();
 		LoginHandler loginHandler = new LoginHandler(registry, logoutHandler, userSessionData);
 		loginHandler.createLoginView(userSessionData.getContext(), userSessionData.getRootPanel());
@@ -294,7 +305,17 @@ public class ApplicationLauncher {
 					handleApplicationLauncherSelection();
 				}
 			});
-			applicationLauncherTab = new Tab(ApplicationIcons.HOME, getLocalized(Dictionary.APPLICATIONS), applicationLauncher);
+			ResponsiveApplication application = ResponsiveApplication.createApplication();
+
+			Perspective perspective = Perspective.createPerspective(new SplitPaneDefinition("split", SplitDirection.VERTICAL, SplitSize.lastFixed(200f), new ViewGroupDefinition(StandardLayout.CENTER, true), new ViewGroupDefinition(StandardLayout.RIGHT, true)));
+			application.showPerspective(perspective);
+			perspective.addView(launcherView);
+			if (userSessionData.getOnlineUsersView() != null) {
+				View onlineUsers = View.createView(StandardLayout.RIGHT, ApplicationIcons.USERS_CROWD, "Online Users", userSessionData.getOnlineUsersView().getComponent());
+				onlineUsers.getPanel().setBodyBackgroundColor(Color.WHITE.withAlpha(0.74f));
+				perspective.addView(onlineUsers);
+			}
+			applicationLauncherTab = new Tab(ApplicationIcons.HOME, getLocalized(Dictionary.APPLICATIONS), application.getUi());
 			applicationsTabPanel.addTab(applicationLauncherTab, true);
 
 			Tab logoutTab = new Tab(ApplicationIcons.LOG_OUT, getLocalized(Dictionary.LOGOUT), null);
@@ -435,24 +456,17 @@ public class ApplicationLauncher {
 						new DesktopApplicationAssembler());
 	}
 
-	private Component createLauncherView(SimpleItemView<ApplicationData> applicationLauncher, boolean mobileView) {
-		Panel panel = new Panel(ApplicationIcons.HOME, getLocalized(Dictionary.APPLICATIONS));
+	private void createLauncherView(SimpleItemView<ApplicationData> launcherItemView, boolean mobileView) {
+		launcherView = View.createView(StandardLayout.CENTER, ApplicationIcons.HOME, getLocalized(Dictionary.APPLICATIONS), launcherItemView);
+		Panel panel = launcherView.getPanel();
 		TextField applicationsSearchField = new TextField();
 		applicationsSearchField.setShowClearButton(true);
 		applicationsSearchField.setEmptyText(getLocalized(Dictionary.SEARCH___));
-		applicationsSearchField.onTextInput().addListener(applicationLauncher::setFilter);
+		applicationsSearchField.onTextInput().addListener(launcherItemView::setFilter);
 		panel.setRightHeaderField(applicationsSearchField);
-		panel.setContent(applicationLauncher);
+		panel.setContent(launcherItemView);
 		panel.setBodyBackgroundColor(userSessionData.isDarkTheme() ? Color.fromRgba(30, 30, 30, .7f) : Color.WHITE.withAlpha(0.7f));
-		if (mobileView) {
-			return panel;
-		}
-		Panel framePanel = new Panel();
-		framePanel.setHideTitleBar(true);
-		framePanel.setPadding(5);
-		framePanel.setContent(panel);
-		framePanel.setBodyBackgroundColor(userSessionData.isDarkTheme() ? Color.BLACK.withAlpha(0.001f) : Color.WHITE.withAlpha(0.001f));
-		return framePanel;
+		applicationLauncher = panel;
 	}
 
 	private List<ApplicationData> getAllApplications() {
