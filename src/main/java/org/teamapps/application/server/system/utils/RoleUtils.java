@@ -52,6 +52,20 @@ public class RoleUtils {
 		}
 	}
 
+	public static Set<Role> getRoleWithGeneralizations(Role role) {
+		Set<Role> roleSet = new HashSet<>();
+		calculateRoleGeneralizations(role, roleSet);
+		return roleSet;
+	}
+
+	private static void calculateRoleGeneralizations(Role role, Set<Role> roleSet) {
+		if (!roleSet.contains(role)) {
+			roleSet.add(role);
+			for (Role generalizationRole : role.getGeneralizationRoles()) {
+				calculateRoleGeneralizations(generalizationRole, roleSet);
+			}
+		}
+	}
 	public static Set<Role> getAllPrivilegeRoles(Role role) {
 		Set<Role> roleSet = new HashSet<>();
 		calculatePrivilegeRoles(role, roleSet);

@@ -120,6 +120,38 @@ public class OrganizationUtils {
 		return units;
 	}
 
+	public static Set<OrganizationUnit> getUnitParentPath(OrganizationUnit unit, int skipLevels) {
+		Set<OrganizationUnit> units = new HashSet<>();
+		OrganizationUnit parent = unit;
+		int level = 0;
+		while (parent != null) {
+			if (level >= skipLevels) {
+				units.add(parent);
+			}
+			level++;
+			parent = parent.getParent();
+		}
+		return units;
+	}
+
+	public static Set<OrganizationUnit> getUnitWithChildren(OrganizationUnit unit, int fromLevelInclusive, int toLevelExclusive) {
+		Set<OrganizationUnit> units = new HashSet<>();
+		calculateUnitWithChildren(unit, 0, fromLevelInclusive, toLevelExclusive, units);
+		return units;
+	}
+
+	public static void calculateUnitWithChildren(OrganizationUnit unit, int currentLevel, int fromLevelInclusive, int toLevelExclusive, Set<OrganizationUnit> result) {
+		if (currentLevel >= fromLevelInclusive) {
+			result.add(unit);
+		}
+		currentLevel++;
+		if (currentLevel < toLevelExclusive) {
+			for (OrganizationUnit child : unit.getChildren()) {
+				calculateUnitWithChildren(child, currentLevel, fromLevelInclusive, toLevelExclusive, result);
+			}
+		}
+	}
+
 	public static Set<OrganizationUnit> getAllUnits(OrganizationUnit unit) {
 		return getAllUnits(unit, null);
 	}

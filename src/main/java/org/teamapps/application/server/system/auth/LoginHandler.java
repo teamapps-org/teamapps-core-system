@@ -50,7 +50,6 @@ import org.teamapps.ux.component.itemview.ItemViewVerticalItemAlignment;
 import org.teamapps.ux.component.linkbutton.LinkButton;
 import org.teamapps.ux.component.panel.ElegantPanel;
 import org.teamapps.ux.component.panel.Panel;
-import org.teamapps.ux.component.rootpanel.RootPanel;
 import org.teamapps.ux.session.SessionContext;
 
 import java.lang.invoke.MethodHandles;
@@ -336,10 +335,13 @@ public class LoginHandler {
 			LOGGER.info("User logged in: {}", userInfo);
 			context.setName(userInfo);
 			systemRegistry.addActiveUser(userSessionData);
+			boolean accepted = true;
 			if (systemRegistry.getSessionRegistryHandler() != null) {
-				systemRegistry.getSessionRegistryHandler().handleAuthenticatedUser(userSessionData, context);
+				accepted = systemRegistry.getSessionRegistryHandler().acceptAuthenticatedUser(userSessionData, context);
 			}
-			new ApplicationLauncher(userSessionData, logoutHandler);
+			if (accepted) {
+				new ApplicationLauncher(userSessionData, logoutHandler);
+			}
 		} finally {
 			UniversalDB.setUserId(0);
 		}

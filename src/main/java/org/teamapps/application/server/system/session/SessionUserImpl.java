@@ -39,10 +39,10 @@ public class SessionUserImpl implements SessionUser {
 	private final User user;
 	private final SessionContext context;
 	private final List<String> rankedLanguages;
-	private UserSessionData userSessionData;
-	private Locale locale;
-	private LocalizedFormatter localizedFormatter;
-	private Event<Void> onLogout = new Event<>();
+	private final UserSessionData userSessionData;
+	private final Locale locale;
+	private final LocalizedFormatter localizedFormatter;
+	private final Event<Void> onLogout = new Event<>();
 
 	public SessionUserImpl(UserSessionData userSessionData) {
 		this.userSessionData = userSessionData;
