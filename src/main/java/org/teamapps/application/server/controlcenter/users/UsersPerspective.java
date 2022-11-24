@@ -81,7 +81,7 @@ import java.util.stream.Collectors;
 public class UsersPerspective extends AbstractManagedApplicationPerspective {
 
 	private final UserSessionData userSessionData;
-
+	private final boolean withDetailFields = false;
 
 	public UsersPerspective(ApplicationInstanceData applicationInstanceData, MutableValue<String> perspectiveInfoBadgeValue) {
 		super(applicationInstanceData, perspectiveInfoBadgeValue);
@@ -115,7 +115,7 @@ public class UsersPerspective extends AbstractManagedApplicationPerspective {
 		table.addColumn(User.FIELD_ORGANIZATION_UNIT, getLocalized("users.organizationUnit"), orgUnitTableField).setDefaultWidth(150);
 		table.addColumn(User.FIELD_USER_ACCOUNT_STATUS, getLocalized("users.accountStatus"), accountStatusTableField).setDefaultWidth(120);
 		table.addColumn(User.FIELD_LAST_LOGIN, getLocalized("users.lastLogin"), lastLogin).setDefaultWidth(200);
-		table.addColumn(User.FIELD_LANGUAGE, getLocalized(Dictionary.LANGUAGE), languageComboBox).setDefaultWidth(350);
+		table.addColumn(User.FIELD_DISPLAY_LANGUAGE, getLocalized(Dictionary.LANGUAGE), languageComboBox).setDefaultWidth(350);
 		table.addColumn(User.FIELD_ROLE_ASSIGNMENTS, getLocalized("users.roles"), userRoleAssignmentTableField).setDefaultWidth(1500);
 
 		table.setPropertyExtractor((user, propertyName) -> switch (propertyName) {
@@ -123,7 +123,7 @@ public class UsersPerspective extends AbstractManagedApplicationPerspective {
 			case User.FIELD_ORGANIZATION_UNIT -> user.getOrganizationUnit();
 			case User.FIELD_USER_ACCOUNT_STATUS -> user.getUserAccountStatus();
 			case User.FIELD_LAST_LOGIN -> user.getLastLogin();
-			case User.FIELD_LANGUAGE -> user.getLanguage() == null ? null : Language.getLanguageByIsoCode(user.getLanguage());
+			case User.FIELD_DISPLAY_LANGUAGE -> user.getDisplayLanguage() == null ? null : Language.getLanguageByIsoCode(user.getDisplayLanguage());
 			case User.FIELD_ROLE_ASSIGNMENTS -> user.getRoleAssignments();
 			default -> null;
 		});
@@ -175,15 +175,22 @@ public class UsersPerspective extends AbstractManagedApplicationPerspective {
 		formLayout.addLabelAndField(null, getLocalized(Dictionary.FIRST_NAME), firstNameField);
 		formLayout.addLabelAndField(null, getLocalized(Dictionary.LAST_NAME), lastNameField);
 		formLayout.addLabelAndField(null, getLocalized(Dictionary.LANGUAGE), languageField);
-		formLayout.addLabelAndField(null, getLocalized(Dictionary.E_MAIL), emailField);
-		formLayout.addLabelAndField(null, getLocalized(Dictionary.MOBILE_NUMBER), mobileField);
+
+		if (withDetailFields) {
+			formLayout.addLabelAndField(null, getLocalized(Dictionary.E_MAIL), emailField);
+			formLayout.addLabelAndField(null, getLocalized(Dictionary.MOBILE_NUMBER), mobileField);
+		}
 		formLayout.addLabelAndField(null, getLocalized(Dictionary.USER_NAME), loginField);
-		formLayout.addLabelAndField(null, getLocalized("users.accountStatus"), accountStatusComboBox);
+		if (withDetailFields) {
+			formLayout.addLabelAndField(null, getLocalized("users.accountStatus"), accountStatusComboBox);
+		}
 		formLayout.addLabelAndField(null, getLocalized("users.organizationUnit"), organizationUnitViewField);
 
-		AddressForm addressForm = new AddressForm(getApplicationInstanceData());
-		addressForm.createAddressSection(formLayout);
-		addressForm.addFields(formLayout);
+		if (withDetailFields) {
+			AddressForm addressForm = new AddressForm(getApplicationInstanceData());
+			addressForm.createAddressSection(formLayout);
+			addressForm.addFields(formLayout);
+		}
 
 		formLayout.addSection(ApplicationIcons.USERS_THREE_RELATION, getLocalized("userRoleAssignment.allRolesOfTheUser")).setCollapsed(true);
 		formLayout.addLabelAndComponent(roleMembersPanel.getPanel());
@@ -191,12 +198,13 @@ public class UsersPerspective extends AbstractManagedApplicationPerspective {
 
 		formController.addNotBlank(firstNameField);
 		formController.addNotBlank(lastNameField);
-		formController.addEmailOrEmpty(emailField);
+		//formController.addEmailOrEmpty(emailField);
 		formController.addPhoneOrEmptyNumber(mobileField);
 		formController.addMinCharactersOrEmpty(loginField, 2);
 		//formController.addMinCharactersOrEmpty(passwordField, 9);
-		formController.addNotNull(languageField);
-		formController.addValidator(organizationUnitViewField, unit -> unit != null && OrganizationUtils.convert(unit).getType().isAllowUsers() ? null : getLocalized("users.wrongOrMissingOrgUnit"));
+		//formController.addNotNull(languageField);
+		//formController.addValidator(organizationUnitViewField, unit -> unit != null && OrganizationUtils.convert(unit).getType().isAllowUsers() ? null : getLocalized("users.wrongOrMissingOrgUnit"));
+		formController.addValidator(organizationUnitViewField, unit -> unit != null ? null : getLocalized("users.wrongOrMissingOrgUnit"));
 
 		masterDetailController.createViews(getPerspective(), table, formLayout);
 
@@ -215,22 +223,22 @@ public class UsersPerspective extends AbstractManagedApplicationPerspective {
 		});
 
 		formController.setSaveEntityHandler(user -> {
-			if (!addressForm.validateAddress() || (user.getAddress() != null && user.getAddress().isStored() && !addressForm.getAddress().equals(user.getAddress()))) {
-				return false;
-			}
+//			if (!addressForm.validateAddress() || (user.getAddress() != null && user.getAddress().isStored() && !addressForm.getAddress().equals(user.getAddress()))) {
+//				return false;
+//			}
 			OrganizationUnit organizationUnit = OrganizationUtils.convert(organizationUnitViewField.getValue());
 			byte[] picture = readUserPicture(pictureChooser);
-			Address address = addressForm.getAddress().save();
+//			Address address = addressForm.getAddress().save();
 			user
 					.setFirstName(firstNameField.getValue())
 					.setLastName(lastNameField.getValue())
-					.setLanguage(languageField.getValue().getIsoCode())
+					.setDisplayLanguage(languageField.getValue() == null ? null : languageField.getValue().getIsoCode())
 					.setEmail(emailField.getValue())
 					.setMobile(mobileField.getValue())
 					.setLogin(loginField.getValue())
 					.setUserAccountStatus(accountStatusComboBox.getValue())
 					.setOrganizationUnit(organizationUnit)
-					.setAddress(address)
+					//.setAddress(address.isStored() ? address : null)
 			;
 			if (picture != null && picture.length != user.getProfilePictureLength()) {
 				user.setProfilePicture(picture);
@@ -242,18 +250,19 @@ public class UsersPerspective extends AbstractManagedApplicationPerspective {
 			pictureChooser.setValue(user.getProfilePicture() != null ? new ByteArrayResource(user.getProfilePicture(), "image.jpg") : null);
 			firstNameField.setValue(user.getFirstName());
 			lastNameField.setValue(user.getLastName());
-			languageField.setValue(Language.getLanguageByIsoCode(user.getLanguage()));
+			languageField.setValue(Language.getLanguageByIsoCode(user.getDisplayLanguage()));
 			emailField.setValue(user.getEmail());
 			mobileField.setValue(user.getMobile());
 			loginField.setValue(user.getLogin());
 			passwordField.setValue(user.getPassword());
 			accountStatusComboBox.setValue(user.getUserAccountStatus());
-			addressForm.setAddress(user.getAddress());
+			//addressForm.setAddress(user.getAddress());
 			formController.clearMessages();
 			userRoleAssignmentModelBuilder.setRecords(user.getRoleAssignments());
 		});
 
-		Supplier<User> createNewEntitySupplier = () -> User.create().setAddress(Address.create()).setUserAccountStatus(UserAccountStatus.ACTIVE);
+		Supplier<User> createNewEntitySupplier = () -> User.create().setUserAccountStatus(UserAccountStatus.ACTIVE);
+		//Supplier<User> createNewEntitySupplier = () -> User.create().setAddress(Address.create()).setUserAccountStatus(UserAccountStatus.ACTIVE);
 		formController.setCreateNewEntitySupplier(createNewEntitySupplier);
 		entityModelBuilder.setSelectedRecord(createNewEntitySupplier.get());
 	}
@@ -265,7 +274,7 @@ public class UsersPerspective extends AbstractManagedApplicationPerspective {
 		formDialogue.addOkCancelButtons(getLocalized(Dictionary.O_K), getLocalized(Dictionary.CANCEL));
 		formDialogue.onOk.addListener(() -> {
 			String value = passwordField.getValue();
-			if (value.length() > 8) {
+			if (value.length() > 5) {
 				user.setPassword(SecurePasswordHash.createDefault().createSecureHash(value)).save();
 				UiUtils.showSaveNotification(true, getApplicationInstanceData());
 				formDialogue.close();

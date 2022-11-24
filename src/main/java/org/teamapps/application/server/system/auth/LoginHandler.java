@@ -186,8 +186,8 @@ public class LoginHandler {
 
 		formLayout.addLabelAndComponent(null, null, buttonLogin);
 
-		formLayout.addLabelAndComponent(buttonResetPassword).field.getRowDefinition().setTopPadding(20);
-		formLayout.addLabelAndComponent(buttonRegister).field.getRowDefinition().setTopPadding(10);
+//		formLayout.addLabelAndComponent(buttonResetPassword).field.getRowDefinition().setTopPadding(20);
+//		formLayout.addLabelAndComponent(buttonRegister).field.getRowDefinition().setTopPadding(10);
 
 		rootPanel.setContent(elegantPanel);
 
