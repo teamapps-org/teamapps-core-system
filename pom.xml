@@ -12,7 +12,7 @@
         <maven.compiler.target>14</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <teamapps-version>0.9.159</teamapps-version>
-        <universal-db-version>0.5.28-SNAPSHOT</universal-db-version>
+        <universal-db-version>0.5.28</universal-db-version>
         <apache-commons-io>2.11.0</apache-commons-io>
     </properties>
 
@@ -57,7 +57,7 @@
         <dependency>
             <groupId>org.teamapps</groupId>
             <artifactId>teamapps-core-system-model</artifactId>
-            <version>0.4</version>
+            <version>0.5</version>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -69,7 +69,7 @@
         <dependency>
             <groupId>org.teamapps</groupId>
             <artifactId>teamapps-application-api</artifactId>
-            <version>0.79-SNAPSHOT</version>
+            <version>0.79</version>
         </dependency>
 
     </dependencies>
@@ -82,7 +82,7 @@
                 <dependency>
                     <groupId>org.teamapps</groupId>
                     <artifactId>teamapps-application-server</artifactId>
-                    <version>0.35-SNAPSHOT</version>
+                    <version>0.35</version>
                     <exclusions>
                         <exclusion>
                             <groupId>*</groupId>
@@ -192,7 +192,7 @@
                 <dependency>
                     <groupId>org.teamapps</groupId>
                     <artifactId>universal-db</artifactId>
-                    <version>0.5.27</version>
+                    <version>0.5.28</version>
                     <exclusions>
                         <exclusion>
                             <groupId>*</groupId>
@@ -217,7 +217,7 @@
                 <dependency>
                     <groupId>org.teamapps</groupId>
                     <artifactId>teamapps-protocol-schema</artifactId>
-                    <version>0.4</version>
+                    <version>0.6</version>
                     <exclusions>
                         <exclusion>
                             <groupId>*</groupId>
