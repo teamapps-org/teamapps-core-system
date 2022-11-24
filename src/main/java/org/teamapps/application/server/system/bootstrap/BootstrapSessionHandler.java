@@ -160,7 +160,7 @@ public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 		User.create()
 				.setFirstName("Super")
 				.setLastName("Admin")
-				.setLanguage(language)
+				.setDisplayLanguage(language)
 				.setLogin(login)
 				.setPassword(SecurePasswordHash.createDefault().createSecureHash(password))
 				.setUserAccountStatus(UserAccountStatus.SUPER_ADMIN)

@@ -50,8 +50,8 @@ public class SessionUserImpl implements SessionUser {
 		this.context = userSessionData.getContext();
 		rankedLanguages = new ArrayList<>();
 		List<String> languages = new ArrayList<>();
-		if (user.getLanguage() != null) {
-			languages.add(user.getLanguage());
+		if (user.getDisplayLanguage() != null) {
+			languages.add(user.getDisplayLanguage());
 		}
 		user.getLanguageSettings().stream()
 				.filter(settings -> settings.getLanguage() != null && settings.getLanguageSkillLevel() != null)
