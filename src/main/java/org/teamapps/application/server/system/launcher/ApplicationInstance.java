@@ -218,6 +218,7 @@ public class ApplicationInstance implements PerspectiveByNameLauncher {
 		ResponsiveApplication responsiveApplication = perspectiveSessionData.getManagedApplicationSessionData().getResponsiveApplication();
 		ApplicationPerspective applicationPerspective = applicationPerspectiveByPerspectiveBuilder.get(perspectiveSessionData);
 		if (applicationPerspective == null) {
+			userSessionData.addOpenPerspectivesCount();
 			applicationPerspective = perspectiveSessionData.getPerspectiveBuilder().build(perspectiveSessionData, null);
 			applicationPerspectiveByPerspectiveBuilder.put(perspectiveSessionData, applicationPerspective);
 			responsiveApplication.addPerspective(applicationPerspective.getPerspective());
@@ -270,6 +271,7 @@ public class ApplicationInstance implements PerspectiveByNameLauncher {
 		ResponsiveApplication responsiveApplication = perspectiveSessionData.getManagedApplicationSessionData().getResponsiveApplication();
 		ApplicationPerspective applicationPerspective = applicationPerspectiveByPerspectiveBuilder.get(perspectiveSessionData);
 		if (applicationPerspective == null) {
+			userSessionData.addOpenPerspectivesCount();
 			applicationPerspective = perspectiveSessionData.getPerspectiveBuilder().build(perspectiveSessionData, null);
 			applicationPerspectiveByPerspectiveBuilder.put(perspectiveSessionData, applicationPerspective);
 			responsiveApplication.addPerspective(applicationPerspective.getPerspective());

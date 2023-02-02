@@ -28,34 +28,22 @@ import org.teamapps.application.server.system.session.PerspectiveSessionData;
 import org.teamapps.application.server.system.session.UserSessionData;
 import org.teamapps.application.ux.UiUtils;
 import org.teamapps.application.ux.form.FormWindow;
-import org.teamapps.cluster.core.Cluster;
-import org.teamapps.cluster.core.Node;
-import org.teamapps.cluster.core.RemoteNode;
 import org.teamapps.databinding.MutableValue;
-import org.teamapps.databinding.TwoWayBindableValue;
 import org.teamapps.ux.application.layout.StandardLayout;
 import org.teamapps.ux.application.view.View;
-import org.teamapps.ux.component.Component;
-import org.teamapps.ux.component.field.AbstractField;
 import org.teamapps.ux.component.field.TemplateField;
-import org.teamapps.ux.component.field.TextField;
-import org.teamapps.ux.component.field.combobox.TagBoxWrappingMode;
-import org.teamapps.ux.component.field.combobox.TagComboBox;
-import org.teamapps.ux.component.field.upload.UploadedFile;
 import org.teamapps.ux.component.field.upload.simple.FileItem;
 import org.teamapps.ux.component.field.upload.simple.SimpleFileField;
 import org.teamapps.ux.component.form.ResponsiveForm;
 import org.teamapps.ux.component.form.ResponsiveFormLayout;
 import org.teamapps.ux.component.panel.Panel;
 import org.teamapps.ux.component.table.ListTable;
-import org.teamapps.ux.component.table.Table;
 import org.teamapps.ux.component.template.BaseTemplate;
 import org.teamapps.ux.component.template.BaseTemplateRecord;
 import org.teamapps.ux.component.toolbar.ToolbarButton;
 import org.teamapps.ux.component.toolbar.ToolbarButtonGroup;
 
 import java.io.File;
-import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -64,7 +52,7 @@ import java.util.Map;
 public class SystemCoreUpdatePerspective extends AbstractManagedApplicationPerspective {
 
 	private final UserSessionData userSessionData;
-	private final TwoWayBindableValue<RemoteNode> selectedNode = TwoWayBindableValue.create();
+//	private final TwoWayBindableValue<ClusterNode> selectedNode = TwoWayBindableValue.create();
 
 	public SystemCoreUpdatePerspective(ApplicationInstanceData applicationInstanceData, MutableValue<String> perspectiveInfoBadgeValue) {
 		super(applicationInstanceData, perspectiveInfoBadgeValue);

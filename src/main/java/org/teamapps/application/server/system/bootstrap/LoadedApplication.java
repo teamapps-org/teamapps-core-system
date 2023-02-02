@@ -20,23 +20,29 @@
 package org.teamapps.application.server.system.bootstrap;
 
 import org.teamapps.application.api.application.ApplicationBuilder;
+import org.teamapps.application.api.application.ApplicationInitializer;
 import org.teamapps.application.api.application.BaseApplicationBuilder;
 import org.teamapps.application.api.application.perspective.PerspectiveBuilder;
 import org.teamapps.application.server.system.privilege.ApplicationScopePrivilegeProvider;
 import org.teamapps.model.controlcenter.Application;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
 public class LoadedApplication {
 
+	private final ApplicationInitializer applicationInitializer;
 	private final Application application;
 	private final BaseApplicationBuilder baseApplicationBuilder;
 	private final ClassLoader applicationClassLoader;
 	private final boolean unmanagedPerspectives;
 	private ApplicationScopePrivilegeProvider applicationScopePrivilegeProvider;
 
-	public LoadedApplication(Application application, BaseApplicationBuilder applicationBuilder, ClassLoader applicationClassLoader, boolean unmanagedPerspectives) {
+	public LoadedApplication(File basePath, Application application, BaseApplicationBuilder applicationBuilder, ClassLoader applicationClassLoader, boolean unmanagedPerspectives) {
+		File appBasePath = new File(basePath, application.getName());
+		appBasePath.mkdir();
+		this.applicationInitializer = new ApplicationInitData(appBasePath);
 		this.application = application;
 		this.baseApplicationBuilder = applicationBuilder;
 		this.applicationClassLoader = applicationClassLoader;
@@ -85,5 +91,9 @@ public class LoadedApplication {
 
 	public boolean isUnmanagedPerspectives() {
 		return unmanagedPerspectives;
+	}
+
+	public ApplicationInitializer getApplicationInitializer() {
+		return applicationInitializer;
 	}
 }

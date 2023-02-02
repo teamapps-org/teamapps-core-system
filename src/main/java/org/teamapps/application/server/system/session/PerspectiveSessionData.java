@@ -21,6 +21,7 @@ package org.teamapps.application.server.system.session;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.event.Level;
+import org.teamapps.application.api.application.ApplicationInitializer;
 import org.teamapps.application.api.application.ApplicationInstanceData;
 import org.teamapps.application.api.application.entity.EntityUpdate;
 import org.teamapps.application.api.application.perspective.ApplicationPerspective;
@@ -41,16 +42,19 @@ import org.teamapps.application.server.system.utils.RoleUtils;
 import org.teamapps.application.ux.IconUtils;
 import org.teamapps.event.Event;
 import org.teamapps.icons.Icon;
+import org.teamapps.message.protocol.message.Message;
 import org.teamapps.model.controlcenter.*;
 import org.teamapps.protocol.system.SystemLogEntry;
 import org.teamapps.reporting.convert.DocumentConverter;
 import org.teamapps.universaldb.index.numeric.NumericFilter;
 import org.teamapps.universaldb.index.translation.TranslatableText;
+import org.teamapps.universaldb.message.MessageStore;
 import org.teamapps.universaldb.record.EntityBuilder;
 import org.teamapps.ux.application.perspective.Perspective;
 import org.teamapps.ux.component.progress.MultiProgressDisplay;
 import org.teamapps.ux.resource.Resource;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 import java.util.function.Consumer;
@@ -64,6 +68,7 @@ public class PerspectiveSessionData implements ApplicationInstanceData {
 	private final ManagedApplication managedApplication;
 	private final ManagedApplicationPerspective managedApplicationPerspective;
 	private final PerspectiveBuilder perspectiveBuilder;
+	private final ApplicationInitializer applicationInitializer;
 	private PerspectiveByNameLauncher perspectiveByNameLauncher;
 	private final ApplicationPrivilegeProvider privilegeProvider;
 	private final ApplicationLocalizationProvider localizationProvider;
@@ -82,6 +87,7 @@ public class PerspectiveSessionData implements ApplicationInstanceData {
 		this.documentConverterSupplier = documentConverterSupplier;
 		this.userSessionData = managedApplicationSessionData.getUserSessionData();
 		this.componentFactory = new SessionUiComponentFactory(this, userSessionData.getRegistry(), managedApplication.getMainApplication());
+		this.applicationInitializer = userSessionData.getRegistry().getLoadedApplication(managedApplication.getMainApplication()).getApplicationInitializer();
 	}
 
 	public Icon getIcon() {
@@ -186,14 +192,14 @@ public class PerspectiveSessionData implements ApplicationInstanceData {
 				.setThreadName(Thread.currentThread().getName())
 				.setManagedApplicationId(managedApplication.getId())
 				.setManagedApplicationPerspectiveId(managedApplicationPerspective.getId())
-				.setTitle(title)
-				.setMessage(data);
-		userSessionData.getRegistry().getServerRegistry().getSystemLogMessageStore().addMessage(logEntry);
+				.setMessage(title)
+				.setStackTrace(data);
+		userSessionData.getRegistry().getServerRegistry().getSystemLogMessageStore().saveSecure(logEntry);
 	}
 
 	@Override
 	public void writeExceptionLog(Level level, String title, Throwable throwable) {
-		String message = ExceptionUtils.getMessage(throwable);
+		String message = ExceptionUtils.getMessage(throwable); //todo
 		SystemLogEntry logEntry = new SystemLogEntry()
 				.setUserId(getUser().getId())
 				.setTimestamp(System.currentTimeMillis())
@@ -202,10 +208,10 @@ public class PerspectiveSessionData implements ApplicationInstanceData {
 				.setThreadName(Thread.currentThread().getName())
 				.setManagedApplicationId(managedApplication.getId())
 				.setManagedApplicationPerspectiveId(managedApplicationPerspective.getId())
-				.setTitle(title)
-				.setMessage(message)
+				.setMessage(title)
+				//.setMessage(message)
 				.setStackTrace(ExceptionUtils.getStackTrace(throwable));
-		userSessionData.getRegistry().getServerRegistry().getSystemLogMessageStore().addMessage(logEntry);
+		userSessionData.getRegistry().getServerRegistry().getSystemLogMessageStore().saveSecure(logEntry);
 	}
 
 	@Override
@@ -254,6 +260,10 @@ public class PerspectiveSessionData implements ApplicationInstanceData {
 		return PublicLinkResourceProvider.getInstance().createLinkForResource(resource, availabilityDuration);
 	}
 
+	@Override
+	public <MESSAGE extends Message> MessageStore<MESSAGE> getMessageStore(String name) {
+		return applicationInitializer.getMessageStore(name);
+	}
 
 	public static List<Integer> getOrganizationUsersWithRole(OrganizationUnitView orgUnit, UserRoleType userRoleType, OrganizationFieldView organizationFieldView) {
 		if (userRoleType == null) {

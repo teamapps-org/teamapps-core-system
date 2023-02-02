@@ -19,6 +19,7 @@
  */
 package org.teamapps.application.server.system.bootstrap.installer;
 
+import org.teamapps.application.api.application.ApplicationInitializer;
 import org.teamapps.application.api.application.BaseApplicationBuilder;
 import org.teamapps.application.server.system.bootstrap.ApplicationInfo;
 import org.teamapps.application.server.system.bootstrap.LoadedApplication;
@@ -97,9 +98,9 @@ public class ApplicationInstaller {
 		}
 	}
 
-	public LoadedApplication loadApplication() {
+	public LoadedApplication loadApplication(File basePath) {
 		if (applicationInfo.isChecked() && applicationInfo.getErrors().isEmpty()) {
-			applicationInfo.createLoadedApplication();
+			applicationInfo.createLoadedApplication(basePath);
 			applicationInstallationPhases.forEach(phase -> phase.loadApplication(applicationInfo));
 			ClassLoader classLoader = applicationInfo.getApplicationClassLoader();
 			if (classLoader == null) {
@@ -114,7 +115,9 @@ public class ApplicationInstaller {
 					e.printStackTrace();
 				}
 			}
-			applicationInfo.getBaseApplicationBuilder().getOnApplicationLoaded().fire();
+
+			ApplicationInitializer applicationInitializer = applicationInfo.getLoadedApplication().getApplicationInitializer();
+			applicationInfo.getBaseApplicationBuilder().getOnApplicationLoaded().fire(applicationInitializer);
 			return applicationInfo.getLoadedApplication();
 		}
 		return null;

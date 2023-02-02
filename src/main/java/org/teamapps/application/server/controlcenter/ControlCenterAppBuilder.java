@@ -93,7 +93,6 @@ public class ControlCenterAppBuilder extends AbstractApplicationBuilder {
 				new MonitoringPerspectiveBuilder(),
 				new DataBasePerspectiveBuilder(),
 
-				new NewsBoardPerspectiveBuilder(),
 				new UserLanguageSettingsPerspectiveBuilder(),
 
 				new AppLocalAdministrationPerspectiveBuilder(),

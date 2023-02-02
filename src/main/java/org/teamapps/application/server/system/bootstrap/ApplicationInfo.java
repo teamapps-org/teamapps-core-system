@@ -80,8 +80,8 @@ public class ApplicationInfo {
 		return application;
 	}
 
-	public void createLoadedApplication() {
-		loadedApplication = new LoadedApplication(getApplication(), baseApplicationBuilder, applicationClassLoader, unmanagedPerspectives);
+	public void createLoadedApplication(File basePath) {
+		loadedApplication = new LoadedApplication(basePath, getApplication(), baseApplicationBuilder, applicationClassLoader, unmanagedPerspectives);
 	}
 
 	public LoadedApplication getLoadedApplication() {

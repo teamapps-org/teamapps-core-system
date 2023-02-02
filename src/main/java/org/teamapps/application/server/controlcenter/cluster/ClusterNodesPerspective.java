@@ -20,64 +20,32 @@
 package org.teamapps.application.server.controlcenter.cluster;
 
 import org.teamapps.application.api.application.ApplicationInstanceData;
-import org.teamapps.application.api.localization.Dictionary;
 import org.teamapps.application.api.theme.ApplicationIcons;
-import org.teamapps.application.server.controlcenter.Privileges;
 import org.teamapps.application.server.system.application.AbstractManagedApplicationPerspective;
 import org.teamapps.application.server.system.bootstrap.SystemRegistry;
 import org.teamapps.application.server.system.session.PerspectiveSessionData;
 import org.teamapps.application.server.system.session.UserSessionData;
-import org.teamapps.application.server.system.template.PropertyProviders;
-import org.teamapps.application.server.system.utils.RoleUtils;
-import org.teamapps.application.tools.EntityListModelBuilder;
-import org.teamapps.application.tools.EntityModelBuilder;
-import org.teamapps.application.ux.IconUtils;
-import org.teamapps.application.ux.UiUtils;
-import org.teamapps.application.ux.combo.ComboBoxUtils;
-import org.teamapps.application.ux.form.FormController;
-import org.teamapps.application.ux.form.FormPanel;
-import org.teamapps.application.ux.localize.TranslatableField;
-import org.teamapps.application.ux.localize.TranslatableTextUtils;
-import org.teamapps.application.ux.view.MasterDetailController;
 import org.teamapps.cluster.core.Cluster;
-import org.teamapps.cluster.core.Node;
-import org.teamapps.cluster.core.RemoteNode;
-import org.teamapps.data.extract.PropertyProvider;
+import org.teamapps.cluster.core.ClusterNode;
 import org.teamapps.databinding.MutableValue;
 import org.teamapps.databinding.TwoWayBindableValue;
-import org.teamapps.icons.Icon;
-import org.teamapps.model.controlcenter.*;
-import org.teamapps.universaldb.index.numeric.NumericFilter;
-import org.teamapps.universaldb.pojo.Query;
 import org.teamapps.ux.application.layout.StandardLayout;
 import org.teamapps.ux.application.view.View;
-import org.teamapps.ux.component.field.CheckBox;
-import org.teamapps.ux.component.field.TemplateField;
 import org.teamapps.ux.component.field.TextField;
-import org.teamapps.ux.component.field.combobox.ComboBox;
 import org.teamapps.ux.component.field.combobox.TagBoxWrappingMode;
 import org.teamapps.ux.component.field.combobox.TagComboBox;
 import org.teamapps.ux.component.form.ResponsiveForm;
 import org.teamapps.ux.component.form.ResponsiveFormLayout;
 import org.teamapps.ux.component.table.ListTable;
-import org.teamapps.ux.component.table.Table;
-import org.teamapps.ux.component.table.TableColumn;
-import org.teamapps.ux.component.template.BaseTemplate;
 import org.teamapps.ux.component.toolbar.ToolbarButton;
 import org.teamapps.ux.component.toolbar.ToolbarButtonGroup;
 
 import java.text.DecimalFormat;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public class ClusterNodesPerspective extends AbstractManagedApplicationPerspective {
 
 	private final UserSessionData userSessionData;
-	private final TwoWayBindableValue<RemoteNode> selectedNode = TwoWayBindableValue.create();
+	private final TwoWayBindableValue<ClusterNode> selectedNode = TwoWayBindableValue.create();
 
 	public ClusterNodesPerspective(ApplicationInstanceData applicationInstanceData, MutableValue<String> perspectiveInfoBadgeValue) {
 		super(applicationInstanceData, perspectiveInfoBadgeValue);
@@ -95,20 +63,20 @@ public class ClusterNodesPerspective extends AbstractManagedApplicationPerspecti
 			return;
 		}
 
-		ListTable<RemoteNode> table = new ListTable<>(cluster.getRemoteNodes());
+		ListTable<ClusterNode> table = new ListTable<>(cluster.getClusterNodes());
 		table.setDisplayAsList(true);
 		table.setRowHeight(28);
 		table.setStripedRows(false);
 
-		table.addColumn("name", "Node ID", new TextField()).setDefaultWidth(100).setValueExtractor(node -> node.getNodeId());
-		table.addColumn("host", "Host", new TextField()).setDefaultWidth(70).setValueExtractor(node -> node.getHostAddress().getHost());
-		table.addColumn("port", "Port", new TextField()).setDefaultWidth(70).setValueExtractor(node -> node.getHostAddress().getPort() + "");
+		table.addColumn("name", "Node ID", new TextField()).setDefaultWidth(100).setValueExtractor(node -> node.getNodeData().getNodeId());
+		table.addColumn("host", "Host", new TextField()).setDefaultWidth(70).setValueExtractor(node -> node.getNodeData().getHost());
+		table.addColumn("port", "Port", new TextField()).setDefaultWidth(70).setValueExtractor(node -> node.getNodeData().getPort() + "");
 		table.addColumn("sentBytes", "Bytes sent", new TextField()).setDefaultWidth(70).setValueExtractor(node -> readableFileSize(node.getSentBytes()));
 		table.addColumn("receivedBytes", "Bytes received", new TextField()).setDefaultWidth(70).setValueExtractor(node -> readableFileSize(node.getReceivedBytes()));
 		table.addColumn("sentMessages", "Messages sent", new TextField()).setDefaultWidth(70).setValueExtractor(node -> node.getSentMessages() + "");
 		table.addColumn("receivedMessages", "Messages received", new TextField()).setDefaultWidth(70).setValueExtractor(node -> node.getReceivedMessages() + "");
-		table.addColumn("reconnects", "Reconnects", new TextField()).setDefaultWidth(70).setValueExtractor(node -> node.getReconnects() + "");
-		table.addColumn("services", "Services", new TagComboBox<String>()).setDefaultWidth(150).setValueExtractor(Node::getServices);
+//		table.addColumn("reconnects", "Reconnects", new TextField()).setDefaultWidth(70).setValueExtractor(node -> node.getReconnects() + "");
+//		table.addColumn("services", "Services", new TagComboBox<String>()).setDefaultWidth(150).setValueExtractor(Node::getServices);
 
 		table.onSingleRowSelected.addListener(selectedNode::set);
 
@@ -139,19 +107,19 @@ public class ClusterNodesPerspective extends AbstractManagedApplicationPerspecti
 
 
 		selectedNode.onChanged().addListener(node -> {
-			nameField.setValue(node.getNodeId());
-			hostField.setValue(node.getHostAddress().getHost());
-			portField.setValue(node.getHostAddress().getPort() + "");
+			nameField.setValue(node.getNodeData().getNodeId());
+			hostField.setValue(node.getNodeData().getHost());
+			portField.setValue(node.getNodeData().getPort() + "");
 			sentBytesField.setValue(readableFileSize(node.getSentBytes()));
 			receivedBytesField.setValue(readableFileSize(node.getReceivedBytes()));
 			sentMessagesField.setValue(node.getSentMessages() + "");
 			receivedMessagesField.setValue(node.getReceivedMessages() + "");
-			reconnectsField.setValue(node.getReconnects() + "");
-			servicesField.setValue(node.getServices());
+//			reconnectsField.setValue(node.getReconnects() + "");
+//			servicesField.setValue(node.getServices());
 		});
 
 		ToolbarButtonGroup buttonGroup = centerView.addWorkspaceButtonGroup(new ToolbarButtonGroup());
-		buttonGroup.addButton(ToolbarButton.create(ApplicationIcons.NAV_REFRESH, "Refresh view", "Refresh all values")).onClick.addListener(() -> table.setRecords(cluster.getRemoteNodes()));
+		buttonGroup.addButton(ToolbarButton.create(ApplicationIcons.NAV_REFRESH, "Refresh view", "Refresh all values")).onClick.addListener(() -> table.setRecords(cluster.getClusterNodes()));
 
 		centerView.setComponent(table);
 		rightView.setComponent(form);

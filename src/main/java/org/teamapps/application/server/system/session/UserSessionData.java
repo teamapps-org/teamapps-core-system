@@ -37,9 +37,13 @@ import org.teamapps.icons.SessionIconProvider;
 import org.teamapps.model.controlcenter.Application;
 import org.teamapps.model.controlcenter.ManagedApplication;
 import org.teamapps.model.controlcenter.User;
+import org.teamapps.protocol.system.LoginData;
+import org.teamapps.uisession.statistics.SumStats;
+import org.teamapps.uisession.statistics.UiSessionStats;
 import org.teamapps.ux.component.Component;
 import org.teamapps.ux.session.SessionContext;
 
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -60,6 +64,7 @@ public class UserSessionData {
 	private Function<Component, Component> rootWrapperComponentFunction;
 	private final ApplicationLocalizationProvider localizationProvider;
 	private boolean darkTheme;
+	private LoginData loginData;
 	private final Map<String, Event<?>> userSessionEventByName = new ConcurrentHashMap<>();
 	private final Map<String, ReplicatedStateMachine> replicatedStateMachineMap = new HashMap<>();
 	private OnlineUsersView onlineUsersView;
@@ -87,6 +92,22 @@ public class UserSessionData {
 		} else {
 			return sessionUser.getRankedLanguages();
 		}
+	}
+
+	public void setLoginData(LoginData loginData) {
+		this.loginData = loginData;
+	}
+
+	public void addActivity() {
+		loginData.setActivityCount(loginData.getActivityCount() + 1);
+	}
+
+	public void addOpenApplicationsCount() {
+		loginData.setOpenApplicationsCount(loginData.getOpenApplicationsCount() + 1);
+	}
+
+	public void addOpenPerspectivesCount() {
+		loginData.setOpenPerspectivesCount(loginData.getOpenPerspectivesCount() + 1);
 	}
 
 	public ManagedApplicationSessionData createManageApplicationSessionData(ManagedApplication managedApplication, MobileApplicationNavigation mobileNavigation) {
@@ -169,6 +190,19 @@ public class UserSessionData {
 	public void invalidate() {
 		sessionUser.onUserLogout().fire();
 		userPrivileges = null;
+		if (loginData != null) {
+			UiSessionStats sessionStats = sessionUser.getSessionContext().getUiSessionStats();
+			loginData.setLogoutTimestamp((int) Instant.now().getEpochSecond());
+
+			String sessionId = sessionStats.getSessionId();
+			SumStats receivedDataStats = sessionStats.getReceivedDataStats();
+			SumStats sentDataStats = sessionStats.getSentDataStats();
+
+			//todo store data...
+
+
+			loginData = null;
+		}
 	}
 
 	public List<String> getRankedLanguages() {

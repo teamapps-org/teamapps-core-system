@@ -42,6 +42,7 @@ import org.teamapps.common.format.Color;
 import org.teamapps.databinding.TwoWayBindableValue;
 import org.teamapps.icons.Icon;
 import org.teamapps.model.controlcenter.*;
+import org.teamapps.protocol.system.LoginData;
 import org.teamapps.universaldb.UniversalDB;
 import org.teamapps.ux.application.ResponsiveApplication;
 import org.teamapps.ux.application.assembler.DesktopApplicationAssembler;
@@ -92,9 +93,6 @@ public class ApplicationLauncher {
 	private TwoWayBindableValue<ManagedApplication> selectedApplication = TwoWayBindableValue.create();
 	private TwoWayBindableValue<ManagedApplicationPerspective> selectedPerspective = TwoWayBindableValue.create();
 	private boolean selectedThemeIsDarkTheme;
-	private int activityCount;
-	private int applicationOpenCount;
-	private final Login loginData;
 	private Tab applicationLauncherTab;
 	private ApplicationData userProfileApp;
 	private View launcherView;
@@ -105,13 +103,7 @@ public class ApplicationLauncher {
 		ClientInfo clientInfo = userSessionData.getContext().getClientInfo();
 		this.mobileView = clientInfo.isMobileDevice();
 		this.logoutHandler = logoutHandler;
-		loginData = createLoginData(userSessionData, clientInfo);
-
-		userSessionData.getContext().onDestroyed.addListener(() -> loginData
-				.setActivityCount(activityCount)
-				.setApplicationOpenCount(applicationOpenCount)
-				.setDateLogout(Instant.now())
-				.save());
+		userSessionData.setLoginData(createLoginData(userSessionData.getUser().getId(), clientInfo));
 
 		userSessionData.getContext().addExecutionDecorator(runnable -> {
 			try {
@@ -119,7 +111,7 @@ public class ApplicationLauncher {
 				DatabaseLogAppender.THREAD_LOCAL_MANAGED_APPLICATION.set(selectedApplication.get() != null ? selectedApplication.get().getId() : 0);
 				DatabaseLogAppender.THREAD_LOCAL_APPLICATION_VERSION.set(getCurrentApplicationVersion(selectedApplication.get()));
 				DatabaseLogAppender.THREAD_LOCAL_MANAGED_PERSPECTIVE.set(selectedPerspective.get() != null ? selectedPerspective.get().getId() : 0);
-				activityCount++;
+				userSessionData.addActivity();
 				runnable.run();
 			} catch (Throwable e) {
 				LOGGER.error("Application crash", e);
@@ -149,15 +141,15 @@ public class ApplicationLauncher {
 		}
 	}
 
-	private Login createLoginData(UserSessionData userSessionData, ClientInfo clientInfo) {
-		return Login.create()
-				.setUser(userSessionData.getUser())
-				.setDateLogin(Instant.now())
+	private LoginData createLoginData(int userId, ClientInfo clientInfo) {
+		return new LoginData()
+				.setUserId(userId)
+				.setLoginTimestamp((int) Instant.now().getEpochSecond())
 				.setIp(clientInfo.getIp())
 				.setUserAgent(clientInfo.getUserAgent())
 				.setMobileDevice(clientInfo.isMobileDevice())
-				.setScreenSize(clientInfo.getScreenWidth() + "x" + clientInfo.getScreenHeight())
-				.save();
+				.setScreenWidth(clientInfo.getScreenWidth())
+				.setScreenHeight(clientInfo.getScreenHeight());
 	}
 
 	private void handleSessionException(Throwable e) {
@@ -379,7 +371,7 @@ public class ApplicationLauncher {
 
 	private void openApplication(ApplicationData applicationData) {
 		selectedApplication.set(applicationData.getManagedApplication());
-		applicationOpenCount++;
+		userSessionData.addOpenApplicationsCount();
 		LOGGER.info("Open app: " + (selectedPerspective.get() != null ? selectedPerspective.get().getApplicationPerspective().getQualifiedName() : null));
 		if (openedApplications.contains(applicationData)) {
 			userSessionData.setDarkTheme(applicationData.getManagedApplication().isDarkTheme());

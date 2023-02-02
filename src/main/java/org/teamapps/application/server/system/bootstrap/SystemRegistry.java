@@ -32,6 +32,7 @@ import org.teamapps.application.server.EntityUpdateEventHandler;
 import org.teamapps.application.server.ServerRegistry;
 import org.teamapps.application.server.SessionManager;
 import org.teamapps.application.server.system.auth.AuthenticationHandler;
+import org.teamapps.application.server.system.auth.UrlAuthenticationHandler;
 import org.teamapps.application.server.system.bootstrap.installer.ApplicationInstaller;
 import org.teamapps.application.server.system.config.DocumentConversionConfig;
 import org.teamapps.application.server.system.config.MachineTranslationConfig;
@@ -100,6 +101,7 @@ public class SystemRegistry {
 		this.baseResourceLinkProvider = new BaseResourceLinkProvider();
 		this.unspecifiedApplicationGroup = getOrCreateUnspecifiedApplicationGroup();
 
+		authenticationHandlers.add(new UrlAuthenticationHandler(() -> applicationConfig.getConfig().getAuthenticationConfig()));
 		applicationConfig.onConfigUpdate.addListener(this::handleConfigUpdate);
 		handleConfigUpdate();
 	}
@@ -204,7 +206,7 @@ public class SystemRegistry {
 
 	public void loadApplication(ApplicationInstaller applicationInstaller) {
 		try {
-			LoadedApplication loadedApplication = applicationInstaller.loadApplication();
+			LoadedApplication loadedApplication = applicationInstaller.loadApplication(serverRegistry.getAppsBasePath());
 			updateGlobalLocalizationProvider();
 			LOGGER.info("Loaded app:" + applicationInstaller.getApplicationInfo().getName());
 			if (applicationInstaller.getApplicationInfo().getErrors().isEmpty()) {

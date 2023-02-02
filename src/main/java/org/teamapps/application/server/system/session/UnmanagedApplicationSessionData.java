@@ -21,6 +21,7 @@ package org.teamapps.application.server.system.session;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.event.Level;
+import org.teamapps.application.api.application.ApplicationInitializer;
 import org.teamapps.application.api.application.ApplicationInstanceData;
 import org.teamapps.application.api.application.entity.EntityUpdate;
 import org.teamapps.application.api.application.perspective.ApplicationPerspective;
@@ -37,10 +38,12 @@ import org.teamapps.application.server.PublicLinkResourceProvider;
 import org.teamapps.application.server.system.bootstrap.LoadedApplication;
 import org.teamapps.application.server.system.bootstrap.SystemRegistry;
 import org.teamapps.event.Event;
+import org.teamapps.message.protocol.message.Message;
 import org.teamapps.model.controlcenter.*;
 import org.teamapps.protocol.system.SystemLogEntry;
 import org.teamapps.reporting.convert.DocumentConverter;
 import org.teamapps.universaldb.index.translation.TranslatableText;
+import org.teamapps.universaldb.message.MessageStore;
 import org.teamapps.universaldb.record.EntityBuilder;
 import org.teamapps.ux.application.ResponsiveApplication;
 import org.teamapps.ux.application.perspective.Perspective;
@@ -64,6 +67,7 @@ public class UnmanagedApplicationSessionData implements ApplicationInstanceData 
 	private final ApplicationLocalizationProvider localizationProvider;
 	private final Supplier<DocumentConverter> documentConverterSupplier;
 	private final SessionUiComponentFactory componentFactory;
+	private final ApplicationInitializer applicationInitializer;
 
 	public UnmanagedApplicationSessionData(UserSessionData userSessionData, ManagedApplication managedApplication, ResponsiveApplication responsiveApplication, ApplicationPrivilegeProvider privilegeProvider, ApplicationLocalizationProvider localizationProvider) {
 		this.registry = userSessionData.getRegistry();
@@ -75,6 +79,7 @@ public class UnmanagedApplicationSessionData implements ApplicationInstanceData 
 		this.localizationProvider = localizationProvider;
 		this.documentConverterSupplier = registry.getDocumentConverterSupplier();
 		this.componentFactory = new SessionUiComponentFactory(this, userSessionData.getRegistry(), application);
+		this.applicationInitializer = userSessionData.getRegistry().getLoadedApplication(managedApplication.getMainApplication()).getApplicationInitializer();
 	}
 
 	@Override
@@ -145,14 +150,14 @@ public class UnmanagedApplicationSessionData implements ApplicationInstanceData 
 				.setApplicationVersion(managedApplication.getMainApplication().getInstalledVersion().getVersion())
 				.setThreadName(Thread.currentThread().getName())
 				.setManagedApplicationId(managedApplication.getId())
-				.setTitle(title)
-				.setMessage(data);
-		userSessionData.getRegistry().getServerRegistry().getSystemLogMessageStore().addMessage(logEntry);
+				.setMessage(title)
+				.setStackTrace(data);
+		userSessionData.getRegistry().getServerRegistry().getSystemLogMessageStore().saveSecure(logEntry);
 	}
 
 	@Override
 	public void writeExceptionLog(Level level, String title, Throwable throwable) {
-		String message = ExceptionUtils.getMessage(throwable);
+//		String message = ExceptionUtils.getMessage(throwable); //todo
 		SystemLogEntry logEntry = new SystemLogEntry()
 				.setUserId(getUser().getId())
 				.setTimestamp(System.currentTimeMillis())
@@ -160,10 +165,10 @@ public class UnmanagedApplicationSessionData implements ApplicationInstanceData 
 				.setApplicationVersion(managedApplication.getMainApplication().getInstalledVersion().getVersion())
 				.setThreadName(Thread.currentThread().getName())
 				.setManagedApplicationId(managedApplication.getId())
-				.setTitle(title)
-				.setMessage(message)
+				.setMessage(title)
+//				.setMessage(message)
 				.setStackTrace(ExceptionUtils.getStackTrace(throwable));
-		userSessionData.getRegistry().getServerRegistry().getSystemLogMessageStore().addMessage(logEntry);
+		userSessionData.getRegistry().getServerRegistry().getSystemLogMessageStore().saveSecure(logEntry);
 	}
 
 	@Override
@@ -209,6 +214,11 @@ public class UnmanagedApplicationSessionData implements ApplicationInstanceData 
 	@Override
 	public String createPublicLinkForResource(Resource resource, Duration availabilityDuration) {
 		return PublicLinkResourceProvider.getInstance().createLinkForResource(resource, availabilityDuration);
+	}
+
+	@Override
+	public <MESSAGE extends Message> MessageStore<MESSAGE> getMessageStore(String name) {
+		return applicationInitializer.getMessageStore(name);
 	}
 
 	@Override

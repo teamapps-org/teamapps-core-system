@@ -11,8 +11,8 @@
         <maven.compiler.source>14</maven.compiler.source>
         <maven.compiler.target>14</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <teamapps-version>0.9.159</teamapps-version>
-        <universal-db-version>0.5.28</universal-db-version>
+        <teamapps-version>0.9.166</teamapps-version>
+        <universal-db-version>0.5.29</universal-db-version>
         <apache-commons-io>2.11.0</apache-commons-io>
     </properties>
 
@@ -38,11 +38,11 @@
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
         <repository>
             <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
 
@@ -69,7 +69,7 @@
         <dependency>
             <groupId>org.teamapps</groupId>
             <artifactId>teamapps-application-api</artifactId>
-            <version>0.79</version>
+            <version>0.80</version>
         </dependency>
 
     </dependencies>
@@ -82,7 +82,7 @@
                 <dependency>
                     <groupId>org.teamapps</groupId>
                     <artifactId>teamapps-application-server</artifactId>
-                    <version>0.35</version>
+                    <version>0.36</version>
                     <exclusions>
                         <exclusion>
                             <groupId>*</groupId>
@@ -115,7 +115,7 @@
                 <dependency>
                     <groupId>org.teamapps</groupId>
                     <artifactId>teamapps-media</artifactId>
-                    <version>1.5</version>
+                    <version>1.6</version>
                     <scope>provided</scope>
                 </dependency>
 
@@ -192,7 +192,7 @@
                 <dependency>
                     <groupId>org.teamapps</groupId>
                     <artifactId>universal-db</artifactId>
-                    <version>0.5.28</version>
+                    <version>0.5.29</version>
                     <exclusions>
                         <exclusion>
                             <groupId>*</groupId>
@@ -205,7 +205,7 @@
                 <dependency>
                     <groupId>org.teamapps</groupId>
                     <artifactId>teamapps-cluster</artifactId>
-                    <version>0.8</version>
+                    <version>0.9</version>
                     <exclusions>
                         <exclusion>
                             <groupId>*</groupId>
@@ -216,8 +216,8 @@
 
                 <dependency>
                     <groupId>org.teamapps</groupId>
-                    <artifactId>teamapps-protocol-schema</artifactId>
-                    <version>0.6</version>
+                    <artifactId>teamapps-message-protocol</artifactId>
+                    <version>0.9</version>
                     <exclusions>
                         <exclusion>
                             <groupId>*</groupId>
@@ -339,10 +339,8 @@
                         <artifactId>maven-release-plugin</artifactId>
                         <version>2.5.3</version>
                         <configuration>
-                            <!-- see https://docs.sonatype.org/display/Repository/How+To+Generate+PGP+Signatures+With+Maven -->
                             <mavenExecutorId>forked-path</mavenExecutorId>
                             <useReleaseProfile>false</useReleaseProfile>
-                            <!--<arguments>-Psonatype-oss-release -D${gpg.arguments}</arguments>-->
                             <autoVersionSubmodules>true</autoVersionSubmodules>
                             <tagNameFormat>v@{version}</tagNameFormat>
                             <releaseProfiles>javadoc-jar,sources-jar,license-handling</releaseProfiles>
@@ -351,11 +349,11 @@
                     <plugin>
                         <groupId>org.sonatype.plugins</groupId>
                         <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.8</version>
+                        <version>1.6.13</version>
                         <extensions>true</extensions>
                         <configuration>
                             <serverId>ossrh</serverId>
-                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
                             <autoReleaseAfterClose>false</autoReleaseAfterClose>
                         </configuration>
                     </plugin>
@@ -451,10 +449,8 @@
                             <organizationName>TeamApps.org</organizationName>
                             <inceptionYear>2020</inceptionYear>
                             <licenseName>apache_v2</licenseName>
-                            <processStartTag>========================LICENSE_START=================================
-                            </processStartTag>
-                            <processEndTag>=========================LICENSE_END==================================
-                            </processEndTag>
+                            <processStartTag>========================LICENSE_START=================================</processStartTag>
+                            <processEndTag>=========================LICENSE_END==================================</processEndTag>
                             <sectionDelimiter>---</sectionDelimiter>
                             <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
                             <canUpdateCopyright>true</canUpdateCopyright>

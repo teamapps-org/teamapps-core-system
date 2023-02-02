@@ -37,10 +37,12 @@ import org.teamapps.application.server.PublicLinkResourceProvider;
 import org.teamapps.application.server.system.bootstrap.LoadedApplication;
 import org.teamapps.application.server.system.bootstrap.SystemRegistry;
 import org.teamapps.event.Event;
+import org.teamapps.message.protocol.message.Message;
 import org.teamapps.model.controlcenter.*;
 import org.teamapps.protocol.system.SystemLogEntry;
 import org.teamapps.reporting.convert.DocumentConverter;
 import org.teamapps.universaldb.index.translation.TranslatableText;
+import org.teamapps.universaldb.message.MessageStore;
 import org.teamapps.universaldb.record.EntityBuilder;
 import org.teamapps.ux.application.ResponsiveApplication;
 import org.teamapps.ux.application.perspective.Perspective;
@@ -183,6 +185,11 @@ public class UserSessionApplicationInstanceData implements ApplicationInstanceDa
 	@Override
 	public String createPublicLinkForResource(Resource resource, Duration availabilityDuration) {
 		return PublicLinkResourceProvider.getInstance().createLinkForResource(resource, availabilityDuration);
+	}
+
+	@Override
+	public <MESSAGE extends Message> MessageStore<MESSAGE> getMessageStore(String name) {
+		return null;
 	}
 
 	@Override
