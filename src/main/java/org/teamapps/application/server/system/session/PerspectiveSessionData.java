@@ -194,7 +194,7 @@ public class PerspectiveSessionData implements ApplicationInstanceData {
 				.setManagedApplicationPerspectiveId(managedApplicationPerspective.getId())
 				.setMessage(title)
 				.setStackTrace(data);
-		userSessionData.getRegistry().getServerRegistry().getSystemLogMessageStore().saveSecure(logEntry);
+		userSessionData.getRegistry().getServerRegistry().getSystemLogMessageStore().save(logEntry);
 	}
 
 	@Override
@@ -211,7 +211,7 @@ public class PerspectiveSessionData implements ApplicationInstanceData {
 				.setMessage(title)
 				//.setMessage(message)
 				.setStackTrace(ExceptionUtils.getStackTrace(throwable));
-		userSessionData.getRegistry().getServerRegistry().getSystemLogMessageStore().saveSecure(logEntry);
+		userSessionData.getRegistry().getServerRegistry().getSystemLogMessageStore().save(logEntry);
 	}
 
 	@Override
