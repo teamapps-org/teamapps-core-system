@@ -11,8 +11,8 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <teamapps-version>0.9.166</teamapps-version>
-        <universal-db-version>0.5.30</universal-db-version>
+        <teamapps-version>0.9.174</teamapps-version>
+        <universal-db-version>0.5.32</universal-db-version>
         <apache-commons-io>2.11.0</apache-commons-io>
     </properties>
 
@@ -57,7 +57,7 @@
         <dependency>
             <groupId>org.teamapps</groupId>
             <artifactId>teamapps-core-system-model</artifactId>
-            <version>0.5</version>
+            <version>0.6</version>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -69,7 +69,7 @@
         <dependency>
             <groupId>org.teamapps</groupId>
             <artifactId>teamapps-application-api</artifactId>
-            <version>0.81</version>
+            <version>0.82</version>
         </dependency>
 
     </dependencies>
@@ -82,7 +82,7 @@
                 <dependency>
                     <groupId>org.teamapps</groupId>
                     <artifactId>teamapps-application-server</artifactId>
-                    <version>0.37</version>
+                    <version>0.38</version>
                     <exclusions>
                         <exclusion>
                             <groupId>*</groupId>
@@ -122,7 +122,7 @@
                 <dependency>
                     <groupId>org.teamapps</groupId>
                     <artifactId>teamapps-reporting</artifactId>
-                    <version>1.9</version>
+                    <version>1.10</version>
                     <scope>provided</scope>
                 </dependency>
 
@@ -192,7 +192,7 @@
                 <dependency>
                     <groupId>org.teamapps</groupId>
                     <artifactId>universal-db</artifactId>
-                    <version>0.5.29</version>
+                    <version>0.5.32</version>
                     <exclusions>
                         <exclusion>
                             <groupId>*</groupId>
@@ -205,7 +205,7 @@
                 <dependency>
                     <groupId>org.teamapps</groupId>
                     <artifactId>teamapps-cluster</artifactId>
-                    <version>0.9</version>
+                    <version>0.11</version>
                     <exclusions>
                         <exclusion>
                             <groupId>*</groupId>
@@ -217,7 +217,7 @@
                 <dependency>
                     <groupId>org.teamapps</groupId>
                     <artifactId>teamapps-message-protocol</artifactId>
-                    <version>0.9</version>
+                    <version>0.12</version>
                     <exclusions>
                         <exclusion>
                             <groupId>*</groupId>
