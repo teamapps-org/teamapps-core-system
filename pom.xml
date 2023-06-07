@@ -57,7 +57,7 @@
         <dependency>
             <groupId>org.teamapps</groupId>
             <artifactId>teamapps-core-system-model</artifactId>
-            <version>0.6</version>
+            <version>0.5</version>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
