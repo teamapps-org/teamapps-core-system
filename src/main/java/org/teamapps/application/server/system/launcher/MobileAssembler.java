@@ -92,7 +92,7 @@ public class MobileAssembler implements ApplicationAssembler {
 		navigationToolbar.setBackgroundColor(Color.WHITE.withAlpha(0.6f));
 
 		leftGroup = navigationToolbar.addButtonGroup(new ToolbarButtonGroup());
-		ToolbarButton backButton = new ToolbarButton(BaseTemplate.LIST_ITEM_MEDIUM_ICON_SINGLE_LINE, new BaseTemplateRecord<>(MaterialIcon.NAVIGATE_BEFORE, getLocalized(Dictionary.BACK)));
+		ToolbarButton backButton = new ToolbarButton(BaseTemplate.LIST_ITEM_MEDIUM_ICON_SINGLE_LINE, new BaseTemplateRecord<>(ApplicationIcons.NAVIGATE_LEFT, getLocalized(Dictionary.BACK)));
 		leftGroup.addButton(backButton);
 		leftGroup.setShowGroupSeparator(false);
 		backButton.onClick.addListener(() -> {
@@ -121,7 +121,7 @@ public class MobileAssembler implements ApplicationAssembler {
 		//todo workaround until distribute option is available
 		centerGroup.addButton(new ToolbarButton(BaseTemplate.LIST_ITEM_MEDIUM_ICON_SINGLE_LINE, new BaseTemplateRecord<>("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;")));
 		centerGroup.setShowGroupSeparator(false);
-		ToolbarButton viewsButton = new ToolbarButton(BaseTemplate.LIST_ITEM_MEDIUM_ICON_SINGLE_LINE, new BaseTemplateRecord<>(MaterialIcon.TAB, getLocalized(Dictionary.VIEWS)));
+		ToolbarButton viewsButton = new ToolbarButton(BaseTemplate.LIST_ITEM_MEDIUM_ICON_SINGLE_LINE, new BaseTemplateRecord<>(ApplicationIcons.WINDOWS, getLocalized(Dictionary.VIEWS)));
 
 		viewsButton.setDropDownComponent(viewsItemView);
 		viewsButton.onClick.addListener(this::updateViewsDropdown);
@@ -131,7 +131,7 @@ public class MobileAssembler implements ApplicationAssembler {
 		rightGroup = navigationToolbar.addButtonGroup(new ToolbarButtonGroup());
 		rightGroup.setRightSide(true);
 		rightGroup.setShowGroupSeparator(false);
-		navigationToolbarMenuButton = new ToolbarButton(BaseTemplate.LIST_ITEM_MEDIUM_ICON_SINGLE_LINE, new BaseTemplateRecord<>(MaterialIcon.MENU, getLocalized(Dictionary.MENU)));
+		navigationToolbarMenuButton = new ToolbarButton(BaseTemplate.LIST_ITEM_MEDIUM_ICON_SINGLE_LINE, new BaseTemplateRecord<>(ApplicationIcons.DROP_DOWN_LIST, getLocalized(Dictionary.MENU)));
 		rightGroup.addButton(navigationToolbarMenuButton);
 
 		setNavigationToolbarVisible(false);
