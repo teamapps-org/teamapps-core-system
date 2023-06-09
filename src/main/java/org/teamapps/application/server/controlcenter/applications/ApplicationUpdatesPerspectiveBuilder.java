@@ -34,6 +34,11 @@ public class ApplicationUpdatesPerspectiveBuilder extends AbstractPerspectiveBui
 	}
 
 	@Override
+	public boolean autoProvisionPerspective() {
+		return false;
+	}
+
+	@Override
 	public boolean isPerspectiveAccessible(ApplicationPrivilegeProvider applicationPrivilegeProvider) {
 		return applicationPrivilegeProvider.isReadAccess(Privileges.APPLICATION_UPDATES_PERSPECTIVE);
 	}

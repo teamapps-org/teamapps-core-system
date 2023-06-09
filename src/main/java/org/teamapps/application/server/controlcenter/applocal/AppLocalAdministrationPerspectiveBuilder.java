@@ -34,6 +34,11 @@ public class AppLocalAdministrationPerspectiveBuilder extends AbstractPerspectiv
 	}
 
 	@Override
+	public boolean autoProvisionPerspective() {
+		return false;
+	}
+
+	@Override
 	public boolean isPerspectiveAccessible(ApplicationPrivilegeProvider applicationPrivilegeProvider) {
 		return applicationPrivilegeProvider.isAllowed(Privileges.LAUNCH_PERSPECTIVE_APP_LOCAL_ADMINISTRATION);
 	}

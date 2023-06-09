@@ -34,6 +34,11 @@ public class ApplicationProvisioningPerspectiveBuilder extends AbstractPerspecti
 	}
 
 	@Override
+	public boolean autoProvisionPerspective() {
+		return false;
+	}
+
+	@Override
 	public boolean isPerspectiveAccessible(ApplicationPrivilegeProvider applicationPrivilegeProvider) {
 		return applicationPrivilegeProvider.isAllowed(Privileges.LAUNCH_PERSPECTIVE_APPLICATION_PROVISIONING);
 	}

@@ -34,6 +34,11 @@ public class OrganizationUnitTypePerspectiveBuilder extends AbstractPerspectiveB
 	}
 
 	@Override
+	public boolean autoProvisionPerspective() {
+		return false;
+	}
+
+	@Override
 	public boolean isPerspectiveAccessible(ApplicationPrivilegeProvider applicationPrivilegeProvider) {
 		return applicationPrivilegeProvider.isReadAccess(Privileges.ORGANIZATION_UNIT_TYPE_PERSPECTIVE);
 	}
