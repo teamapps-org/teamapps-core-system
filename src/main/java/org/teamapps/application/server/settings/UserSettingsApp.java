@@ -23,18 +23,16 @@ import org.teamapps.application.api.application.AbstractApplicationBuilder;
 import org.teamapps.application.api.application.perspective.PerspectiveBuilder;
 import org.teamapps.application.api.config.ApplicationConfig;
 import org.teamapps.application.api.localization.LocalizationData;
-import org.teamapps.application.api.localization.LocalizationLanguages;
 import org.teamapps.application.api.privilege.ApplicationPrivilegeProvider;
 import org.teamapps.application.api.privilege.ApplicationRole;
 import org.teamapps.application.api.privilege.PrivilegeGroup;
 import org.teamapps.application.api.theme.ApplicationIcons;
 import org.teamapps.application.api.versioning.ApplicationVersion;
-import org.teamapps.universaldb.schema.SchemaInfoProvider;
+import org.teamapps.universaldb.schema.ModelProvider;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 public class UserSettingsApp extends AbstractApplicationBuilder {
 
@@ -70,7 +68,7 @@ public class UserSettingsApp extends AbstractApplicationBuilder {
 	}
 
 	@Override
-	public SchemaInfoProvider getDatabaseModel() {
+	public ModelProvider getDatabaseModel() {
 		return null;
 	}
 

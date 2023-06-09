@@ -89,7 +89,7 @@ public class MessageView extends AbstractApplicationView {
 		messageBlock.setHtml(htmlMessage);
 
 		SessionContext context = SessionContext.current();
-		List<String> images = message.getImages().stream().filter(image -> image.getFile() != null).map(image -> context.createFileLink(image.getFile().retrieveFile())).collect(Collectors.toList());
+		List<String> images = message.getImages().stream().filter(image -> image.getFile() != null).map(image -> context.createFileLink(image.getFile().getAsFile())).collect(Collectors.toList());
 		messageBlock.setImageUrls(images);
 
 

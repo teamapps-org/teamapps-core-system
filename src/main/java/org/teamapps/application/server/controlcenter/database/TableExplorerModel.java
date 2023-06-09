@@ -20,8 +20,7 @@
 package org.teamapps.application.server.controlcenter.database;
 
 import org.teamapps.application.api.application.ApplicationInstanceData;
-import org.teamapps.universaldb.TableConfig;
-import org.teamapps.universaldb.index.ColumnIndex;
+import org.teamapps.universaldb.index.FieldIndex;
 import org.teamapps.universaldb.index.IndexType;
 import org.teamapps.universaldb.index.SortEntry;
 import org.teamapps.universaldb.index.TableIndex;
@@ -62,16 +61,16 @@ public class TableExplorerModel extends AbstractTableModel<Integer> {
 		executeQuery();
 	}
 
-	public ColumnIndex getDefaultTimeLineColumn() {
-		if (!tableIndex.getTableConfig().getOption(TableConfig.TRACK_MODIFICATION)) {
-			List<ColumnIndex> timeLineColumns = getTimeLineColumns();
+	public FieldIndex getDefaultTimeLineColumn() {
+		if (!tableIndex.getTableModel().isTrackModifications()) {
+			List<FieldIndex> timeLineColumns = getTimeLineColumns();
 			return timeLineColumns.size() > 0 ? timeLineColumns.get(0) : null;
 		}
-		return deletedRecords ? tableIndex.getColumnIndex(Table.FIELD_DELETION_DATE) : tableIndex.getColumnIndex(Table.FIELD_MODIFICATION_DATE);
+		return deletedRecords ? tableIndex.getFieldIndex(Table.FIELD_DELETION_DATE) : tableIndex.getFieldIndex(Table.FIELD_MODIFICATION_DATE);
 	}
 
-	public List<ColumnIndex> getTimeLineColumns() {
-		return tableIndex.getColumnIndices().stream().filter(c -> c.getColumnType().isDateBased()).collect(Collectors.toList());
+	public List<FieldIndex> getTimeLineColumns() {
+		return tableIndex.getFieldIndices().stream().filter(c -> c.getFieldType().isDateBased()).collect(Collectors.toList());
 	}
 
 	public void setQuery(String query) {
@@ -81,18 +80,18 @@ public class TableExplorerModel extends AbstractTableModel<Integer> {
 	}
 
 	public void setTimeLineFilter(String field, Interval interval) {
-		if (interval == null || field == null || tableIndex.getColumnIndex(field) == null) {
+		if (interval == null || field == null || tableIndex.getFieldIndex(field) == null) {
 			timeFilterDataFunction = null;
 			timeLineFilterInterval = null;
 		} else {
 			timeLineFilterInterval = interval;
-			timeFilterDataFunction = createTimeLineDataFunction(tableIndex.getColumnIndex(field));
+			timeFilterDataFunction = createTimeLineDataFunction(tableIndex.getFieldIndex(field));
 		}
 		executeQuery();
 		onAllDataChanged().fire();
 	}
 
-	public Function<Integer, Long> createTimeLineDataFunction(ColumnIndex timeLineFilterColumn) {
+	public Function<Integer, Long> createTimeLineDataFunction(FieldIndex timeLineFilterColumn) {
 		if (timeLineFilterColumn.getType() == IndexType.INT) {
 			IntegerIndex index = (IntegerIndex) timeLineFilterColumn;
 			return (id) -> (index.getValue(id) * 1000L);
@@ -125,7 +124,7 @@ public class TableExplorerModel extends AbstractTableModel<Integer> {
 		}
 
 		if (currentSorting != null) {
-			ColumnIndex columnIndex = tableIndex.getColumnIndex(currentSorting.getSortFieldName());
+			FieldIndex columnIndex = tableIndex.getFieldIndex(currentSorting.getSortFieldName());
 			if (columnIndex != null) {
 				List<SortEntry> sortEntries = SortEntry.createSortEntries(recordBitSet);
 				columnIndex.sortRecords(sortEntries, currentSorting.getSortDirection() == SortDirection.ASCENDING, applicationInstanceData.getUser());

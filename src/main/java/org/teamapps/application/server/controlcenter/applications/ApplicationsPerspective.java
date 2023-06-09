@@ -278,7 +278,7 @@ public class ApplicationsPerspective extends AbstractManagedApplicationPerspecti
 			ApplicationVersion version = applicationVersionModelBuilder.getSelectedRecord();
 			FileValue versionBinary = version.getBinary();
 			if (versionBinary != null) {
-				SessionContext.current().download(versionBinary.retrieveFile(), versionBinary.getFileName());
+				SessionContext.current().download(versionBinary.getAsFile(), versionBinary.getFileName());
 			}
 		});
 

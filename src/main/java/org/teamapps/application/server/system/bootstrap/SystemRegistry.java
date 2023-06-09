@@ -28,6 +28,7 @@ import org.teamapps.application.api.localization.Dictionary;
 import org.teamapps.application.api.state.MultiStateHandler;
 import org.teamapps.application.api.state.ReplicatedStateMachine;
 import org.teamapps.application.api.theme.ApplicationIcons;
+import org.teamapps.application.server.ApplicationServerConfig;
 import org.teamapps.application.server.EntityUpdateEventHandler;
 import org.teamapps.application.server.ServerRegistry;
 import org.teamapps.application.server.SessionManager;
@@ -50,8 +51,11 @@ import org.teamapps.cluster.core.Cluster;
 import org.teamapps.icons.Icon;
 import org.teamapps.model.controlcenter.*;
 import org.teamapps.reporting.convert.DocumentConverter;
+import org.teamapps.universaldb.DatabaseManager;
 import org.teamapps.universaldb.UniversalDB;
+import org.teamapps.universaldb.UniversalDbBuilder;
 import org.teamapps.universaldb.record.EntityBuilder;
+import org.teamapps.universaldb.schema.ModelProvider;
 import org.teamapps.ux.component.template.BaseTemplateRecord;
 import org.teamapps.ux.session.SessionContext;
 
@@ -59,6 +63,7 @@ import java.io.File;
 import java.lang.invoke.MethodHandles;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -67,7 +72,6 @@ public class SystemRegistry {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	private final BootstrapSessionHandler bootstrapSessionHandler;
-	private final UniversalDB universalDB;
 	private final ApplicationConfig<SystemConfig> applicationConfig;
 	private TranslationService translationService;
 	private final DictionaryLocalizationProvider dictionary;
@@ -79,7 +83,6 @@ public class SystemRegistry {
 	private SessionRegistryHandler sessionRegistryHandler;
 	private DocumentConverter documentConverter;
 	private final List<AuthenticationHandler> authenticationHandlers = new ArrayList<>();
-	private final EntityUpdateEventHandler entityUpdateEventHandler;
 	private Cluster cluster;
 	private ServerRegistry serverRegistry;
 	private final SessionManager sessionManager;
@@ -92,8 +95,6 @@ public class SystemRegistry {
 		this.bootstrapSessionHandler = bootstrapSessionHandler;
 		this.serverRegistry = serverRegistry;
 		this.sessionManager = sessionManager;
-		this.universalDB = serverRegistry.getUniversalDB();
-		this.entityUpdateEventHandler = serverRegistry.getEntityUpdateEventHandler();
 		this.applicationConfig = applicationConfig;
 		this.systemDictionary = new SystemLocalizationProvider();
 		this.dictionary = new DictionaryLocalizationProvider(systemConfig.getLocalizationConfig());
@@ -179,16 +180,38 @@ public class SystemRegistry {
 			//managedApplication.setHidden(true);
 		}
 		loadedApplicationMap.remove(application);
+	}
 
+	public Function<String, UniversalDbBuilder> createDbBuilderFunction() {
+		return applicationName -> createDatabaseBuilder(applicationName, serverRegistry);
+	}
 
+	public static UniversalDbBuilder createDatabaseBuilder(String applicationName, ServerRegistry serverRegistry) {
+		ApplicationServerConfig config = serverRegistry.getServerConfig();
+		File indexPath = createPath(config.getIndexPath(), applicationName);
+		File textPath = createPath(config.getFullTextIndexPath(), applicationName);
+		File filesPath = createPath(config.getFileStorePath(), applicationName);
+		File transactionsPath = createPath(config.getTransactionLogPath(), applicationName);
+		return UniversalDbBuilder.create()
+				.databaseManager(serverRegistry.getDatabaseManager())
+				.indexPath(indexPath)
+				.fullTextIndexPath(textPath)
+				.fileStorePath(filesPath)
+				.transactionLogPath(transactionsPath);
+	}
+
+	private static File createPath(File dir, String name) {
+		File path = new File(dir, name);
+		path.mkdir();
+		return path;
 	}
 
 	public ApplicationInstaller createJarInstaller(File jarFile) {
-		return ApplicationInstaller.createJarInstaller(jarFile, universalDB, translationService, getSystemConfig().getLocalizationConfig());
+		return ApplicationInstaller.createJarInstaller(jarFile, serverRegistry.getDatabaseManager(), createDbBuilderFunction(), translationService, getSystemConfig().getLocalizationConfig());
 	}
 
 	public boolean installAndLoadApplication(BaseApplicationBuilder baseApplicationBuilder) {
-		ApplicationInstaller applicationInstaller = ApplicationInstaller.createClassInstaller(baseApplicationBuilder, universalDB, translationService, getSystemConfig().getLocalizationConfig());
+		ApplicationInstaller applicationInstaller = ApplicationInstaller.createClassInstaller(baseApplicationBuilder, serverRegistry.getDatabaseManager(), createDbBuilderFunction(), translationService, getSystemConfig().getLocalizationConfig());
 		return installAndLoadApplication(applicationInstaller);
 	}
 
@@ -281,11 +304,12 @@ public class SystemRegistry {
 		return authenticationHandlers;
 	}
 
-	public UniversalDB getUniversalDB() {
-		return universalDB;
+	public DatabaseManager getDatabaseManager() {
+		return serverRegistry.getDatabaseManager();
 	}
 
 	public synchronized <ENTITY> void registerEntity(EntityBuilder<ENTITY> entityBuilder, int userId, Consumer<EntityUpdate<ENTITY>> listener) {
+		EntityUpdateEventHandler entityUpdateEventHandler = serverRegistry.getEntityUpdateEventHandler(entityBuilder.getDatabase());
 		entityUpdateEventHandler.registerEntity(entityBuilder, userId, listener);
 	}
 

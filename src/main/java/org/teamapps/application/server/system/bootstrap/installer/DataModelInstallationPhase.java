@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,21 +23,34 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.teamapps.application.server.system.bootstrap.ApplicationInfo;
 import org.teamapps.application.server.system.bootstrap.ApplicationInfoDataElement;
+import org.teamapps.commons.util.collections.ByKeyComparisonResult;
+import org.teamapps.commons.util.collections.CollectionUtil;
+import org.teamapps.universaldb.DatabaseManager;
 import org.teamapps.universaldb.UniversalDB;
-import org.teamapps.universaldb.schema.*;
+import org.teamapps.universaldb.UniversalDbBuilder;
+import org.teamapps.universaldb.model.DatabaseModel;
+import org.teamapps.universaldb.model.FieldModel;
+import org.teamapps.universaldb.model.TableModel;
+import org.teamapps.universaldb.schema.Column;
+import org.teamapps.universaldb.schema.Database;
+import org.teamapps.universaldb.schema.ModelProvider;
+import org.teamapps.universaldb.schema.Table;
 
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class DataModelInstallationPhase implements ApplicationInstallationPhase {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-	private final UniversalDB universalDB;
+	private final DatabaseManager databaseManager;
+	private final Function<String, UniversalDbBuilder> dbBuilderFunction;
 
-	public DataModelInstallationPhase(UniversalDB universalDB) {
-		this.universalDB = universalDB;
+	public DataModelInstallationPhase(DatabaseManager databaseManager, Function<String, UniversalDbBuilder> dbBuilderFunction) {
+		this.databaseManager = databaseManager;
+		this.dbBuilderFunction = dbBuilderFunction;
 	}
 
 	@Override
@@ -46,57 +59,45 @@ public class DataModelInstallationPhase implements ApplicationInstallationPhase 
 			if (!applicationInfo.getErrors().isEmpty()) {
 				return;
 			}
-			SchemaInfoProvider databaseModel = applicationInfo.getBaseApplicationBuilder().getDatabaseModel();
+			ModelProvider databaseModel = applicationInfo.getBaseApplicationBuilder().getDatabaseModel();
 			if (databaseModel == null) {
 				applicationInfo.addWarning("No data model!");
 				return;
 			}
-			Schema schema = databaseModel.getSchema();
-			List<Database> databases = schema.getDatabases();
-			if (databases.size() > 1) {
-				applicationInfo.addError("More than one database:" + databases.stream().map(Database::getName).collect(Collectors.joining(", ")));
+			DatabaseModel model = databaseModel.getModel();
+			if (!model.isValid()) {
+				applicationInfo.addError("Data model is invalid!");
+			}
+			if (model.getTables().isEmpty()) {
+				applicationInfo.addError("Data model with missing tables!");
 				return;
 			}
-			if (databases.isEmpty()) {
-				applicationInfo.addError("Data model with missing database!");
+
+			if (!model.getName().equals(applicationInfo.getName())) {
+				applicationInfo.addError("Name of database is not equal to application name! Application name: " + applicationInfo.getName() + ", db name: " + model.getName());
 				return;
 			}
-			Database database = databases.get(0);
-			String databaseName = database.getName();
-			if (!databaseName.equals(applicationInfo.getName())) {
-				applicationInfo.addError("Name of database is not equal to application name! Application name: " + applicationInfo.getName() + ", db name: " + databaseName);
-				return;
+
+			UniversalDB universalDB = databaseManager.getDatabase(applicationInfo.getName());
+			DatabaseModel installedModel = null;
+			if (universalDB != null) {
+				installedModel = universalDB.getTransactionIndex().getCurrentModel();
+				if (!universalDB.getTransactionIndex().isValidModel(model)) {
+					applicationInfo.addError("Incompatible database models!");
+					return;
+				}
 			}
-			if (!universalDB.getSchemaIndex().getSchema().isCompatibleWith(schema)) {
-				applicationInfo.addError("Incompatible database models!");
-				return;
-			}
+
 			ApplicationInfoDataElement modelInfo = new ApplicationInfoDataElement();
-			modelInfo.setData(databaseModel.getSchema().getSchemaDefinition());
-			Database installedDb = universalDB.getSchemaIndex().getSchema().getDatabases().stream().filter(db -> db.getName().equals(databaseName)).findFirst().orElse(null);
-			if (installedDb == null) {
-				for (Table table : database.getTables()) {
-					for (Column column : table.getColumns()) {
-						modelInfo.added(column.getFQN() + ": " + column.getType());
-					}
-				}
+			modelInfo.setData(model.toString());
+			List<String> newList = model.getTables().stream().flatMap(t -> t.getFields().stream()).map(f -> f.getTableModel().getName() + "." + f.getName() + " (" + f.getFieldType() + ")").toList();
+			if (installedModel == null) {
+				newList.forEach(modelInfo::added);
 			} else {
-				Set<String> columnNameSet = database.getTables().stream().flatMap(t -> t.getColumns().stream()).map(Column::getFQN).collect(Collectors.toSet());
-				Set<String> installedColumnNameSet = installedDb.getTables().stream().flatMap(t -> t.getColumns().stream()).map(Column::getFQN).collect(Collectors.toSet());
-				for (Table table : database.getTables()) {
-					for (Column column : table.getColumns()) {
-						if (!installedColumnNameSet.contains(column.getFQN())) {
-							modelInfo.added(column.getFQN() + ": " + column.getType());
-						}
-					}
-				}
-				for (Table table : installedDb.getTables()) {
-					for (Column column : table.getColumns()) {
-						if (!columnNameSet.contains(column.getFQN())) {
-							modelInfo.removed(column.getFQN() + ": " + column.getType());
-						}
-					}
-				}
+				List<String> existingList = installedModel.getTables().stream().flatMap(t -> t.getFields().stream()).map(f -> f.getTableModel().getName() + "." + f.getName() + " (" + f.getFieldType() + ")").toList();
+				ByKeyComparisonResult<String, String, String> comparisonResult = CollectionUtil.compareByKey(existingList, newList, s -> s, s -> s);
+				comparisonResult.getBEntriesNotInA().forEach(modelInfo::added);
+				comparisonResult.getAEntriesNotInB().forEach(modelInfo::removed);
 			}
 			applicationInfo.setDataModelData(modelInfo);
 		} catch (Exception e) {
@@ -107,7 +108,7 @@ public class DataModelInstallationPhase implements ApplicationInstallationPhase 
 
 	@Override
 	public void installApplication(ApplicationInfo applicationInfo) {
-		SchemaInfoProvider databaseModel = applicationInfo.getBaseApplicationBuilder().getDatabaseModel();
+		ModelProvider databaseModel = applicationInfo.getBaseApplicationBuilder().getDatabaseModel();
 		if (databaseModel == null) {
 			return;
 		}
@@ -116,7 +117,15 @@ public class DataModelInstallationPhase implements ApplicationInstallationPhase 
 			if (classLoader == null) {
 				classLoader = this.getClass().getClassLoader();
 			}
-			universalDB.addAuxiliaryModel(databaseModel, classLoader);
+			UniversalDB universalDB = databaseManager.getDatabase(applicationInfo.getName());
+			if (universalDB == null) {
+				dbBuilderFunction.apply(applicationInfo.getName())
+						.modelProvider(databaseModel)
+						.classLoader(classLoader)
+						.build();
+			} else {
+				universalDB.installModelUpdate(databaseModel, classLoader);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -124,7 +133,7 @@ public class DataModelInstallationPhase implements ApplicationInstallationPhase 
 
 	@Override
 	public void loadApplication(ApplicationInfo applicationInfo) {
-		SchemaInfoProvider databaseModel = applicationInfo.getBaseApplicationBuilder().getDatabaseModel();
+		ModelProvider databaseModel = applicationInfo.getBaseApplicationBuilder().getDatabaseModel();
 		if (databaseModel == null) {
 			return;
 		}
@@ -133,7 +142,15 @@ public class DataModelInstallationPhase implements ApplicationInstallationPhase 
 			if (classLoader == null) {
 				classLoader = this.getClass().getClassLoader();
 			}
-			universalDB.addAuxiliaryModel(databaseModel, classLoader);
+			UniversalDB universalDB = databaseManager.getDatabase(applicationInfo.getName());
+			if (universalDB == null) {
+				dbBuilderFunction.apply(applicationInfo.getName())
+						.modelProvider(databaseModel)
+						.classLoader(classLoader)
+						.build();
+			} else {
+				universalDB.installModelUpdate(databaseModel, classLoader);
+			}
 		} catch (RuntimeException runtimeException) {
 			throw new RuntimeException(runtimeException);
 		} catch (Exception e) {

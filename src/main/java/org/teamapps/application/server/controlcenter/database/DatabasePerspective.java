@@ -32,6 +32,7 @@ import org.teamapps.databinding.MutableValue;
 import org.teamapps.databinding.TwoWayBindableValue;
 import org.teamapps.icons.Icon;
 import org.teamapps.icons.composite.CompositeIcon;
+import org.teamapps.universaldb.DatabaseManager;
 import org.teamapps.universaldb.UniversalDB;
 import org.teamapps.universaldb.index.DatabaseIndex;
 import org.teamapps.universaldb.index.TableIndex;
@@ -55,8 +56,8 @@ import java.util.Map;
 public class DatabasePerspective extends AbstractManagedApplicationPerspective {
 
 	private final UserSessionData userSessionData;
-	private final UniversalDB universalDB;
 	private final TwoWayBindableValue<TableIndex> selectedTable = TwoWayBindableValue.create();
+	private final DatabaseManager databaseManager;
 	private boolean showDeletedRecords = false;
 	private View timeLineView;
 	private View tableView;
@@ -66,7 +67,7 @@ public class DatabasePerspective extends AbstractManagedApplicationPerspective {
 		super(applicationInstanceData, perspectiveInfoBadgeValue);
 		PerspectiveSessionData perspectiveSessionData = (PerspectiveSessionData) getApplicationInstanceData();
 		userSessionData = perspectiveSessionData.getManagedApplicationSessionData().getUserSessionData();
-		universalDB = userSessionData.getRegistry().getUniversalDB();
+		databaseManager = userSessionData.getRegistry().getDatabaseManager();
 		createUi();
 	}
 
@@ -78,7 +79,7 @@ public class DatabasePerspective extends AbstractManagedApplicationPerspective {
 
 
 
-		List<DatabaseIndex> databases = universalDB.getSchemaIndex().getDatabases();
+		List<DatabaseIndex> databases = databaseManager.getDatabases().stream().map(UniversalDB::getDatabaseIndex).toList();
 		List<DatabaseNode> databaseNodes = new ArrayList<>();
 		List<TableIndex> applicationDbTables = new ArrayList<>();
 		TableIndex firstIndex = null;

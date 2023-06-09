@@ -52,11 +52,10 @@ import org.teamapps.application.server.controlcenter.systemlog.SystemLogPerspect
 import org.teamapps.application.server.controlcenter.systenconfig.ApplicationConfigurationPerspectiveBuilder;
 import org.teamapps.application.server.controlcenter.translations.TranslationsPerspectiveBuilder;
 import org.teamapps.application.server.controlcenter.users.UsersPerspectiveBuilder;
-import org.teamapps.application.server.messaging.newsboard.NewsBoardPerspectiveBuilder;
 import org.teamapps.application.server.settings.UserLanguageSettingsPerspectiveBuilder;
 import org.teamapps.application.server.system.config.SystemConfig;
-import org.teamapps.model.ControlCenterSchema;
-import org.teamapps.universaldb.schema.SchemaInfoProvider;
+import org.teamapps.model.ControlCenterModel;
+import org.teamapps.universaldb.schema.ModelProvider;
 
 import java.util.Arrays;
 import java.util.List;
@@ -132,8 +131,8 @@ public class ControlCenterAppBuilder extends AbstractApplicationBuilder {
 	}
 
 	@Override
-	public SchemaInfoProvider getDatabaseModel() {
-		return new ControlCenterSchema();
+	public ModelProvider getDatabaseModel() {
+		return new ControlCenterModel();
 		//return null;
 	}
 

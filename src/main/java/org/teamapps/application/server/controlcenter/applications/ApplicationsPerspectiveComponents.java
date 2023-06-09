@@ -92,7 +92,7 @@ public class ApplicationsPerspectiveComponents extends AbstractManagedApplicatio
 				return;
 			}
 			LoadedApplication loadedApplication = userSessionData.getRegistry().getLoadedApplication(application);
-			String schemaDefinition = loadedApplication.getBaseApplicationBuilder().getDatabaseModel() != null ? loadedApplication.getBaseApplicationBuilder().getDatabaseModel().getSchema().getSchemaDefinition() : "";
+			String schemaDefinition = loadedApplication.getBaseApplicationBuilder().getDatabaseModel() != null ? loadedApplication.getBaseApplicationBuilder().getDatabaseModel().getModel().toString() : "";
 			StringBuilder sb = new StringBuilder();
 			for (String line : schemaDefinition.split("[\\r\\n]+")) {
 				sb.append(line.replaceAll("\\t", "&nbsp;&nbsp;&nbsp;&nbsp;")).append("<br>");
@@ -335,7 +335,7 @@ public class ApplicationsPerspectiveComponents extends AbstractManagedApplicatio
 
 		buttonGroup = window.getToolbar().addButtonGroup(new ToolbarButtonGroup());
 		buttonGroup.addButton(ToolbarButton.create(ApplicationIcons.DATA_CLOUD, getLocalized("applications.dataModel"), getLocalized("applications.showDataModel"))).onClick.addListener(() -> {
-			String schemaDefinition = baseApplicationBuilder.getDatabaseModel() != null ? baseApplicationBuilder.getDatabaseModel().getSchema().getSchemaDefinition() : "";
+			String schemaDefinition = baseApplicationBuilder.getDatabaseModel() != null ? baseApplicationBuilder.getDatabaseModel().getModel().toString() : "";
 			StringBuilder sb = new StringBuilder();
 			for (String line : schemaDefinition.split("[\\r\\n]+")) {
 				sb.append(line.replaceAll("\\t", "&nbsp;&nbsp;&nbsp;&nbsp;")).append("<br>");

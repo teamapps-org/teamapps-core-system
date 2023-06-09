@@ -46,7 +46,7 @@ public class ImageListView extends AbstractApplicationView {
 		SessionContext context = SessionContext.current();
 		PropertyProvider<NewsBoardMessageImage> propertyProvider = (newsBoardMessageImage, collection) -> {
 			Map<String, Object> map =new HashMap<>();
-			map.put(BaseTemplate.PROPERTY_IMAGE, context.createFileLink(newsBoardMessageImage.getThumbnail().retrieveFile())); //TODO!
+			map.put(BaseTemplate.PROPERTY_IMAGE, context.createFileLink(newsBoardMessageImage.getThumbnail().getAsFile())); //TODO!
 			map.put(BaseTemplate.PROPERTY_CAPTION, newsBoardMessageImage.getFileName());
 			map.put(BaseTemplate.PROPERTY_DESCRIPTION, FileSizeFormatter.humanReadableByteCount(newsBoardMessageImage.getFile().getSize(), false, 2));
 			return map;

@@ -30,7 +30,7 @@ import org.teamapps.application.api.application.AbstractBaseApplicationBuilder;
 import org.teamapps.application.api.application.ApplicationBuilder;
 import org.teamapps.application.api.application.BaseApplicationBuilder;
 import org.teamapps.application.server.system.bootstrap.ApplicationInfo;
-import org.teamapps.universaldb.index.file.FileUtil;
+import org.teamapps.universaldb.index.filelegacy.FileUtil;
 
 import java.lang.invoke.MethodHandles;
 import java.net.URL;

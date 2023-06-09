@@ -32,8 +32,8 @@ import org.teamapps.data.extract.PropertyProvider;
 import org.teamapps.data.value.SortDirection;
 import org.teamapps.databinding.TwoWayBindableValue;
 import org.teamapps.event.Event;
-import org.teamapps.universaldb.index.ColumnIndex;
 import org.teamapps.universaldb.index.ColumnType;
+import org.teamapps.universaldb.index.FieldIndex;
 import org.teamapps.universaldb.index.TableIndex;
 import org.teamapps.universaldb.index.file.FileIndex;
 import org.teamapps.universaldb.index.file.FileValue;
@@ -45,6 +45,9 @@ import org.teamapps.universaldb.index.reference.single.SingleReferenceIndex;
 import org.teamapps.universaldb.index.text.TextIndex;
 import org.teamapps.universaldb.index.translation.TranslatableText;
 import org.teamapps.universaldb.index.translation.TranslatableTextIndex;
+import org.teamapps.universaldb.model.EnumFieldModel;
+import org.teamapps.universaldb.model.FieldModel;
+import org.teamapps.universaldb.model.FieldType;
 import org.teamapps.ux.application.view.View;
 import org.teamapps.ux.component.Component;
 import org.teamapps.ux.component.absolutelayout.Length;
@@ -113,7 +116,7 @@ public class TableExplorerView extends AbstractApplicationView {
 		createFormFields(tableIndex, formLayout, table.onSingleRowSelected);
 		table.onSingleRowSelected.addListener(id -> {
 			form.setFieldValue("ID", id);
-			tableIndex.getColumnIndices().stream().filter(c -> c.getColumnType() != ColumnType.MULTI_REFERENCE).forEach(c -> {
+			tableIndex.getFieldIndices().stream().filter(c -> c.getFieldType() != FieldType.MULTI_REFERENCE).forEach(c -> {
 				Function<Integer, Object> valueFunction = fieldValueFunctionMap.get(c.getName());
 				if (valueFunction != null) {
 					form.setFieldValue(c.getName(), valueFunction.apply(id));
@@ -121,14 +124,14 @@ public class TableExplorerView extends AbstractApplicationView {
 			});
 		});
 
-		ColumnIndex defaultTimeLineColumn = model.getDefaultTimeLineColumn();
+		FieldIndex defaultTimeLineColumn = model.getDefaultTimeLineColumn();
 		if (defaultTimeLineColumn != null) {
-			TwoWayBindableValue<ColumnIndex> timeLineColumn = TwoWayBindableValue.create();
-			List<ColumnIndex> timeLineColumns = model.getTimeLineColumns();
-			ComboBox<ColumnIndex> timeLineComboBox = ComboBoxUtils.createRecordComboBox(timeLineColumns, (columnIndex, collection) -> {
+			TwoWayBindableValue<FieldIndex> timeLineColumn = TwoWayBindableValue.create();
+			List<FieldIndex> timeLineColumns = model.getTimeLineColumns();
+			ComboBox<FieldIndex> timeLineComboBox = ComboBoxUtils.createRecordComboBox(timeLineColumns, (FieldIndex, collection) -> {
 				Map<String, Object> map = new HashMap<>();
 				map.put(BaseTemplate.PROPERTY_ICON, ApplicationIcons.CALENDAR_CLOCK);
-				map.put(BaseTemplate.PROPERTY_CAPTION, DbExplorerUtils.createTitleFromCamelCase(columnIndex.getName()));
+				map.put(BaseTemplate.PROPERTY_CAPTION, DbExplorerUtils.createTitleFromCamelCase(FieldIndex.getName()));
 				return map;
 			}, BaseTemplate.LIST_ITEM_MEDIUM_ICON_SINGLE_LINE);
 			timeLineComboBox.setValue(defaultTimeLineColumn);
@@ -188,35 +191,34 @@ public class TableExplorerView extends AbstractApplicationView {
 
 	private Map<String, Function<Integer, Object>> createFieldValueFunctionMap(TableIndex tableIndex) {
 		Map<String, Function<Integer, Object>> fieldValueFunctionMap = new HashMap<>();
-		for (ColumnIndex<?, ?> columnIndex : tableIndex.getColumnIndices()) {
-			Function<Integer, Object> valueFunction = columnIndex::getGenericValue;
-			String fieldName = columnIndex.getName();
-			switch (columnIndex.getColumnType()) {
+		for (FieldIndex FieldIndex : tableIndex.getFieldIndices()) {
+			Function<Integer, Object> valueFunction = FieldIndex::getGenericValue;
+			String fieldName = FieldIndex.getName();
+			switch (FieldIndex.getFieldType()) {
 				case TRANSLATABLE_TEXT -> {
-					TranslatableTextIndex translatableTextIndex = (TranslatableTextIndex) columnIndex;
+					TranslatableTextIndex translatableTextIndex = (TranslatableTextIndex) FieldIndex;
 					valueFunction = (id) -> {
 						TranslatableText value = translatableTextIndex.getValue(id);
 						return value != null ? value.getText() : null;
 					};
 				}
 				case FILE -> {
-					FileIndex fileIndex = (FileIndex) columnIndex;
+					FileIndex fileIndex = (FileIndex) FieldIndex;
 					valueFunction = (id) -> {
 						FileValue fileValue = fileIndex.getValue(id);
 						if (fileValue != null) {
 							String fileName = fileValue.getFileName();
 							String size = FileUtils.byteCountToDisplaySize(fileValue.getSize());
-							File file = fileValue.retrieveFile();
-							return fileName + " (" + size + ")" + ", " + file.length() + ", " + file.getPath();
+							return fileName + " (" + size + ")" + ", " + fileValue.getSize();
 						} else {
 							return null;
 						}
 					};
 				}
 				case SINGLE_REFERENCE -> {
-					SingleReferenceIndex singleReferenceIndex = (SingleReferenceIndex) columnIndex;
-					List<ColumnIndex> textIndices = singleReferenceIndex.getReferencedTable().getColumnIndices().stream()
-							.filter(c -> c.getColumnType() == ColumnType.TEXT)
+					SingleReferenceIndex singleReferenceIndex = (SingleReferenceIndex) FieldIndex;
+					List<FieldIndex> textIndices = singleReferenceIndex.getReferencedTable().getFieldIndices().stream()
+							.filter(c -> c.getFieldType() == FieldType.TEXT)
 							.limit(3)
 							.collect(Collectors.toList());
 					valueFunction = (id) -> {
@@ -225,7 +227,7 @@ public class TableExplorerView extends AbstractApplicationView {
 					};
 				}
 				case MULTI_REFERENCE -> {
-					MultiReferenceIndex multiReferenceIndex = (MultiReferenceIndex) columnIndex;
+					MultiReferenceIndex multiReferenceIndex = (MultiReferenceIndex) FieldIndex;
 					valueFunction = (id) -> {
 						int count = multiReferenceIndex.getReferencesCount(id);
 						if (count == 0) {
@@ -237,39 +239,40 @@ public class TableExplorerView extends AbstractApplicationView {
 					};
 				}
 				case TIMESTAMP -> valueFunction = (id) -> {
-					IntegerIndex integerIndex = (IntegerIndex) columnIndex;
+					IntegerIndex integerIndex = (IntegerIndex) FieldIndex;
 					int value = integerIndex.getValue(id);
 					return value == 0 ? null : Instant.ofEpochSecond(value);
 				};
 				case DATE -> valueFunction = (id) -> {
-					LongIndex integerIndex = (LongIndex) columnIndex;
+					LongIndex integerIndex = (LongIndex) FieldIndex;
 					long value = integerIndex.getValue(id);
 					return value == 0 ? null : Instant.ofEpochMilli(value).atOffset(ZoneOffset.UTC).toLocalDate();
 				};
 				case TIME -> valueFunction = (id) -> {
-					IntegerIndex integerIndex = (IntegerIndex) columnIndex;
+					IntegerIndex integerIndex = (IntegerIndex) FieldIndex;
 					int value = integerIndex.getValue(id);
 					return value == 0 ? null : Instant.ofEpochSecond(value).atOffset(ZoneOffset.UTC).toLocalTime();
 				};
 				case DATE_TIME -> valueFunction = (id) -> {
-					LongIndex longIndex = (LongIndex) columnIndex;
+					LongIndex longIndex = (LongIndex) FieldIndex;
 					long value = longIndex.getValue(id);
 					return value == 0 ? null : Instant.ofEpochMilli(value);
 				};
 				case LOCAL_DATE -> valueFunction = (id) -> {
-					LongIndex longIndex = (LongIndex) columnIndex;
+					LongIndex longIndex = (LongIndex) FieldIndex;
 					long value = longIndex.getValue(id);
 					return value == 0 ? null : Instant.ofEpochMilli(value).atOffset(ZoneOffset.UTC).toLocalDate();
 				};
 				case ENUM -> {
-					List<String> enumValues = columnIndex.getTable().getTable().getColumn(columnIndex.getName()).getEnumValues();
-					ShortIndex enumIndex = (ShortIndex) columnIndex;
+					EnumFieldModel fieldModel = (EnumFieldModel) FieldIndex.getTable().getTableModel().getField(FieldIndex.getName());
+					List<String> enumValues = fieldModel.getEnumModel().getEnumTitles();
+					ShortIndex enumIndex = (ShortIndex) FieldIndex;
 					valueFunction = (id) -> {
 						int value = enumIndex.getValue(id);
 						return value == 0 ? null : enumValues.get(value - 1);
 					};
 				}
-				case BINARY -> valueFunction = columnIndex::getStringValue;
+				case BINARY -> valueFunction = FieldIndex::getStringValue;
 			}
 			fieldValueFunctionMap.put(fieldName, valueFunction);
 		}
@@ -277,20 +280,20 @@ public class TableExplorerView extends AbstractApplicationView {
 	}
 
 	private void createFormFields(TableIndex tableIndex, ResponsiveFormLayout formLayout, Event<Integer> onTableRowSelected) {
-		for (ColumnIndex<?, ?> columnIndex : getSortedColumns(tableIndex)) {
-			String fieldName = columnIndex.getName();
-			if (isMetaUserColumn(columnIndex)) {
+		for (FieldIndex<?, ?> FieldIndex : getSortedColumns(tableIndex)) {
+			String fieldName = FieldIndex.getName();
+			if (isMetaUserColumn(FieldIndex)) {
 				addFormColumn(fieldName, getApplicationInstanceData().getComponentFactory().createUserTemplateField(), formLayout);
 				continue;
 			}
-			switch (columnIndex.getColumnType()) {
-				case BOOLEAN, BITSET_BOOLEAN -> addFormColumn(fieldName, new CheckBox(), formLayout);
+			switch (FieldIndex.getFieldType()) {
+				case BOOLEAN -> addFormColumn(fieldName, new CheckBox(), formLayout);
 				case SHORT, INT, LONG -> addFormColumn(fieldName, new NumberField(0), formLayout);
 				case FLOAT, DOUBLE -> addFormColumn(fieldName, new NumberField(2), formLayout);
-				case TEXT -> addFormColumn(fieldName, getFormTextField((TextIndex) columnIndex), formLayout);
+				case TEXT -> addFormColumn(fieldName, getFormTextField((TextIndex) FieldIndex), formLayout);
 				case TRANSLATABLE_TEXT, BINARY, ENUM, SINGLE_REFERENCE, FILE -> addFormColumn(fieldName, new TextField(), formLayout);
 				case MULTI_REFERENCE -> {
-					MultiReferenceIndex multiReferenceIndex = (MultiReferenceIndex) columnIndex;
+					MultiReferenceIndex multiReferenceIndex = (MultiReferenceIndex) FieldIndex;
 					TableIndex referencedTable = multiReferenceIndex.getReferencedTable();
 					Map<String, Function<Integer, Object>> subTableValueFunctionMap = createFieldValueFunctionMap(referencedTable);
 					Table<Integer> subTable = new Table<>();
@@ -323,14 +326,14 @@ public class TableExplorerView extends AbstractApplicationView {
 	}
 
 	private void createTableFields(TableIndex tableIndex, Table<Integer> table) {
-		for (ColumnIndex<?, ?> columnIndex : getSortedColumns(tableIndex)) {
-			String fieldName = columnIndex.getName();
-			if (isMetaUserColumn(columnIndex)) {
+		for (FieldIndex<?, ?> FieldIndex : getSortedColumns(tableIndex)) {
+			String fieldName = FieldIndex.getName();
+			if (isMetaUserColumn(FieldIndex)) {
 				addColumn(fieldName, getApplicationInstanceData().getComponentFactory().createUserTemplateField(), 250, table);
 				continue;
 			}
-			switch (columnIndex.getColumnType()) {
-				case BOOLEAN, BITSET_BOOLEAN -> addColumn(fieldName, new CheckBox(), 70, table);
+			switch (FieldIndex.getFieldType()) {
+				case BOOLEAN -> addColumn(fieldName, new CheckBox(), 70, table);
 				case SHORT, INT, LONG -> addColumn(fieldName, new NumberField(0), 70, table);
 				case FLOAT, DOUBLE -> addColumn(fieldName, new NumberField(2), 100, table);
 				case TEXT -> addColumn(fieldName, new TextField(), 200, table);
@@ -349,9 +352,9 @@ public class TableExplorerView extends AbstractApplicationView {
 		}
 	}
 
-	private boolean isMetaUserColumn(ColumnIndex<?, ?> columnIndex) {
-		String fieldName = columnIndex.getName();
-		if (columnIndex.getColumnType() == ColumnType.INT && isMetaField(fieldName)) {
+	private boolean isMetaUserColumn(FieldIndex<?, ?> FieldIndex) {
+		String fieldName = FieldIndex.getName();
+		if (FieldIndex.getFieldType() == FieldType.INT && isMetaField(fieldName)) {
 			if (
 					fieldName.equals(org.teamapps.universaldb.schema.Table.FIELD_CREATED_BY) ||
 					fieldName.equals(org.teamapps.universaldb.schema.Table.FIELD_MODIFIED_BY) ||
@@ -368,11 +371,11 @@ public class TableExplorerView extends AbstractApplicationView {
 		return org.teamapps.universaldb.schema.Table.isReservedMetaName(fieldName);
 	}
 
-	private List<ColumnIndex> getSortedColumns(TableIndex tableIndex) {
-		return tableIndex.getColumnIndices().stream().sorted((o1, o2) -> {
-			if (isMetaField(o1) && !isMetaField(o2)) {
+	private List<FieldIndex> getSortedColumns(TableIndex tableIndex) {
+		return tableIndex.getFieldIndices().stream().sorted((o1, o2) -> {
+			if (o1.getFieldModel().isMetaField() && !o2.getFieldModel().isMetaField()) {
 				return 1;
-			} else if (!isMetaField(o1) && isMetaField(o2)) {
+			} else if (!o1.getFieldModel().isMetaField() && o2.getFieldModel().isMetaField()) {
 				return -1;
 			} else {
 				return 0;
@@ -417,9 +420,6 @@ public class TableExplorerView extends AbstractApplicationView {
 		return field;
 	}
 
-	private boolean isMetaField(ColumnIndex<?, ?> columnIndex) {
-		return org.teamapps.universaldb.schema.Table.isReservedMetaName(columnIndex.getName());
-	}
 
 	private void addFormColumn(String fieldName, AbstractField<?> field, ResponsiveFormLayout formLayout) {
 		String label = getTitle(fieldName);
@@ -449,9 +449,9 @@ public class TableExplorerView extends AbstractApplicationView {
 		return (id, collection) -> {
 			Map<String, Object> map = new HashMap<>();
 			map.put("ID", id);
-			for (ColumnIndex<?, ?> columnIndex : tableIndex.getColumnIndices()) {
-				Function<Integer, Object> valueFunction = fieldValueFunctionMap.get(columnIndex.getName());
-				map.put(columnIndex.getName(), valueFunction.apply(id));
+			for (FieldIndex<?, ?> FieldIndex : tableIndex.getFieldIndices()) {
+				Function<Integer, Object> valueFunction = fieldValueFunctionMap.get(FieldIndex.getName());
+				map.put(FieldIndex.getName(), valueFunction.apply(id));
 			}
 			return map;
 		};

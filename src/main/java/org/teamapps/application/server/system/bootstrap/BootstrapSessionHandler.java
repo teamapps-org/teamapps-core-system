@@ -23,9 +23,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.teamapps.application.api.annotation.TeamAppsBootableClass;
 import org.teamapps.application.api.application.ApplicationBuilder;
-import org.teamapps.application.api.application.BaseApplicationBuilder;
 import org.teamapps.application.api.config.ApplicationConfig;
 import org.teamapps.application.api.password.SecurePasswordHash;
+import org.teamapps.application.server.ApplicationServerConfig;
 import org.teamapps.application.server.ServerRegistry;
 import org.teamapps.application.server.SessionHandler;
 import org.teamapps.application.server.SessionManager;
@@ -36,18 +36,21 @@ import org.teamapps.application.server.system.bootstrap.installer.ApplicationIns
 import org.teamapps.application.server.system.config.SystemConfig;
 import org.teamapps.application.server.system.server.SessionRegistryHandler;
 import org.teamapps.application.server.system.template.Templates;
-import org.teamapps.application.server.system.utils.ValueConverterUtils;
 import org.teamapps.cluster.core.Cluster;
 import org.teamapps.event.Event;
 import org.teamapps.icon.antu.AntuIcon;
 import org.teamapps.icon.flags.FlagIcon;
 import org.teamapps.icon.fontawesome.FontAwesomeIcon;
 import org.teamapps.icon.material.MaterialIcon;
-import org.teamapps.model.ControlCenterSchema;
+import org.teamapps.model.ControlCenterModel;
 import org.teamapps.model.controlcenter.*;
+import org.teamapps.universaldb.DatabaseManager;
 import org.teamapps.universaldb.UniversalDB;
+import org.teamapps.universaldb.UniversalDbBuilder;
 import org.teamapps.universaldb.index.file.FileValue;
+import org.teamapps.universaldb.index.file.store.LocalDatabaseFileStore;
 import org.teamapps.universaldb.index.translation.TranslatableText;
+import org.teamapps.universaldb.schema.ModelProvider;
 import org.teamapps.ux.component.template.BaseTemplateRecord;
 import org.teamapps.ux.session.SessionContext;
 
@@ -74,7 +77,6 @@ public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 
 	private SessionRegistryHandler sessionRegistryHandler;
 	private ServerRegistry serverRegistry;
-	private UniversalDB universalDB;
 	private SystemRegistry systemRegistry;
 
 	public BootstrapSessionHandler() {
@@ -88,7 +90,6 @@ public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 	public void init(SessionManager sessionManager, ServerRegistry serverRegistry) {
 		try {
 			this.serverRegistry = serverRegistry;
-			this.universalDB = serverRegistry.getUniversalDB();
 			startSystem(sessionManager);
 		} catch (Exception e) {
 			LOGGER.error("Error initializing system:", e);
@@ -100,12 +101,11 @@ public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 	}
 
 	private void startSystem(SessionManager sessionManager) throws Exception {
-		ClassLoader classLoader = this.getClass().getClassLoader();
-		ControlCenterSchema schema = new ControlCenterSchema();
-		universalDB.addAuxiliaryModel(schema, classLoader);
-
 		ApplicationBuilder controlCenterApp = getControlCenterApplication();
 		ApplicationConfig<SystemConfig> applicationConfig = controlCenterApp.getApplicationConfig();
+		ModelProvider databaseModel = controlCenterApp.getDatabaseModel();
+
+		SystemRegistry.createDatabaseBuilder(databaseModel.getModel().getName(), serverRegistry).modelProvider(databaseModel).build();
 		systemRegistry = new SystemRegistry(this, serverRegistry, sessionManager, applicationConfig);
 		systemRegistry.setSessionRegistryHandler(sessionRegistryHandler);
 		systemRegistry.installAndLoadApplication(controlCenterApp);
@@ -128,8 +128,8 @@ public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 			}
 			FileValue binary = installedVersion.getBinary();
 			if (binary != null) {
-				File jarFile = binary.getFileSupplier().get();
-				ApplicationInstaller jarInstaller = ApplicationInstaller.createJarInstaller(jarFile, universalDB, systemRegistry.getTranslationService(), systemRegistry.getSystemConfig().getLocalizationConfig());
+				File jarFile = binary.getAsFile();
+				ApplicationInstaller jarInstaller = systemRegistry.createJarInstaller(jarFile);
 				try {
 					if (jarInstaller.isInstalled()) {
 						systemRegistry.loadApplication(jarInstaller);
@@ -215,10 +215,6 @@ public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 	@Override
 	public void handleLogout(SessionContext context) {
 
-	}
-
-	public UniversalDB getUniversalDB() {
-		return universalDB;
 	}
 
 	public SystemRegistry getSystemRegistry() {

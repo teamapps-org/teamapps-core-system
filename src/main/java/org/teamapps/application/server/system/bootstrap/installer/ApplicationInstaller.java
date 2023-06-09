@@ -28,39 +28,40 @@ import org.teamapps.application.server.system.localization.LocalizationUtil;
 import org.teamapps.application.server.system.machinetranslation.TranslationService;
 import org.teamapps.model.controlcenter.Application;
 import org.teamapps.model.controlcenter.ApplicationVersion;
+import org.teamapps.universaldb.DatabaseManager;
 import org.teamapps.universaldb.UniversalDB;
+import org.teamapps.universaldb.UniversalDbBuilder;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 
 public class ApplicationInstaller {
 
 	private final ApplicationInfo applicationInfo;
-	private final UniversalDB universalDB;
 	private final TranslationService translationService;
 	private final LocalizationConfig localizationConfig;
 
 	private final List<ApplicationInstallationPhase> applicationInstallationPhases;
 
 
-	public static ApplicationInstaller createJarInstaller(File applicationJar, UniversalDB universalDB, TranslationService translationService, LocalizationConfig localizationConfig) {
-		return new ApplicationInstaller(new ApplicationInfo(applicationJar), universalDB, translationService, localizationConfig);
+	public static ApplicationInstaller createJarInstaller(File applicationJar, DatabaseManager databaseManager, Function<String, UniversalDbBuilder> dbBuilderFunction, TranslationService translationService, LocalizationConfig localizationConfig) {
+		return new ApplicationInstaller(new ApplicationInfo(applicationJar), databaseManager, dbBuilderFunction, translationService, localizationConfig);
 	}
 
-	public static ApplicationInstaller createClassInstaller(BaseApplicationBuilder baseApplicationBuilder, UniversalDB universalDB, TranslationService translationService, LocalizationConfig localizationConfig) {
-		return new ApplicationInstaller(new ApplicationInfo(baseApplicationBuilder), universalDB, translationService, localizationConfig);
+	public static ApplicationInstaller createClassInstaller(BaseApplicationBuilder baseApplicationBuilder, DatabaseManager databaseManager, Function<String, UniversalDbBuilder> dbBuilderFunction, TranslationService translationService, LocalizationConfig localizationConfig) {
+		return new ApplicationInstaller(new ApplicationInfo(baseApplicationBuilder), databaseManager, dbBuilderFunction, translationService, localizationConfig);
 	}
 
-	private ApplicationInstaller(ApplicationInfo applicationInfo, UniversalDB universalDB, TranslationService translationService, LocalizationConfig localizationConfig) {
+	private ApplicationInstaller(ApplicationInfo applicationInfo, DatabaseManager databaseManager, Function<String, UniversalDbBuilder> dbBuilderFunction, TranslationService translationService, LocalizationConfig localizationConfig) {
 		this.applicationInfo = applicationInfo;
-		this.universalDB = universalDB;
 		this.translationService = translationService;
 		this.localizationConfig = localizationConfig;
 		applicationInstallationPhases = Arrays.asList(
 				new ApplicationJarInstallationPhase(),
 				new ApplicationArtifactInstallationPhase(),
-				new DataModelInstallationPhase(universalDB),
+				new DataModelInstallationPhase(databaseManager, dbBuilderFunction),
 				new LocalizationDataInstallationPhase(localizationConfig),
 				new PrivilegeDataInstallationPhase(),
 				new PerspectiveDataInstallationPhase()
