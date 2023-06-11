@@ -329,10 +329,14 @@ public class SystemRegistry {
 		return sessionManager;
 	}
 
+	public synchronized ReplicatedStateMachine getReplicatedStateMachine(String name) {
+		return getReplicatedStateMachine(name, null);
+	}
+
 	public synchronized ReplicatedStateMachine getReplicatedStateMachine(String name, SessionContext context) {
-		if (context == null) {
-			return null;
-		}
+//		if (context == null) {
+//			return null;
+//		}
 		MultiStateHandler multiStateHandler = stateHandlerMap.get(name);
 		if (multiStateHandler == null) {
 			multiStateHandler = new MultiStateHandler(name);
@@ -341,6 +345,10 @@ public class SystemRegistry {
 		ReplicatedStateMachine replicatedStateMachine = new ReplicatedStateMachine(multiStateHandler.getReplicatedState());
 		multiStateHandler.addStateHandler(replicatedStateMachine, context);
 		return replicatedStateMachine;
+	}
+
+	public synchronized void destroyStateMachine(String name) {
+		stateHandlerMap.remove(name);
 	}
 
 }

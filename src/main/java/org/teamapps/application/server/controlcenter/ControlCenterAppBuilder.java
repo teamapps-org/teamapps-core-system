@@ -55,6 +55,7 @@ import org.teamapps.application.server.controlcenter.users.UsersPerspectiveBuild
 import org.teamapps.application.server.settings.UserLanguageSettingsPerspectiveBuilder;
 import org.teamapps.application.server.system.config.SystemConfig;
 import org.teamapps.model.ControlCenterModel;
+import org.teamapps.model.CoreSystemModel;
 import org.teamapps.universaldb.schema.ModelProvider;
 
 import java.util.Arrays;
@@ -132,8 +133,7 @@ public class ControlCenterAppBuilder extends AbstractApplicationBuilder {
 
 	@Override
 	public ModelProvider getDatabaseModel() {
-		return new ControlCenterModel();
-		//return null;
+		return new CoreSystemModel();
 	}
 
 	@Override
