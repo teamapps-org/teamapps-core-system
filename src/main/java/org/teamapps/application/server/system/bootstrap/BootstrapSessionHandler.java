@@ -50,6 +50,7 @@ import org.teamapps.universaldb.UniversalDbBuilder;
 import org.teamapps.universaldb.index.file.FileValue;
 import org.teamapps.universaldb.index.file.store.LocalDatabaseFileStore;
 import org.teamapps.universaldb.index.translation.TranslatableText;
+import org.teamapps.universaldb.model.DatabaseModel;
 import org.teamapps.universaldb.schema.ModelProvider;
 import org.teamapps.ux.component.template.BaseTemplateRecord;
 import org.teamapps.ux.session.SessionContext;
@@ -104,8 +105,10 @@ public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 		ApplicationBuilder controlCenterApp = getControlCenterApplication();
 		ApplicationConfig<SystemConfig> applicationConfig = controlCenterApp.getApplicationConfig();
 		ModelProvider databaseModel = controlCenterApp.getDatabaseModel();
-
-		SystemRegistry.createDatabaseBuilder(databaseModel.getModel().getName(), serverRegistry).modelProvider(databaseModel).build();
+		SystemRegistry.createDatabaseBuilder(databaseModel.getModel().getName(), serverRegistry)
+				.modelProvider(databaseModel)
+				.classLoader(this.getClass().getClassLoader())
+				.build();
 		systemRegistry = new SystemRegistry(this, serverRegistry, sessionManager, applicationConfig);
 		systemRegistry.setSessionRegistryHandler(sessionRegistryHandler);
 		systemRegistry.installAndLoadApplication(controlCenterApp);
