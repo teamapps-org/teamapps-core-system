@@ -147,10 +147,15 @@ public class PerspectiveDataInstallationPhase implements ApplicationInstallation
 
 		if (installedAsMainApplication.isEmpty()) {
 			ManagedApplicationGroup applicationGroup = getApplicationGroup(applicationBuilder.getPreferredApplicationGroup());
+			OrganizationField organizationField = null;
+			if (applicationBuilder.getOrganizationField() != null) {
+				organizationField = OrganizationField.getAll().stream().filter(field -> applicationBuilder.getOrganizationField().equals(field.getTitle().getText())).findAny().orElse(null);
+			}
 			ManagedApplication managedApplication = ManagedApplication.create()
 					.setMainApplication(application)
 					.setApplicationGroup(applicationGroup)
 					.setSingleApplication(applicationInfo.isUnmanagedPerspectives())
+					.setOrganizationField(organizationField)
 					.save();
 
 			List<ApplicationPerspective> autoProvisionPerspectives = application.getPerspectives().stream().filter(ApplicationPerspective::getAutoProvision).collect(Collectors.toList());
