@@ -353,6 +353,16 @@ public class PropertyProviders {
 				.orElse(null);
 	}
 
+	public static User getOrgUnitMentor(OrganizationUnit unit, OrganizationField organizationField) {
+		//todo change when model update is active (back reference from unit to assignment)
+		List<UserRoleAssignment> assignments = UserRoleAssignment.filter().organizationUnit(NumericFilter.equalsFilter(unit.getId())).execute();
+		return assignments.stream()
+				.filter(assignment -> assignment.getRole().getRoleType() == RoleType.MENTOR && assignment.getUser() != null && (organizationField == null || organizationField.equals(assignment.getRole().getOrganizationField())))
+				.map(UserRoleAssignment::getUser)
+				.findFirst()
+				.orElse(null);
+	}
+
 	public static String getOrganizationUnitPath(OrganizationUnit organizationUnit, Set<OrganizationUnitType> rootNodes, ApplicationInstanceData applicationInstanceData) {
 		List<String> pathElements = new ArrayList<>();
 		OrganizationUnit unit = organizationUnit;
