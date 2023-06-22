@@ -95,12 +95,13 @@ public class ApplicationArtifactInstallationPhase implements ApplicationInstalla
 			application = Application.create()
 					.setName(applicationInfo.getName());
 		}
+		boolean darkTheme = baseApplicationBuilder.getApplicationTheme() != null && baseApplicationBuilder.getApplicationTheme().isDarkThemePreferred();
 		application
 				.setIcon(IconUtils.encodeNoStyle(baseApplicationBuilder.getApplicationIcon()))
 				.setTitleKey(baseApplicationBuilder.getApplicationTitleKey())
 				.setDescriptionKey(baseApplicationBuilder.getApplicationDescriptionKey())
 				.setUnmanagedApplication(applicationInfo.isUnmanagedPerspectives())
-				.setDarkTheme(baseApplicationBuilder.isDarkTheme())
+				.setDarkTheme(darkTheme)
 				.save();
 		ApplicationVersion applicationVersion = ApplicationVersion.create()
 				.setApplication(application)

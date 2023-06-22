@@ -24,11 +24,14 @@ import org.slf4j.LoggerFactory;
 import org.teamapps.application.api.application.BaseApplicationBuilder;
 import org.teamapps.application.api.application.UserProfileApplicationBuilder;
 import org.teamapps.application.api.application.perspective.PerspectiveBuilder;
+import org.teamapps.application.api.application.theme.ApplicationTheme;
+import org.teamapps.application.api.application.theme.CustomApplicationTheme;
 import org.teamapps.application.api.desktop.ApplicationDesktop;
 import org.teamapps.application.api.localization.Dictionary;
 import org.teamapps.application.api.localization.Language;
 import org.teamapps.application.api.theme.ApplicationIcons;
 import org.teamapps.application.server.DatabaseLogAppender;
+import org.teamapps.application.server.PublicLinkResourceProvider;
 import org.teamapps.application.server.system.auth.LoginHandler;
 import org.teamapps.application.server.system.bootstrap.LoadedApplication;
 import org.teamapps.application.server.system.bootstrap.LogoutHandler;
@@ -66,14 +69,17 @@ import org.teamapps.ux.component.workspacelayout.SplitDirection;
 import org.teamapps.ux.component.workspacelayout.definition.SplitPaneDefinition;
 import org.teamapps.ux.component.workspacelayout.definition.SplitSize;
 import org.teamapps.ux.component.workspacelayout.definition.ViewGroupDefinition;
+import org.teamapps.ux.resource.ByteArrayResource;
 import org.teamapps.ux.session.ClientInfo;
 import org.teamapps.ux.session.SessionConfiguration;
 import org.teamapps.ux.session.SessionContext;
 import org.teamapps.ux.session.StylingTheme;
 
 import java.lang.invoke.MethodHandles;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class ApplicationLauncher {
@@ -92,10 +98,10 @@ public class ApplicationLauncher {
 	private TabPanel applicationsTabPanel;
 	private TwoWayBindableValue<ManagedApplication> selectedApplication = TwoWayBindableValue.create();
 	private TwoWayBindableValue<ManagedApplicationPerspective> selectedPerspective = TwoWayBindableValue.create();
-	private boolean selectedThemeIsDarkTheme;
 	private Tab applicationLauncherTab;
 	private ApplicationData userProfileApp;
 	private View launcherView;
+	private final Map<String, String> registeredPublicBackgroundImageMap = new ConcurrentHashMap<>();
 
 	public ApplicationLauncher(UserSessionData userSessionData, LogoutHandler logoutHandler) {
 		this.userSessionData = userSessionData;
@@ -126,7 +132,7 @@ public class ApplicationLauncher {
 		selectedApplication.onChanged().addListener(this::handleApplicationSelection);
 		selectedPerspective.onChanged().addListener(this::handlePerspectiveSelection);
 		userSessionData.getUser().setLastLogin(Instant.now()).save();
-		setTheme(userSessionData.isDarkTheme());
+		setLauncherTheme();
 		userSessionData.setApplicationDesktopSupplier(this::createApplicationDesktop);
 		initApplicationData();
 		createApplicationLauncher();
@@ -176,13 +182,13 @@ public class ApplicationLauncher {
 
 	private void handleApplicationSelection(ManagedApplication application) {
 		if (application == null) {
+			setLauncherTheme();
 			return;
 		}
 		DatabaseLogAppender.THREAD_LOCAL_MANAGED_APPLICATION.set(application.getId());
 		DatabaseLogAppender.THREAD_LOCAL_APPLICATION_VERSION.set(getCurrentApplicationVersion(application));
 		DatabaseLogAppender.THREAD_LOCAL_MANAGED_PERSPECTIVE.set(null);
-		setTheme(application.isDarkTheme() || userSessionData.isDarkTheme());
-		selectedThemeIsDarkTheme = application.getDarkTheme();
+		setApplicationTheme(application);
 	}
 
 	private void handlePerspectiveSelection(ManagedApplicationPerspective perspective) {
@@ -192,10 +198,59 @@ public class ApplicationLauncher {
 		DatabaseLogAppender.THREAD_LOCAL_MANAGED_PERSPECTIVE.set(perspective.getId());
 	}
 
-	private void setTheme(boolean dark) {
-		userSessionData.getContext().setBackgroundImage(dark ? "defaultDarkBackground" : "defaultBackground", 0);
+	private void registerApplicationTheme(LoadedApplication loadedApplication) {
+		if (loadedApplication != null && loadedApplication.getBaseApplicationBuilder().getApplicationTheme() != null) {
+			String applicationName = loadedApplication.getApplication().getName();
+			ApplicationTheme theme = loadedApplication.getBaseApplicationBuilder().getApplicationTheme();
+			if (theme.getBrightTheme() != null) {
+				CustomApplicationTheme customTheme = theme.getBrightTheme();
+				if (customTheme.getBackgroundImage() != null) {
+					registerBackgroundImage(applicationName, customTheme.getBackgroundImage(), false);
+				}
+				if (customTheme.getCustomCss() != null) {
+					//todo differentiate between dark and bright theme!
+					userSessionData.getRootPanel().setApplicationStyles(loadedApplication.getBaseApplicationBuilder().getApplicationName(), customTheme.getCustomCss());
+				}
+			}
+			if (theme.getDarkTheme() != null) {
+				CustomApplicationTheme customTheme = theme.getDarkTheme();
+				if (customTheme.getBackgroundImage() != null) {
+					registerBackgroundImage(applicationName, customTheme.getBackgroundImage(), true);
+				}
+			}
+		}
+	}
+
+	private void registerBackgroundImage(String applicationName, byte[] bytes, boolean darkTheme) {
+		String key = applicationName + "-" + (darkTheme ? "dark" : "bright");
+		String link = registeredPublicBackgroundImageMap.get(key);
+		if (link == null) {
+			link = PublicLinkResourceProvider.getInstance().createLinkForResource(new ByteArrayResource(bytes, key + ".jpg"), Duration.ofDays(10_000));
+			registeredPublicBackgroundImageMap.put(key, link);
+		}
+		userSessionData.getContext().registerBackgroundImage(key, link, link);
+	}
+
+	private void setApplicationTheme(ManagedApplication application) {
+		boolean darkTheme = application.isDarkTheme() || userSessionData.getUser().isDarkTheme();
+		LoadedApplication loadedApplication = registry.getLoadedApplication(application.getMainApplication());
+		String applicationName = loadedApplication.getApplication().getName();
+		String key = applicationName + "-" + (darkTheme ? "dark" : "bright");
+		if (registeredPublicBackgroundImageMap.containsKey(key)) {
+			userSessionData.getContext().setBackgroundImage(key, 1_000);
+		} else {
+			userSessionData.getContext().setBackgroundImage(darkTheme ? "defaultDarkBackground" : "defaultBackground", 500);
+		}
 		SessionConfiguration configuration = SessionContext.current().getConfiguration();
-		configuration.setTheme(dark ? StylingTheme.DARK : StylingTheme.DEFAULT);
+		configuration.setTheme(darkTheme ? StylingTheme.DARK : StylingTheme.DEFAULT);
+		SessionContext.current().setConfiguration(configuration);
+	}
+
+	private void setLauncherTheme() {
+		boolean darkTheme = userSessionData.getUser().isDarkTheme();
+		userSessionData.getContext().setBackgroundImage(darkTheme ? "defaultDarkBackground" : "defaultBackground", 500);
+		SessionConfiguration configuration = SessionContext.current().getConfiguration();
+		configuration.setTheme(darkTheme ? StylingTheme.DARK : StylingTheme.DEFAULT);
 		SessionContext.current().setConfiguration(configuration);
 	}
 
@@ -203,10 +258,6 @@ public class ApplicationLauncher {
 		selectedApplication.set(null);
 		if (userSessionData.getOnlineUsersView() != null) {
 			userSessionData.getOnlineUsersView().refresh();
-		}
-		if (selectedThemeIsDarkTheme) {
-			setTheme(true);
-			selectedThemeIsDarkTheme = false;
 		}
 	}
 
@@ -275,13 +326,14 @@ public class ApplicationLauncher {
 		ThemingConfig themingConfig = registry.getSystemConfig().getThemingConfig();
 		userSessionData.getContext().registerBackgroundImage("defaultBackground", themingConfig.getApplicationBackgroundUrl(), themingConfig.getApplicationSecondaryBackgroundUrl());
 		userSessionData.getContext().registerBackgroundImage("defaultDarkBackground", themingConfig.getApplicationDarkBackgroundUrl(), themingConfig.getApplicationDarkSecondaryBackgroundUrl());
-		if (themingConfig.isDarkTheme()) {
-			setTheme(true);
+		setLauncherTheme();
+
+		for (LoadedApplication loadedApplication : registry.getLoadedApplications()) {
+			registerApplicationTheme(loadedApplication);
 		}
 		if (themingConfig.getBaseStyles() != null) {
 			userSessionData.getRootPanel().setBaseStyles(themingConfig.getBaseStyles());
 		}
-		userSessionData.getContext().setBackgroundImage(userSessionData.isDarkTheme() ? "defaultDarkBackground" : "defaultBackground", 0);
 
 		if (mobileView) {
 			userSessionData.setRootComponent(applicationLauncher);

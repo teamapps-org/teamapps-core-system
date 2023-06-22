@@ -218,7 +218,7 @@ public class UserSessionData {
 	}
 
 	public boolean isDarkTheme() {
-		return user.isDarkTheme() || darkTheme;
+		return darkTheme;
 	}
 
 	public void setDarkTheme(boolean darkTheme) {
