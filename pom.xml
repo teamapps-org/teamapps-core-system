@@ -4,7 +4,7 @@
 
     <groupId>org.teamapps</groupId>
     <artifactId>teamapps-core-system</artifactId>
-    <version>0.14</version>
+    <version>0.15-SNAPSHOT</version>
 
 
     <properties>
@@ -50,7 +50,7 @@
         <url>https://github.com/teamapps-org/teamapps-core-system</url>
         <connection>scm:git:git@github.com:teamapps-org/teamapps-core-system.git</connection>
         <developerConnection>scm:git:git@github.com:teamapps-org/teamapps-core-system.git</developerConnection>
-        <tag>v0.14</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <dependencies>
