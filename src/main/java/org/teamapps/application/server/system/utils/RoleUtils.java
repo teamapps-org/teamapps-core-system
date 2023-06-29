@@ -170,7 +170,7 @@ public class RoleUtils {
 	public static ApplicationRole getApplicationRole(String applicationName, String applicationRoleName, SystemRegistry systemRegistry) {
 		return systemRegistry.getLoadedApplications().stream()
 				.filter(app -> app.getApplication().getName().equals(applicationName))
-				.filter(app -> app.getBaseApplicationBuilder() != null)
+				.filter(app -> app.getBaseApplicationBuilder() != null && app.getBaseApplicationBuilder().getApplicationRoles() != null)
 				.flatMap(app -> app.getBaseApplicationBuilder().getApplicationRoles().stream())
 				.filter(role -> role.getName().equals(applicationRoleName))
 				.findFirst().orElse(null);

@@ -257,7 +257,7 @@ public class AccessControlAppRolePerspective extends AbstractManagedApplicationP
 			return null;
 		}
 		LoadedApplication loadedApplication = userSessionData.getRegistry().getLoadedApplication(assignment.getApplication());
-		if (loadedApplication != null) {
+		if (loadedApplication != null && loadedApplication.getBaseApplicationBuilder().getApplicationRoles() != null) {
 			return loadedApplication.getBaseApplicationBuilder().getApplicationRoles().stream().filter(appRole -> assignment.getApplicationRoleName().equals(appRole.getName())).findAny().orElse(null);
 		} else {
 			return null;

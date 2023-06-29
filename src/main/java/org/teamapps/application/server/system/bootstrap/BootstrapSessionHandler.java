@@ -144,6 +144,12 @@ public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 			}
 		}
 
+		handleSystemStarted();
+
+	}
+
+	public void handleSystemStarted() {
+		LOGGER.info("System started");
 	}
 
 	public void createInitialUser() {
