@@ -289,7 +289,7 @@ public class UsersPerspective extends AbstractManagedApplicationPerspective {
 	}
 
 	private void showUserPrivilegesWindow(User user) {
-		UserPrivileges userPrivileges = new UserPrivileges(user, userSessionData.getRegistry());
+		UserPrivileges userPrivileges = new UserPrivileges(user, userSessionData.getRegistry(), null);
 		UserPrivilegesView userPrivilegesView = new UserPrivilegesView(userPrivileges, getApplicationInstanceData());
 		ApplicationWindow window = new ApplicationWindow(ApplicationIcons.LOCK_OPEN, getLocalized(Dictionary.PRIVILEGES), getApplicationInstanceData());
 		window.setContent(userPrivilegesView.getResponsiveForm());

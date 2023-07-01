@@ -177,6 +177,7 @@ public class ApplicationLauncher {
 		dialogue.setCloseOnEscape(true);
 		dialogue.setAutoCloseOnOk(true);
 		dialogue.setCloseable(true);
+		dialogue.enableAutoHeight();
 		dialogue.show();
 	}
 

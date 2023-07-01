@@ -36,6 +36,7 @@ import org.teamapps.icons.Icon;
 import org.teamapps.icons.SessionIconProvider;
 import org.teamapps.model.controlcenter.Application;
 import org.teamapps.model.controlcenter.ManagedApplication;
+import org.teamapps.model.controlcenter.Role;
 import org.teamapps.model.controlcenter.User;
 import org.teamapps.protocol.system.LoginData;
 import org.teamapps.uisession.statistics.SumStats;
@@ -70,12 +71,12 @@ public class UserSessionData {
 	private OnlineUsersView onlineUsersView;
 	private final Map<String, Object> customObjectsMap = new HashMap<>();
 
-	public UserSessionData(User user, SessionContext context, SystemRegistry registry, ApplicationRootPanel rootPanel) {
+	public UserSessionData(User user, SessionContext context, SystemRegistry registry, ApplicationRootPanel rootPanel, Role authenticatedUserRole) {
 		this.user = user;
 		this.context = context;
 		this.registry = registry;
 		this.rootPanel = rootPanel;
-		this.userPrivileges = new UserPrivileges(user, registry);
+		this.userPrivileges = new UserPrivileges(user, registry, authenticatedUserRole);
 		this.sessionUser = new SessionUserImpl(this);
 		this.localizationRankedLanguages = createLocalizationRankedLanguages();
 		this.iconProvider = context.getIconProvider();

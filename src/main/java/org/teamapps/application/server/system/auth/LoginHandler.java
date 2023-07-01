@@ -28,6 +28,7 @@ import org.teamapps.application.server.system.bootstrap.ApplicationRootPanel;
 import org.teamapps.application.server.system.bootstrap.LogoutHandler;
 import org.teamapps.application.server.system.bootstrap.SystemRegistry;
 import org.teamapps.application.server.system.launcher.ApplicationLauncher;
+import org.teamapps.application.server.system.server.SessionRegistryHandler;
 import org.teamapps.application.server.system.session.UserSessionData;
 import org.teamapps.application.server.system.template.PropertyProviders;
 import org.teamapps.application.server.system.template.Templates;
@@ -329,15 +330,16 @@ public class LoginHandler {
 
 	private void handleSuccessfulLogin(User user, ApplicationRootPanel rootPanel, SessionContext context) {
 		try {
-			UserSessionData userSessionData = new UserSessionData(user, context, systemRegistry, rootPanel);
+			SessionRegistryHandler sessionRegistryHandler = systemRegistry.getSessionRegistryHandler();
+			UserSessionData userSessionData = new UserSessionData(user, context, systemRegistry, rootPanel, sessionRegistryHandler != null ? sessionRegistryHandler.getAuthenticatedUserRole() : null);
 			UniversalDB.setUserId(userSessionData.getUser().getId());
 			String userInfo = user.getId() + "-" + user.getLastName() + "-" + user.getFirstName();
 			LOGGER.info("User logged in: {}", userInfo);
 			context.setName(userInfo);
 			systemRegistry.addActiveUser(userSessionData);
 			boolean accepted = true;
-			if (systemRegistry.getSessionRegistryHandler() != null) {
-				accepted = systemRegistry.getSessionRegistryHandler().acceptAuthenticatedUser(userSessionData, context);
+			if (sessionRegistryHandler != null) {
+				accepted = sessionRegistryHandler.acceptAuthenticatedUser(userSessionData, context);
 			}
 			if (accepted) {
 				new ApplicationLauncher(userSessionData, logoutHandler);
