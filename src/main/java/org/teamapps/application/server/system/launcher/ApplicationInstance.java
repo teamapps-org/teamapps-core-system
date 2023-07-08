@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,7 +33,6 @@ import org.teamapps.common.format.Color;
 import org.teamapps.databinding.MutableValue;
 import org.teamapps.model.controlcenter.ManagedApplicationPerspective;
 import org.teamapps.ux.application.ResponsiveApplication;
-import org.teamapps.ux.application.assembler.DesktopApplicationAssembler;
 import org.teamapps.ux.application.layout.StandardLayout;
 import org.teamapps.ux.application.perspective.Perspective;
 import org.teamapps.ux.application.view.View;
@@ -43,7 +42,6 @@ import org.teamapps.ux.component.flexcontainer.VerticalLayout;
 import org.teamapps.ux.component.itemview.SimpleItemGroup;
 import org.teamapps.ux.component.itemview.SimpleItemView;
 import org.teamapps.ux.component.mobile.MobileLayout;
-import org.teamapps.ux.component.tabpanel.Tab;
 import org.teamapps.ux.component.template.BaseTemplate;
 import org.teamapps.ux.component.template.BaseTemplateRecord;
 import org.teamapps.ux.component.toolbar.Toolbar;
@@ -51,7 +49,6 @@ import org.teamapps.ux.component.toolbar.ToolbarButton;
 import org.teamapps.ux.component.toolbar.ToolbarButtonGroup;
 import org.teamapps.ux.component.tree.Tree;
 import org.teamapps.ux.model.ListTreeModel;
-import org.teamapps.ux.session.SessionContext;
 
 import java.lang.invoke.MethodHandles;
 import java.util.*;
@@ -64,10 +61,10 @@ public class ApplicationInstance implements PerspectiveByNameLauncher {
 	private final ApplicationData applicationData;
 	private final Component applicationLauncher;
 	private final MutableValue<ManagedApplicationPerspective> selectedPerspective;
+	private final Map<PerspectiveSessionData, ApplicationPerspective> applicationPerspectiveByPerspectiveBuilder = new HashMap<>();
 	private boolean mobileInstance;
 	private ToolbarButton backButton;
 	private MobileLayout mobileLayout;
-	private final Map<PerspectiveSessionData, ApplicationPerspective> applicationPerspectiveByPerspectiveBuilder = new HashMap<>();
 	private View mobileApplicationMenu;
 	private List<PerspectiveSessionData> sortedPerspectives;
 	private Tree<PerspectiveSessionData> applicationMenuTree;
@@ -126,43 +123,43 @@ public class ApplicationInstance implements PerspectiveByNameLauncher {
 		backButton = toolbarApplicationMenu ? null : new ToolbarButton(BaseTemplate.LIST_ITEM_LARGE_ICON_SINGLE_LINE, new BaseTemplateRecord(ApplicationIcons.NAVIGATE_LEFT, getLocalized(Dictionary.BACK), null));
 		mobileLayout = toolbarApplicationMenu ? null : new MobileLayout();
 
-		if (toolbarApplicationMenu) {
-			SimpleItemView<PerspectiveSessionData> applicationMenu = createApplicationMenu(sortedPerspectives);
-			applicationSessionData.setApplicationToolbarMenuComponent(applicationMenu);
+		if (sortedPerspectives.size() > 1) {
+			if (toolbarApplicationMenu) {
+				SimpleItemView<PerspectiveSessionData> applicationMenu = createApplicationMenu(sortedPerspectives);
+				applicationSessionData.setApplicationToolbarMenuComponent(applicationMenu);
 
-			applicationMenu.onItemClicked.addListener(event -> {
-				PerspectiveSessionData perspectiveSessionData = event.getItem().getPayload();
-				showPerspective(perspectiveSessionData);
-			});
-		} else {
-			applicationMenuTree = createApplicationMenuTree(sortedPerspectives);
-			View applicationMenu = View.createView(StandardLayout.LEFT, ApplicationIcons.RADIO_BUTTON_GROUP, getLocalized(Dictionary.MENU), null);
-			responsiveApplication.addApplicationView(applicationMenu);
-			applicationMenu.getPanel().setBodyBackgroundColor(userSessionData.isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.84f));
-			VerticalLayout verticalLayout = new VerticalLayout();
-			applicationMenu.setComponent(verticalLayout);
+				applicationMenu.onItemClicked.addListener(event -> {
+					PerspectiveSessionData perspectiveSessionData = event.getItem().getPayload();
+					showPerspective(perspectiveSessionData);
+				});
+			} else {
+				applicationMenuTree = createApplicationMenuTree(sortedPerspectives);
+				View applicationMenu = View.createView(StandardLayout.LEFT, ApplicationIcons.RADIO_BUTTON_GROUP, getLocalized(Dictionary.MENU), null);
+				responsiveApplication.addApplicationView(applicationMenu);
+				applicationMenu.getPanel().setBodyBackgroundColor(userSessionData.isDarkTheme() ? Color.fromRgba(30, 30, 30, .7f) : Color.WHITE.withAlpha(0.84f));
+				VerticalLayout verticalLayout = new VerticalLayout();
+				applicationMenu.setComponent(verticalLayout);
 
-			Toolbar toolbar = new Toolbar();
-			ToolbarButtonGroup buttonGroup = toolbar.addButtonGroup(new ToolbarButtonGroup());
-			buttonGroup.setShowGroupSeparator(false);
-			backButton.setVisible(false);
-			buttonGroup.addButton(backButton);
-			verticalLayout.addComponent(toolbar);
-			mobileLayout.setContent(applicationMenuTree);
-			verticalLayout.addComponentFillRemaining(mobileLayout);
-
-			backButton.onClick.addListener(() -> {
+				Toolbar toolbar = new Toolbar();
+				ToolbarButtonGroup buttonGroup = toolbar.addButtonGroup(new ToolbarButtonGroup());
+				buttonGroup.setShowGroupSeparator(false);
 				backButton.setVisible(false);
-				mobileLayout.setContent(applicationMenuTree, PageTransition.MOVE_TO_RIGHT_VS_MOVE_FROM_LEFT, 500);
-			});
+				buttonGroup.addButton(backButton);
+				verticalLayout.addComponent(toolbar);
+				mobileLayout.setContent(applicationMenuTree);
+				verticalLayout.addComponentFillRemaining(mobileLayout);
 
-			applicationMenuTree.onNodeSelected.addListener(this::showPerspective);
+				backButton.onClick.addListener(() -> {
+					backButton.setVisible(false);
+					mobileLayout.setContent(applicationMenuTree, PageTransition.MOVE_TO_RIGHT_VS_MOVE_FROM_LEFT, 500);
+				});
+				applicationMenuTree.onNodeSelected.addListener(this::showPerspective);
+			}
 		}
 
 		if (!sortedPerspectives.isEmpty()) {
 			showPerspective(sortedPerspectives.get(0));
 		}
-
 		return responsiveApplication.getUi();
 	}
 
@@ -179,7 +176,7 @@ public class ApplicationInstance implements PerspectiveByNameLauncher {
 
 
 		mobileApplicationMenu = View.createView(StandardLayout.LEFT, ApplicationIcons.RADIO_BUTTON_GROUP, getLocalized(Dictionary.APPLICATION_MENU), null);
-		mobileApplicationMenu.getPanel().setBodyBackgroundColor(userSessionData.isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.84f));
+		mobileApplicationMenu.getPanel().setBodyBackgroundColor(userSessionData.isDarkTheme() ? Color.fromRgba(30, 30, 30, .7f) : Color.WHITE.withAlpha(0.84f));
 		responsiveApplication.addApplicationView(mobileApplicationMenu);
 		mobileLayout = new MobileLayout();
 		mobileApplicationMenu.setComponent(mobileLayout);
