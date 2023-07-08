@@ -27,6 +27,7 @@ import org.teamapps.application.api.theme.ApplicationIcons;
 import org.teamapps.application.server.system.bootstrap.ApplicationRootPanel;
 import org.teamapps.application.server.system.bootstrap.LogoutHandler;
 import org.teamapps.application.server.system.bootstrap.SystemRegistry;
+import org.teamapps.application.server.system.config.ThemingConfig;
 import org.teamapps.application.server.system.launcher.ApplicationLauncher;
 import org.teamapps.application.server.system.server.SessionRegistryHandler;
 import org.teamapps.application.server.system.session.UserSessionData;
@@ -82,6 +83,14 @@ public class LoginHandler {
 			rankedLanguages.add("en");
 		}
 		ApplicationRootPanel rootPanel = new ApplicationRootPanel();
+
+		ThemingConfig themingConfig = systemRegistry.getSystemConfig().getThemingConfig();
+		context.registerBackgroundImage("defaultBackground", themingConfig.getApplicationBackgroundUrl(), themingConfig.getApplicationSecondaryBackgroundUrl());
+		context.registerBackgroundImage("defaultDarkBackground", themingConfig.getApplicationDarkBackgroundUrl(), themingConfig.getApplicationDarkSecondaryBackgroundUrl());
+		if (themingConfig.getBaseStyles() != null) {
+			rootPanel.setBaseStyles(themingConfig.getBaseStyles());
+		}
+
 		context.addRootPanel("body", rootPanel);
 
 		Map<String, Object> clientParameters = context.getClientInfo().getClientParameters();

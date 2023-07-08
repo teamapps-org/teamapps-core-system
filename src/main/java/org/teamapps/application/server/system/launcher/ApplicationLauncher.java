@@ -325,8 +325,6 @@ public class ApplicationLauncher {
 
 	private void createMainView() {
 		ThemingConfig themingConfig = registry.getSystemConfig().getThemingConfig();
-		userSessionData.getContext().registerBackgroundImage("defaultBackground", themingConfig.getApplicationBackgroundUrl(), themingConfig.getApplicationSecondaryBackgroundUrl());
-		userSessionData.getContext().registerBackgroundImage("defaultDarkBackground", themingConfig.getApplicationDarkBackgroundUrl(), themingConfig.getApplicationDarkSecondaryBackgroundUrl());
 		setLauncherTheme();
 
 		for (LoadedApplication loadedApplication : registry.getLoadedApplications()) {
