@@ -280,6 +280,14 @@ public class PropertyProviders {
 		return null;
 	}
 
+	public static Icon getOrganizationUnitIcon(OrganizationUnit unit) {
+		if (unit == null) {
+			return null;
+		} else {
+			return unit.getIcon() != null ? IconUtils.decodeIcon(unit.getIcon()) : IconUtils.decodeIcon(unit.getType().getIcon());
+		}
+	}
+
 
 	public static String getUserCaptionWithTranslation(User user) {
 		StringBuilder sb = new StringBuilder();

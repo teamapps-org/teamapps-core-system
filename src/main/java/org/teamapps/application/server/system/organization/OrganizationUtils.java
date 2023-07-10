@@ -110,6 +110,32 @@ public class OrganizationUtils {
 		return path;
 	}
 
+	public static List<OrganizationUnit> getAllParents(OrganizationUnit organizationUnit) {
+		List<OrganizationUnit> parents = new ArrayList<>();
+		OrganizationUnit unit = organizationUnit.getParent();
+		while (unit != null) {
+			parents.add(unit);
+			unit = unit.getParent();
+		}
+		return parents;
+	}
+
+	public static Set<OrganizationUnit> getAllChildren(OrganizationUnit organizationUnit) {
+		Set<OrganizationUnit> result = new HashSet<>();
+		Set<OrganizationUnit> traversedNodes = new HashSet<>();
+		getAllChildren(organizationUnit, traversedNodes, result);
+		return result;
+	}
+
+	private static void getAllChildren(OrganizationUnit unit, Set<OrganizationUnit> traversedNodes, Set<OrganizationUnit> result) {
+		for (OrganizationUnit child : unit.getChildren()) {
+			if (!traversedNodes.contains(child)) {
+				traversedNodes.add(child);
+				getAllChildren(child, traversedNodes, result);
+			}
+		}
+	}
+
 	public static Set<OrganizationUnit> getUnitWithAllParents(OrganizationUnit unit) {
 		Set<OrganizationUnit> units = new HashSet<>();
 		OrganizationUnit parent = unit;
