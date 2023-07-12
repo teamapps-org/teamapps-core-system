@@ -240,6 +240,14 @@ public class PropertyProviders {
 		};
 	}
 
+	public static String getOrganizationUnitTypeName(OrganizationUnitType type, ApplicationInstanceData applicationInstanceData) {
+		if (type == null) {
+			return null;
+		} else {
+			return applicationInstanceData.getTranslatableTextExtractor().apply(type.getName());
+		}
+	}
+
 
 	public static PropertyProvider<OrganizationUnit> creatOrganizationUnitPropertyProvider(ApplicationInstanceData applicationInstanceData) {
 		return (unit, propertyNames) -> {
@@ -412,6 +420,14 @@ public class PropertyProviders {
 			map.put(BaseTemplate.PROPERTY_DESCRIPTION, role.getOrganizationField() != null ? translatableTextExtractor.apply(role.getOrganizationField().getTitle()) : null);
 			return map;
 		};
+	}
+
+	public static String getRoleTitle(Role role, ApplicationInstanceData applicationInstanceData) {
+		if (role == null) {
+			return null;
+		} else {
+			return applicationInstanceData.getLocalized(role.getTitle());
+		}
 	}
 
 	public static PropertyProvider<User> createUserPropertyProvider(ApplicationInstanceData applicationInstanceData) {

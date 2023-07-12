@@ -122,16 +122,15 @@ public class OrganizationUtils {
 
 	public static Set<OrganizationUnit> getAllChildren(OrganizationUnit organizationUnit) {
 		Set<OrganizationUnit> result = new HashSet<>();
-		Set<OrganizationUnit> traversedNodes = new HashSet<>();
-		getAllChildren(organizationUnit, traversedNodes, result);
+		getAllChildren(organizationUnit, result);
 		return result;
 	}
 
-	private static void getAllChildren(OrganizationUnit unit, Set<OrganizationUnit> traversedNodes, Set<OrganizationUnit> result) {
+	private static void getAllChildren(OrganizationUnit unit, Set<OrganizationUnit> result) {
 		for (OrganizationUnit child : unit.getChildren()) {
-			if (!traversedNodes.contains(child)) {
-				traversedNodes.add(child);
-				getAllChildren(child, traversedNodes, result);
+			if (!result.contains(child)) {
+				result.add(child);
+				getAllChildren(child, result);
 			}
 		}
 	}

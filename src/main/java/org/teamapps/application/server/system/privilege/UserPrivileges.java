@@ -109,7 +109,7 @@ public class UserPrivileges {
 			Role role = roleAssignment.getRole();
 			int delegatedCustomPrivilegeObjectId = roleAssignment.getDelegatedCustomPrivilegeObjectId();
 			OrganizationUnit organizationUnit = roleAssignment.getOrganizationUnit();
-			Set<Role> privilegeRoles = RoleUtils.getAllPrivilegeRoles(role);
+						Set<Role> privilegeRoles = RoleUtils.getAllPrivilegeRoles(role);
 			for (Role privilegeRole : privilegeRoles) {
 				for (RoleApplicationRoleAssignment roleApplicationRoleAssignment : privilegeRole.getApplicationRoleAssignments()) {
 					calculatePrivilegesFromApplicationRoleAssignment(organizationUnit, roleApplicationRoleAssignment, delegatedCustomPrivilegeObjectId);
