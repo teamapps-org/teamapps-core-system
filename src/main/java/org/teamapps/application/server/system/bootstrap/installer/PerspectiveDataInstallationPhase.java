@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,12 +25,13 @@ import org.teamapps.application.api.application.ApplicationBuilder;
 import org.teamapps.application.api.application.ApplicationGroup;
 import org.teamapps.application.api.application.BaseApplicationBuilder;
 import org.teamapps.application.api.application.perspective.PerspectiveBuilder;
+import org.teamapps.application.api.application.perspective.PerspectiveData;
 import org.teamapps.application.api.localization.Dictionary;
 import org.teamapps.application.api.theme.ApplicationIcons;
 import org.teamapps.application.server.system.bootstrap.ApplicationInfo;
 import org.teamapps.application.server.system.bootstrap.ApplicationInfoDataElement;
-import org.teamapps.application.tools.KeyCompare;
 import org.teamapps.application.server.system.utils.ValueCompare;
+import org.teamapps.application.tools.KeyCompare;
 import org.teamapps.application.ux.IconUtils;
 import org.teamapps.model.controlcenter.*;
 import org.teamapps.universaldb.index.numeric.NumericFilter;
@@ -40,6 +41,7 @@ import org.teamapps.universaldb.pojo.Entity;
 import java.lang.invoke.MethodHandles;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -170,6 +172,7 @@ public class PerspectiveDataInstallationPhase implements ApplicationInstallation
 		installedAsMainApplication = application.getInstalledAsMainApplication();
 
 		List<String> requiredPerspectives = applicationBuilder.getRequiredPerspectives();
+		Map<String, PerspectiveData> perspectivesData = applicationBuilder.getRequiredPerspectivesData();
 		if (!requiredPerspectives.isEmpty()) {
 			for (ManagedApplication managedApplication : installedAsMainApplication) {
 				Set<String> availablePerspectives = managedApplication.getPerspectives().stream().map(p -> p.getApplicationPerspective().getName()).collect(Collectors.toSet());
@@ -177,11 +180,21 @@ public class PerspectiveDataInstallationPhase implements ApplicationInstallation
 					String perspectiveName = requiredPerspectives.get(i);
 					if (!availablePerspectives.contains(perspectiveName)) {
 						ApplicationPerspective perspective = getPerspective(perspectiveName, application);
-						ManagedApplicationPerspective.create()
+						PerspectiveData perspectiveData = null;
+						if (perspectivesData != null && perspectivesData.containsKey(perspectiveName)) {
+							perspectiveData = perspectivesData.get(perspectiveName);
+						}
+						ManagedApplicationPerspective applicationPerspective = ManagedApplicationPerspective.create()
 								.setManagedApplication(managedApplication)
 								.setApplicationPerspective(perspective)
-								.setListingPosition(i)
-								.save();
+								.setListingPosition(i);
+						if (perspectiveData != null) {
+							applicationPerspective
+									.setIconOverride(IconUtils.encodeNoStyle(perspectiveData.getIcon()))
+									.setTitleKeyOverride(perspectiveData.getTitleKey())
+									.setDescriptionKeyOverride(perspectiveData.getDescriptionKey());
+						}
+						applicationPerspective.save();
 					}
 				}
 			}
