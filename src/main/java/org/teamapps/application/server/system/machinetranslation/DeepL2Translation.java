@@ -24,8 +24,7 @@ import com.deepl.api.*;
 import java.util.*;
 
 public class DeepL2Translation {
-	public static final Set<String> SUPPORTED_LANGUAGES = new HashSet<>(Arrays.asList("bg", "cs", "da", "de", "el", "en", "es", "et", "fi", "fr", "hu", "id", "it", "ja", "lt", "lv", "nl", "pl", "pt", "ro", "ru", "sk", "sl", "sv", "tr", "uk", "zh"));
-
+	public static final Set<String> SUPPORTED_LANGUAGES = new HashSet<>(Arrays.asList("bg", "cs", "da", "de", "el", "en", "es", "et", "fi", "fr", "hu", "id", "it", "ja", "ko", "lt", "lv", "nb", "nl", "pl", "pt", "ro", "ru", "sk", "sl", "sv", "tr", "uk", "zh"));
 	private final String apiKey;
 
 	public DeepL2Translation(String apiKey) {
