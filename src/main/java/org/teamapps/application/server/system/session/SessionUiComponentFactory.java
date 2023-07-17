@@ -33,6 +33,7 @@ import org.teamapps.application.ux.UiUtils;
 import org.teamapps.application.ux.form.FormMetaFieldsImpl;
 import org.teamapps.application.ux.localize.TranslatableField;
 import org.teamapps.application.ux.org.OrganizationViewUtils;
+import org.teamapps.icons.Icon;
 import org.teamapps.model.controlcenter.Application;
 import org.teamapps.model.controlcenter.OrganizationUnitTypeView;
 import org.teamapps.model.controlcenter.OrganizationUnitView;
@@ -131,6 +132,16 @@ public class SessionUiComponentFactory implements UiComponentFactory {
 			}
 		});
 		return editor;
+	}
+
+	@Override
+	public void showDeleteQuestion(Runnable onConfirmation) {
+		UiUtils.showDeleteQuestion(onConfirmation, applicationInstanceData);
+	}
+
+	@Override
+	public void showQuestion(Icon icon, String title, String text, Runnable onConfirmation) {
+		UiUtils.showQuestion(icon, title, text, onConfirmation, applicationInstanceData);
 	}
 
 	private String createLink(File file, String bucket, String name) throws IOException {
