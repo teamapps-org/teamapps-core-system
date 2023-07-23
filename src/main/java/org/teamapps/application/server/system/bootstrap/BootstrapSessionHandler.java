@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,13 +19,13 @@
  */
 package org.teamapps.application.server.system.bootstrap;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.teamapps.application.api.annotation.TeamAppsBootableClass;
 import org.teamapps.application.api.application.ApplicationBuilder;
 import org.teamapps.application.api.config.ApplicationConfig;
 import org.teamapps.application.api.password.SecurePasswordHash;
-import org.teamapps.application.server.ApplicationServerConfig;
 import org.teamapps.application.server.ServerRegistry;
 import org.teamapps.application.server.SessionHandler;
 import org.teamapps.application.server.SessionManager;
@@ -42,23 +42,21 @@ import org.teamapps.icon.antu.AntuIcon;
 import org.teamapps.icon.flags.FlagIcon;
 import org.teamapps.icon.fontawesome.FontAwesomeIcon;
 import org.teamapps.icon.material.MaterialIcon;
-import org.teamapps.model.ControlCenterModel;
 import org.teamapps.model.controlcenter.*;
-import org.teamapps.universaldb.DatabaseManager;
-import org.teamapps.universaldb.UniversalDB;
-import org.teamapps.universaldb.UniversalDbBuilder;
 import org.teamapps.universaldb.index.file.FileValue;
-import org.teamapps.universaldb.index.file.store.LocalDatabaseFileStore;
 import org.teamapps.universaldb.index.translation.TranslatableText;
-import org.teamapps.universaldb.model.DatabaseModel;
 import org.teamapps.universaldb.schema.ModelProvider;
 import org.teamapps.ux.component.template.BaseTemplateRecord;
 import org.teamapps.ux.session.SessionContext;
 
 import java.io.File;
+import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @TeamAppsBootableClass(priority = 7)
@@ -112,6 +110,18 @@ public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 		systemRegistry = new SystemRegistry(this, serverRegistry, sessionManager, applicationConfig);
 		systemRegistry.setSessionRegistryHandler(sessionRegistryHandler);
 		systemRegistry.installAndLoadApplication(controlCenterApp);
+
+		for (Map.Entry<String, Supplier<InputStream>> entry : getEmbeddedUpdatableApps().entrySet()) {
+			String applicationName = entry.getKey();
+			if (Application.getAll().stream().noneMatch(app -> applicationName.equals(app.getName()))) {
+				LOGGER.info("Install embedded updatable app: {}", applicationName);
+				File jarFile = File.createTempFile("temp", ".jar");
+				FileUtils.copyToFile(entry.getValue().get(), jarFile);
+				ApplicationInstaller jarInstaller = systemRegistry.createJarInstaller(jarFile);
+				systemRegistry.installAndLoadApplication(jarInstaller);
+			}
+		}
+
 		getSystemApplications().forEach(app -> systemRegistry.installAndLoadApplication(app));
 
 		if (User.getCount() == 0) {
@@ -120,13 +130,13 @@ public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 
 		for (Application application : Application.getAll()) {
 			if (application.isUninstalled()) {
-				LOGGER.info("Skipping uninstalled app:" + application.getName());
+				LOGGER.info("Skipping uninstalled app: {}", application.getName());
 				continue;
 			}
 			LOGGER.info("Loading app:" + application.getName());
 			ApplicationVersion installedVersion = application.getInstalledVersion();
 			if (installedVersion == null) {
-				LOGGER.warn("ERROR: app has no installed version:" + application);
+				LOGGER.warn("ERROR: app has no installed version: {}", application);
 				continue;
 			}
 			FileValue binary = installedVersion.getBinary();
@@ -186,6 +196,10 @@ public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 		return Arrays.asList(
 				new UserSettingsApp()
 		);
+	}
+
+	public Map<String, Supplier<InputStream>> getEmbeddedUpdatableApps() {
+		return Collections.emptyMap();
 	}
 
 	@Override
