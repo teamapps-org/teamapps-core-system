@@ -200,6 +200,9 @@ public class ApplicationInstance implements PerspectiveByNameLauncher {
 		if (perspectiveSessionData == null) {
 			return null;
 		} else {
+			if (this.applicationMenuTree != null) {
+				applicationMenuTree.setSelectedNode(perspectiveSessionData);
+			}
 			if (mobileInstance) {
 				return showMobilePerspective(perspectiveSessionData);
 			} else {

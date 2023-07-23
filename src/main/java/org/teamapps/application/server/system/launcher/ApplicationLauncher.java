@@ -21,6 +21,7 @@ package org.teamapps.application.server.system.launcher;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.teamapps.application.api.application.ApplicationInstanceData;
 import org.teamapps.application.api.application.BaseApplicationBuilder;
 import org.teamapps.application.api.application.UserProfileApplicationBuilder;
 import org.teamapps.application.api.application.perspective.PerspectiveBuilder;
@@ -95,6 +96,7 @@ public class ApplicationLauncher {
 	private Set<ApplicationData> openedApplications = new HashSet<>();
 	private Map<ApplicationData, Tab> tabByApplicationData = new HashMap<>();
 	private Map<ApplicationData, Component> mobilAppByApplicationData = new HashMap<>();
+	private Map<ApplicationData, ApplicationInstance> openedApplicationInstanceByApplicationData = new HashMap<>();
 	private TabPanel applicationsTabPanel;
 	private TwoWayBindableValue<ManagedApplication> selectedApplication = TwoWayBindableValue.create();
 	private TwoWayBindableValue<ManagedApplicationPerspective> selectedPerspective = TwoWayBindableValue.create();
@@ -374,8 +376,7 @@ public class ApplicationLauncher {
 				SimpleItemGroup<?> itemGroup = itemView.addSingleColumnGroup(baseApplicationBuilder.getApplicationIcon(), getLocalized(baseApplicationBuilder.getApplicationTitleKey()));
 				for (PerspectiveBuilder perspectiveBuilder : builder.getUserProfilePerspectiveBuilders()) {
 					itemGroup.addItem(perspectiveBuilder.getIcon(), getLocalized(perspectiveBuilder.getTitleKey()), getLocalized(perspectiveBuilder.getDescriptionKey())).onClick.addListener(() -> {
-						//todo open with perspective
-						openApplication(userProfileApp);
+						openApplicationWithPerspective(userProfileApp, perspectiveBuilder);
 					});
 				}
 			}
@@ -420,6 +421,11 @@ public class ApplicationLauncher {
 		}
 	}
 
+	private void openApplicationWithPerspective(ApplicationData applicationData, PerspectiveBuilder perspectiveBuilder) {
+		openApplication(applicationData);
+		openedApplicationInstanceByApplicationData.get(applicationData).showApplicationPerspective(perspectiveBuilder.getName());
+	}
+
 	private void openApplication(ApplicationData applicationData) {
 		selectedApplication.set(applicationData.getManagedApplication());
 		userSessionData.addOpenApplicationsCount();
@@ -436,6 +442,7 @@ public class ApplicationLauncher {
 			}
 		} else {
 			ApplicationInstance applicationInstance = new ApplicationInstance(userSessionData, applicationData, applicationLauncher, selectedPerspective);
+			openedApplicationInstanceByApplicationData.put(applicationData, applicationInstance);
 			userSessionData.setDarkTheme(applicationData.getManagedApplication().isDarkTheme());
 			if (mobileView) {
 				Component application = applicationInstance.createMobileApplication();

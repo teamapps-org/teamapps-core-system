@@ -95,6 +95,11 @@ public class UserSessionData {
 		}
 	}
 
+	public void updateDisplayLanguage(String language) {
+		localizationRankedLanguages.remove(language);
+		localizationRankedLanguages.add(0, language);
+	}
+
 	public void setLoginData(LoginData loginData) {
 		this.loginData = loginData;
 	}
