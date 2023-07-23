@@ -299,19 +299,25 @@ public class ApplicationsPerspectiveComponents extends AbstractManagedApplicatio
 		}
 
 		formLayout.addSection(ApplicationIcons.INFORMATION, getLocalized("applications.applicationInfo")).setDrawHeaderLine(false);
-		formLayout.addLabelAndComponent(null, getLocalized("applications.dataModelChanges"), UiUtils.createSingleValueTemplateField(ApplicationIcons.DATA_CLOUD, applicationInfo.getDataModelData().getChangeString()));
-		formLayout.addLabelAndComponent(null, getLocalized("applications.localizationDataChanges"), UiUtils.createSingleValueTemplateField(ApplicationIcons.EARTH, applicationInfo.getLocalizationData().getChangeString()));
-		formLayout.addLabelAndComponent(null, getLocalized("applications.privilegesDataChanges"), UiUtils.createSingleValueTemplateField(ApplicationIcons.KEYS, applicationInfo.getPrivilegeData().getChangeString()));
+		formLayout.addLabelAndComponent(null, getLocalized("applications.dataModelChanges"), UiUtils.createSingleValueTemplateField(ApplicationIcons.DATA_CLOUD, applicationInfo.getDataModelData() == null ? null : applicationInfo.getDataModelData().getChangeString()));
+		formLayout.addLabelAndComponent(null, getLocalized("applications.localizationDataChanges"), UiUtils.createSingleValueTemplateField(ApplicationIcons.EARTH, applicationInfo.getLocalizationData() == null ? null : applicationInfo.getLocalizationData().getChangeString()));
+		formLayout.addLabelAndComponent(null, getLocalized("applications.privilegesDataChanges"), UiUtils.createSingleValueTemplateField(ApplicationIcons.KEYS, applicationInfo.getPrivilegeData() == null ? null : applicationInfo.getPrivilegeData().getChangeString()));
 		formLayout.addLabelAndComponent(null, getLocalized("applications.perspectivesDataChanges"), UiUtils.createSingleValueTemplateField(ApplicationIcons.WINDOWS, applicationInfo.getPerspectiveData().getChangeString()));
 
-		formLayout.addSection(ApplicationIcons.DATA_CLOUD, getLocalized("applications.dataModelChanges")).setDrawHeaderLine(false).setCollapsed(true);
-		formLayout.addLabelAndComponent(UiUtils.createSingleValueDisplayField(applicationInfo.getDataModelData().getMultiLineChangeHtml(getLocalized("applications.addedData"), getLocalized("applications.removedData"))));
+		if (applicationInfo.getDataModelData() != null) {
+			formLayout.addSection(ApplicationIcons.DATA_CLOUD, getLocalized("applications.dataModelChanges")).setDrawHeaderLine(false).setCollapsed(true);
+			formLayout.addLabelAndComponent(UiUtils.createSingleValueDisplayField(applicationInfo.getDataModelData().getMultiLineChangeHtml(getLocalized("applications.addedData"), getLocalized("applications.removedData"))));
+		}
 
-		formLayout.addSection(ApplicationIcons.EARTH, getLocalized("applications.localizationDataChanges")).setDrawHeaderLine(false).setCollapsed(true);
-		formLayout.addLabelAndComponent(UiUtils.createSingleValueDisplayField(applicationInfo.getLocalizationData().getMultiLineChangeHtml(getLocalized("applications.addedData"), getLocalized("applications.removedData"))));
+		if (applicationInfo.getLocalizationData() != null) {
+			formLayout.addSection(ApplicationIcons.EARTH, getLocalized("applications.localizationDataChanges")).setDrawHeaderLine(false).setCollapsed(true);
+			formLayout.addLabelAndComponent(UiUtils.createSingleValueDisplayField(applicationInfo.getLocalizationData().getMultiLineChangeHtml(getLocalized("applications.addedData"), getLocalized("applications.removedData"))));
+		}
 
-		formLayout.addSection(ApplicationIcons.KEYS, getLocalized("applications.privilegesDataChanges")).setDrawHeaderLine(false).setCollapsed(true);
-		formLayout.addLabelAndComponent(UiUtils.createSingleValueDisplayField(applicationInfo.getPrivilegeData().getMultiLineChangeHtml(getLocalized("applications.addedData"), getLocalized("applications.removedData"))));
+		if (applicationInfo.getPrivilegeData() != null) {
+			formLayout.addSection(ApplicationIcons.KEYS, getLocalized("applications.privilegesDataChanges")).setDrawHeaderLine(false).setCollapsed(true);
+			formLayout.addLabelAndComponent(UiUtils.createSingleValueDisplayField(applicationInfo.getPrivilegeData().getMultiLineChangeHtml(getLocalized("applications.addedData"), getLocalized("applications.removedData"))));
+		}
 
 		formLayout.addSection(ApplicationIcons.WINDOWS, getLocalized("applications.perspectivesDataChanges")).setDrawHeaderLine(false).setCollapsed(true);
 		formLayout.addLabelAndComponent(UiUtils.createSingleValueDisplayField(applicationInfo.getPerspectiveData().getMultiLineChangeHtml(getLocalized("applications.addedData"), getLocalized("applications.removedData"))));
