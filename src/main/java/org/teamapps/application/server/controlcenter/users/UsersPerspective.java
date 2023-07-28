@@ -114,7 +114,7 @@ public class UsersPerspective extends AbstractManagedApplicationPerspective {
 		table.addColumn(User.FIELD_LAST_NAME, getLocalized("users.user"), userTableField).setDefaultWidth(250);
 		table.addColumn(User.FIELD_ORGANIZATION_UNIT, getLocalized("users.organizationUnit"), orgUnitTableField).setDefaultWidth(150);
 		table.addColumn(User.FIELD_USER_ACCOUNT_STATUS, getLocalized("users.accountStatus"), accountStatusTableField).setDefaultWidth(120);
-		table.addColumn(User.FIELD_LAST_LOGIN, getLocalized("users.lastLogin"), lastLogin).setDefaultWidth(200);
+		table.addColumn("lastLogin", getLocalized("users.lastLogin"), lastLogin).setDefaultWidth(200);
 		table.addColumn(User.FIELD_DISPLAY_LANGUAGE, getLocalized(Dictionary.LANGUAGE), languageComboBox).setDefaultWidth(350);
 		table.addColumn(User.FIELD_ROLE_ASSIGNMENTS, getLocalized("users.roles"), userRoleAssignmentTableField).setDefaultWidth(1500);
 
@@ -122,7 +122,7 @@ public class UsersPerspective extends AbstractManagedApplicationPerspective {
 			case User.FIELD_LAST_NAME -> user;
 			case User.FIELD_ORGANIZATION_UNIT -> user.getOrganizationUnit();
 			case User.FIELD_USER_ACCOUNT_STATUS -> user.getUserAccountStatus();
-			case User.FIELD_LAST_LOGIN -> user.getLastLogin();
+			case "lastLogin" -> user.getLoginStats() != null ? user.getLoginStats().getLastLogin() : null;
 			case User.FIELD_DISPLAY_LANGUAGE -> user.getDisplayLanguage() == null ? null : Language.getLanguageByIsoCode(user.getDisplayLanguage());
 			case User.FIELD_ROLE_ASSIGNMENTS -> user.getRoleAssignments();
 			default -> null;

@@ -205,15 +205,10 @@ public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 	@Override
 	public void handleSessionStart(SessionContext context) {
 		registerIconProviders(context);
-		if (sessionRegistryHandler != null) {
-			sessionRegistryHandler.handleNewSession(context);
-		}
-
-
 		new LoginHandler(systemRegistry, this).handleNewSession(context);
 	}
 
-	private void registerIconProviders(SessionContext context) {
+	protected void registerIconProviders(SessionContext context) {
 		if (standardIconClass != null) {
 			context.getIconProvider().registerIconLibrary(standardIconClass);
 		}

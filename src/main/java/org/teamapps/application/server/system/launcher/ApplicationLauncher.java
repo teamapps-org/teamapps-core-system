@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,7 +21,6 @@ package org.teamapps.application.server.system.launcher;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.teamapps.application.api.application.ApplicationInstanceData;
 import org.teamapps.application.api.application.BaseApplicationBuilder;
 import org.teamapps.application.api.application.UserProfileApplicationBuilder;
 import org.teamapps.application.api.application.perspective.PerspectiveBuilder;
@@ -91,6 +90,7 @@ public class ApplicationLauncher {
 	private final LogoutHandler logoutHandler;
 	private final SystemRegistry registry;
 	private final boolean mobileView;
+	private final Map<String, String> registeredPublicBackgroundImageMap = new ConcurrentHashMap<>();
 	private List<ApplicationGroupData> sortedApplicationGroups;
 	private Component applicationLauncher;
 	private Set<ApplicationData> openedApplications = new HashSet<>();
@@ -103,7 +103,6 @@ public class ApplicationLauncher {
 	private Tab applicationLauncherTab;
 	private ApplicationData userProfileApp;
 	private View launcherView;
-	private final Map<String, String> registeredPublicBackgroundImageMap = new ConcurrentHashMap<>();
 
 	public ApplicationLauncher(UserSessionData userSessionData, LogoutHandler logoutHandler) {
 		this.userSessionData = userSessionData;
@@ -111,11 +110,12 @@ public class ApplicationLauncher {
 		ClientInfo clientInfo = userSessionData.getContext().getClientInfo();
 		this.mobileView = clientInfo.isMobileDevice();
 		this.logoutHandler = logoutHandler;
-		userSessionData.setLoginData(createLoginData(userSessionData.getUser().getId(), clientInfo));
+		User user = userSessionData.getUser();
+		userSessionData.setLoginData(createLoginData(user.getId(), clientInfo));
 
 		userSessionData.getContext().addExecutionDecorator(runnable -> {
 			try {
-				UniversalDB.setUserId(userSessionData.getUser().getId());
+				UniversalDB.setUserId(user.getId());
 				DatabaseLogAppender.THREAD_LOCAL_MANAGED_APPLICATION.set(selectedApplication.get() != null ? selectedApplication.get().getId() : 0);
 				DatabaseLogAppender.THREAD_LOCAL_APPLICATION_VERSION.set(getCurrentApplicationVersion(selectedApplication.get()));
 				DatabaseLogAppender.THREAD_LOCAL_MANAGED_PERSPECTIVE.set(selectedPerspective.get() != null ? selectedPerspective.get().getId() : 0);
@@ -133,7 +133,18 @@ public class ApplicationLauncher {
 		}, false);
 		selectedApplication.onChanged().addListener(this::handleApplicationSelection);
 		selectedPerspective.onChanged().addListener(this::handlePerspectiveSelection);
-		userSessionData.getUser().setLastLogin(Instant.now()).save();
+		UserLoginStats loginStats = user.getLoginStats();
+		if (loginStats == null) {
+			loginStats = UserLoginStats.create()
+					.setFirstLogin(Instant.now())
+					.setUser(user)
+					.save();
+		}
+		loginStats
+				.setLastLogin(Instant.now())
+				.setLoginCount(loginStats.getLoginCount() + 1)
+				.setLastLoginIpAddress(userSessionData.getContext().getClientInfo().getIp())
+				.save();
 		setLauncherTheme();
 		userSessionData.setApplicationDesktopSupplier(this::createApplicationDesktop);
 		initApplicationData();

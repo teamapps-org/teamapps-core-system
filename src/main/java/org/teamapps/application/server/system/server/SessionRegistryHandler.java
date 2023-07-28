@@ -26,8 +26,6 @@ import org.teamapps.ux.session.SessionContext;
 
 public interface SessionRegistryHandler {
 
-	void handleNewSession(SessionContext context);
-
 	boolean acceptAuthenticatedUser(UserSessionData userSessionDat, SessionContext context);
 
 	Role getAuthenticatedUserRole();

@@ -299,6 +299,7 @@ public class SystemLogPerspective extends AbstractManagedApplicationPerspective 
 
 	private Icon getLoglevelIcon(LogLevel level) {
 		return switch (level) {
+			case DEBUG -> ApplicationIcons.DEBUG;
 			case INFO -> ApplicationIcons.INFORMATION;
 			case WARNING -> ApplicationIcons.SIGN_WARNING;
 			case ERROR -> ApplicationIcons.DELETE;

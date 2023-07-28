@@ -29,6 +29,7 @@ public class SystemConfig {
 	private TwilioConfig twilioConfig = new TwilioConfig();
 	private DocumentConversionConfig documentConversionConfig = new DocumentConversionConfig();
 	private MonitoringDashboardConfig monitoringDashboardConfig = new MonitoringDashboardConfig();
+	private MailConfig mailConfig = new MailConfig();
 
 	public LocalizationConfig getLocalizationConfig() {
 		return localizationConfig;
@@ -92,5 +93,13 @@ public class SystemConfig {
 
 	public void setServerMonitoringDashboardConfig(MonitoringDashboardConfig monitoringDashboardConfig) {
 		this.monitoringDashboardConfig = monitoringDashboardConfig;
+	}
+
+	public MailConfig getMailConfig() {
+		return mailConfig;
+	}
+
+	public void setMailConfig(MailConfig mailConfig) {
+		this.mailConfig = mailConfig;
 	}
 }

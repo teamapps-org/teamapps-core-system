@@ -21,7 +21,7 @@ package org.teamapps.application.server.system.config;
 
 public class ThemingConfig {
 
-	private String loginBackgroundUrl = "/resources/backgrounds/login.jpg";
+	private String loginBackgroundUrl = "/resources/backgrounds/login3-bl.jpg";
 	private String applicationBackgroundUrl = "/resources/backgrounds/default-bl.jpg";
 	private String applicationSecondaryBackgroundUrl = "/resources/backgrounds/default-bl.jpg";
 	private String applicationDarkBackgroundUrl = "/resources/backgrounds/dark.jpg";

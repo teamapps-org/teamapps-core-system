@@ -32,8 +32,8 @@ public class BaseResourceLinkProvider {
 
 	public BaseResourceLinkProvider() {
 		secureResourceHandler = SecureResourceHandler.getInstance();
-		userStandardProfilePictureLinkBuilder = secureResourceHandler.registerByteArrayResourceHandler(id -> User.getById(id).getProfilePicture(), id -> User.getById(id).getLastLoginAsEpochMilli(), "jpg");
-		userLargeProfilePictureLinkBuilder = secureResourceHandler.registerByteArrayResourceHandler(id -> User.getById(id).getProfilePictureLarge(), id -> User.getById(id).getLastLoginAsEpochMilli(),"jpg");
+		userStandardProfilePictureLinkBuilder = secureResourceHandler.registerByteArrayResourceHandler(id -> User.getById(id).getProfilePicture(), id -> User.getById(id).getMetaModificationDateAsEpochMilli(), "jpg");
+		userLargeProfilePictureLinkBuilder = secureResourceHandler.registerByteArrayResourceHandler(id -> User.getById(id).getProfilePictureLarge(), id -> User.getById(id).getMetaModificationDateAsEpochMilli(),"jpg");
 	}
 
 	public String getUserProfilePictureLink(int userId, boolean large) {

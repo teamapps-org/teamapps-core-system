@@ -44,7 +44,7 @@ public class AppLocalAdministrationPerspective extends AbstractManagedApplicatio
 		TranslationsPerspectiveBuilder translationsPerspectiveBuilder = new TranslationsPerspectiveBuilder();
 		PerspectiveMenuPanel menuPanel = PerspectiveMenuPanel.createMenuPanel(getApplicationInstanceData(),
 				translationsPerspectiveBuilder,
-				new UserRoleAssignmentPerspectiveBuilder(),
+//				new UserRoleAssignmentPerspectiveBuilder(),
 				new RolesPerspectiveBuilder(),
 				new AccessControlPerspectiveBuilder(),
 				new AccessControlAppRolePerspectiveBuilder(),

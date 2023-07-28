@@ -107,22 +107,6 @@ public class LoginHandler {
 		createLoginView(context, rootPanel);
 	}
 
-	/*
-		Login options to implement:
-			Authentication:
-				-allow client secure token
-				-wrong password limiter: seconds -> login progress
-			Registration:
-				-allow unknown users
-				-auto confirm new users
-			Password reset
-				-allow sms password reset
-				-allow email password reset
-			Accept policies:
-				Privacy policy
-				Terms of use
-	 */
-
 	public void createLoginView(SessionContext context, ApplicationRootPanel rootPanel) {
 		String backgroundUrl = systemRegistry.getSystemConfig().getThemingConfig().getLoginBackgroundUrl();
 		context.registerBackgroundImage("login", backgroundUrl, backgroundUrl);
