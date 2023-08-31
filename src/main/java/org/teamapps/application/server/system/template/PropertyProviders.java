@@ -360,20 +360,18 @@ public class PropertyProviders {
 	}
 
 	public static User getOrgUnitLeader(OrganizationUnit unit, OrganizationField organizationField) {
-		//todo change when model update is active (back reference from unit to assignment)
-		List<UserRoleAssignment> assignments = UserRoleAssignment.filter().organizationUnit(NumericFilter.equalsFilter(unit.getId())).execute();
-		return assignments.stream()
+		return unit.getUserRoleAssignments().stream()
 				.filter(assignment -> assignment.getRole().getRoleType() == RoleType.LEADER && assignment.getUser() != null && (organizationField == null || organizationField.equals(assignment.getRole().getOrganizationField())))
+				.sorted((o1, o2) -> Boolean.compare(o2.getMainResponsible(), o1.getMainResponsible()))
 				.map(UserRoleAssignment::getUser)
 				.findFirst()
 				.orElse(null);
 	}
 
 	public static User getOrgUnitMentor(OrganizationUnit unit, OrganizationField organizationField) {
-		//todo change when model update is active (back reference from unit to assignment)
-		List<UserRoleAssignment> assignments = UserRoleAssignment.filter().organizationUnit(NumericFilter.equalsFilter(unit.getId())).execute();
-		return assignments.stream()
+		return unit.getUserRoleAssignments().stream()
 				.filter(assignment -> assignment.getRole().getRoleType() == RoleType.MENTOR && assignment.getUser() != null && (organizationField == null || organizationField.equals(assignment.getRole().getOrganizationField())))
+				.sorted((o1, o2) -> Boolean.compare(o2.getMainResponsible(), o1.getMainResponsible()))
 				.map(UserRoleAssignment::getUser)
 				.findFirst()
 				.orElse(null);
