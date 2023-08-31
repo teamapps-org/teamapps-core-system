@@ -56,7 +56,7 @@ public class SessionUserImpl implements SessionUser {
 		user.getLanguageSettings().stream()
 				.filter(settings -> settings.getLanguage() != null && settings.getLanguageSkillLevel() != null)
 				.sorted(Comparator.comparingInt(o -> o.getLanguageSkillLevel().ordinal()))
-				.forEach(settings -> rankedLanguages.add(settings.getLanguage()));
+				.forEach(settings -> languages.add(settings.getLanguage()));
 		if (languages.isEmpty()) {
 			languages.add(context.getLocale().getLanguage());
 		}
