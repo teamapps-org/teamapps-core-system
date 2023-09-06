@@ -238,7 +238,7 @@ public class ApplicationInfo {
 				", warnings=" + warnings +
 				", errors=" + errors +
 				", dataModelData=" + dataModelData +
-				", localizationData=" + localizationData +
+//				", localizationData=" + localizationData +
 				", privilegeData=" + privilegeData +
 				", perspectiveData=" + perspectiveData +
 				", checked=" + checked +
