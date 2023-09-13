@@ -239,7 +239,7 @@ public class ApplicationLauncher {
 		String key = applicationName + "-" + (darkTheme ? "dark" : "bright");
 		String link = registeredPublicBackgroundImageMap.get(key);
 		if (link == null) {
-			link = PublicLinkResourceProvider.getInstance().createLinkForResource(new ByteArrayResource(bytes, key + ".jpg"), Duration.ofDays(10_000));
+			link = PublicLinkResourceProvider.getInstance().createStaticResource(key + "-" + bytes.length, new ByteArrayResource(bytes, key + ".jpg"));
 			registeredPublicBackgroundImageMap.put(key, link);
 		}
 		userSessionData.getContext().registerBackgroundImage(key, link, link);
