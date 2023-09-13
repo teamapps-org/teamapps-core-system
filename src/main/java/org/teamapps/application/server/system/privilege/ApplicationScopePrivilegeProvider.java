@@ -46,11 +46,13 @@ public class ApplicationScopePrivilegeProvider {
 
 	private void loadPrivileges() {
 		privilegeGroups = applicationBuilder.getPrivilegeGroups();
-		if (privilegeGroups == null) {
-			return;
-		}
 		privilegeGroupByName = new HashMap<>();
 		privilegeByName = new HashMap<>();
+		if (privilegeGroups == null) {
+			applicationRoles = new ArrayList<>();
+			applicationRoleByName = new HashMap<>();
+			return;
+		}
 		privilegeGroups.forEach(privilegeGroup -> {
 			privilegeGroupByName.put(privilegeGroup.getName(), privilegeGroup);
 			if (privilegeGroup.getPrivileges() != null) {
