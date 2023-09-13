@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -119,6 +119,10 @@ public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 				FileUtils.copyToFile(entry.getValue().get(), jarFile);
 				ApplicationInstaller jarInstaller = systemRegistry.createJarInstaller(jarFile);
 				systemRegistry.installAndLoadApplication(jarInstaller);
+			} else {
+				LOGGER.info("Load installed embedded app: {}", applicationName);
+				Application application = Application.getAll().stream().filter(app -> applicationName.equals(app.getName())).findFirst().orElse(null);
+				loadInstalledJarApplication(application);
 			}
 		}
 
@@ -129,33 +133,41 @@ public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 		}
 
 		for (Application application : Application.getAll()) {
-			if (application.isUninstalled()) {
-				LOGGER.info("Skipping uninstalled app: {}", application.getName());
-				continue;
-			}
-			LOGGER.info("Loading app:" + application.getName());
-			ApplicationVersion installedVersion = application.getInstalledVersion();
-			if (installedVersion == null) {
-				LOGGER.warn("ERROR: app has no installed version: {}", application);
-				continue;
-			}
-			FileValue binary = installedVersion.getBinary();
-			if (binary != null) {
-				File jarFile = binary.getAsFile();
-				ApplicationInstaller jarInstaller = systemRegistry.createJarInstaller(jarFile);
-				try {
-					if (jarInstaller.isInstalled()) {
-						systemRegistry.loadApplication(jarInstaller);
-					}
-				} catch (Throwable e) {
-					LOGGER.warn("Error while loading application:", e);
-					e.printStackTrace();
-				}
-			}
+			loadInstalledJarApplication(application);
 		}
 
 		handleSystemStarted();
 
+	}
+
+	private void loadInstalledJarApplication(Application application) {
+		if (application.isUninstalled()) {
+			LOGGER.info("Skipping uninstalled app: {}", application.getName());
+			return;
+		}
+		if (systemRegistry.getLoadedApplication(application) != null) {
+			LOGGER.info("Skip loading already loaded app: {}", application.getName());
+			return;
+		}
+		LOGGER.info("Loading app:" + application.getName());
+		ApplicationVersion installedVersion = application.getInstalledVersion();
+		if (installedVersion == null) {
+			LOGGER.warn("ERROR: app has no installed version: {}", application);
+			return;
+		}
+		FileValue binary = installedVersion.getBinary();
+		if (binary != null) {
+			File jarFile = binary.getAsFile();
+			ApplicationInstaller jarInstaller = systemRegistry.createJarInstaller(jarFile);
+			try {
+				if (jarInstaller.isInstalled()) {
+					systemRegistry.loadApplication(jarInstaller);
+				}
+			} catch (Throwable e) {
+				LOGGER.warn("Error while loading application:", e);
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public void handleSystemStarted() {
