@@ -86,7 +86,7 @@ public class PropertyFileTranslation {
 				int pos = line.indexOf('=');
 				String key = line.substring(0, pos);
 				String value = line.substring(pos + 1);
-				String topic = key.substring(0, key.indexOf('.'));
+				String topic = key.contains(".") ? key.substring(0, key.indexOf('.')) : key;
 				if (key.startsWith("org.teamapps.dictionary.")) {
 					int endIndex = key.indexOf('.', 25);
 					topic = key.substring(24, endIndex < 0 ? key.length() : endIndex);
