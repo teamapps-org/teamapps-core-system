@@ -50,10 +50,7 @@ import org.teamapps.ux.component.table.Table;
 import org.teamapps.ux.component.template.BaseTemplate;
 import org.teamapps.ux.component.template.BaseTemplateRecord;
 import org.teamapps.ux.component.timegraph.TimeGraph;
-import org.teamapps.ux.component.toolbar.AbstractToolContainer;
-import org.teamapps.ux.component.toolbar.Toolbar;
-import org.teamapps.ux.component.toolbar.ToolbarButton;
-import org.teamapps.ux.component.toolbar.ToolbarButtonGroup;
+import org.teamapps.ux.component.toolbar.*;
 import org.teamapps.ux.component.tree.Tree;
 import org.teamapps.ux.component.workspacelayout.definition.LayoutItemDefinition;
 
@@ -232,9 +229,19 @@ public class MobileAssembler implements ApplicationAssembler {
 	public void setWorkSpaceToolbar(ResponsiveApplicationToolbar toolbar) {
 		mainToolbar = toolbar.getToolbar();
 		navigationToolbarMenuButton.setDropDownComponent(mainToolbar);
-		mainToolbar.onButtonClick.addListener(() -> {
-			//todo hide drop down panel
+		mainToolbar.onButtonClick.addListener(eventData -> {
+			ToolbarButton button = eventData.getButton();
+			if (button.getDropDownComponentSupplier() != null) {
+				Component component = button.getDropDownComponentSupplier().get();
+				if (component instanceof SimpleItemView<?> itemView) {
+					itemView.onItemClicked.addListener(navigationToolbarMenuButton::closeDropDown);
+				}
+			}
+			if (eventData.getDropDownButtonClickInfo() == null) {
+				navigationToolbarMenuButton.closeDropDown();
+			}
 		});
+
 	}
 
 	@Override
