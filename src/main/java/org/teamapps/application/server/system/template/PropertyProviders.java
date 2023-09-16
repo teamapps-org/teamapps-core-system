@@ -252,9 +252,9 @@ public class PropertyProviders {
 	public static PropertyProvider<OrganizationUnit> creatOrganizationUnitPropertyProvider(ApplicationInstanceData applicationInstanceData) {
 		return (unit, propertyNames) -> {
 			Map<String, Object> map = new HashMap<>();
-			map.put(BaseTemplate.PROPERTY_ICON, unit.getIcon() != null ? IconUtils.decodeIcon(unit.getIcon()) : IconUtils.decodeIcon(unit.getType().getIcon()));
+			map.put(BaseTemplate.PROPERTY_ICON, unit.getIcon() != null ? IconUtils.decodeIcon(unit.getIcon()) : IconUtils.decodeIcon(unit.getType() == null ? null : unit.getType().getIcon()));
 			map.put(BaseTemplate.PROPERTY_CAPTION, getOrganizationUnitTitle(unit, applicationInstanceData));
-			map.put(BaseTemplate.PROPERTY_DESCRIPTION, applicationInstanceData.getTranslatableTextExtractor().apply(unit.getType().getName()));
+			map.put(BaseTemplate.PROPERTY_DESCRIPTION, applicationInstanceData.getTranslatableTextExtractor().apply(unit.getType() == null ? null : unit.getType().getName()));
 			return map;
 		};
 	}
