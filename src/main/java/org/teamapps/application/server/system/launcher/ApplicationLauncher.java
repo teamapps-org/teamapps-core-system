@@ -394,8 +394,8 @@ public class ApplicationLauncher {
 			SimpleItemGroup<?> itemGroup = itemView.addSingleColumnGroup(ApplicationIcons.LOG_OUT, getLocalized(Dictionary.LOGOUT));
 			itemGroup.addItem(ApplicationIcons.LOG_OUT, getLocalized(Dictionary.LOGOUT), "Vom System abmelden").onClick.addListener(this::logout); //todo dictionary entry
 			profileButton.setDropDownComponent(itemView);
-			profileButton.setMinDropDownWidth(200);
-			profileButton.setIconSize(16);
+			profileButton.setMinDropDownWidth(250);
+			profileButton.setIconSize(20);
 			applicationsTabPanel.addToolButton(profileButton);
 			userSessionData.setRootComponent(applicationsTabPanel);
 		}
