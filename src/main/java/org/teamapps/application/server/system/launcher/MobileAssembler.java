@@ -234,7 +234,10 @@ public class MobileAssembler implements ApplicationAssembler {
 			if (button.getDropDownComponentSupplier() != null) {
 				Component component = button.getDropDownComponentSupplier().get();
 				if (component instanceof SimpleItemView<?> itemView) {
-					itemView.onItemClicked.addListener(navigationToolbarMenuButton::closeDropDown);
+					itemView.onItemClicked.addListener((event, disposable) -> {
+						navigationToolbarMenuButton.closeDropDown();
+						disposable.dispose();
+					});
 				}
 			}
 			if (eventData.getDropDownButtonClickInfo() == null) {
