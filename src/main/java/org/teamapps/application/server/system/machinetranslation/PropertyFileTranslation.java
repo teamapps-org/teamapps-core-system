@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,6 +22,7 @@ package org.teamapps.application.server.system.machinetranslation;
 import com.deepl.api.TextResult;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
@@ -38,10 +39,6 @@ public class PropertyFileTranslation {
 		this.translation = new DeepL2Translation(key);
 	}
 
-	public DeepL2Translation getTranslation() {
-		return translation;
-	}
-
 	public static void main(String[] args) throws Exception {
 		if (args == null || args.length < 2) {
 			System.out.println("Error: missing key!");
@@ -52,6 +49,123 @@ public class PropertyFileTranslation {
 		PropertyFileTranslation propertyFileTranslation = new PropertyFileTranslation(key);
 		propertyFileTranslation.getTranslation().printUsage();
 		propertyFileTranslation.translateFiles(path, DeepL2Translation.SUPPORTED_LANGUAGES);
+	}
+
+	public DeepL2Translation getTranslation() {
+		return translation;
+	}
+
+	public void updateTranslationFiles(File path, String sourceLang, boolean updateOriginal) throws Exception {
+		translation.printUsage();
+		File sourceFile = Arrays.stream(path.listFiles())
+				.filter(f -> f.getName().endsWith(".properties"))
+				.filter(f -> f.getName().contains("_" + sourceLang + "."))
+				.findFirst().orElseThrow();
+		String baseName = sourceFile.getName().substring(0, sourceFile.getName().indexOf('_'));
+
+		TreeMap<String, String> sourceMap = readPropertyFile(sourceFile);
+
+		for (String targetLang : DeepL2Translation.SUPPORTED_LANGUAGES) {
+			if (targetLang.equals(sourceLang)) {
+				continue;
+			}
+			File targetFile = new File(path, baseName + "_" + targetLang + ".properties");
+			updateTranslationFile(targetFile, sourceLang, targetLang, sourceMap);
+		}
+		if (updateOriginal && sourceLang.equals("de")) {
+			File translatedFile = new File(path, baseName + "_en.properties");
+			updateOriginalFile(sourceFile, translatedFile, sourceMap);
+		}
+	}
+
+	private void updateOriginalFile(File sourcFile, File translatedFile, TreeMap<String, String> sourceMap) throws IOException {
+		TreeMap<String, String> translatedMap = readPropertyFile(translatedFile);
+		StringBuilder sb = new StringBuilder();
+		String previousTopic = "--";
+		for (String key : sourceMap.keySet()) {
+			String sourceText = sourceMap.get(key);
+			String translatedText = translatedMap.get(key);
+			String topic = getTopic(key);
+			if (!topic.equals(previousTopic)) {
+				sb.append("\n\n");
+				previousTopic = topic;
+			}
+			sb.append("# ").append(translatedText).append("\n");
+			sb.append(key).append("=").append(sourceText).append("\n\n");
+		}
+		Files.writeString(sourcFile.toPath(), sb.toString(), StandardCharsets.UTF_8);
+	}
+
+	private void updateTranslationFile(File targetFile, String sourceLang, String targetLang, TreeMap<String, String> sourceMap) throws Exception {
+		long time = System.currentTimeMillis();
+		TreeMap<String, String> targetMap = readPropertyFile(targetFile);
+		List<String> keys = new ArrayList<>();
+		List<String> values = new ArrayList<>();
+		for (String key : sourceMap.keySet()) {
+			if (!targetMap.containsKey(key)) {
+				keys.add(key);
+				values.add(sourceMap.get(key));
+			}
+		}
+		if (keys.isEmpty()) {
+			System.out.println("Skip language:" + targetLang + ", nothing to translate");
+		} else {
+			System.out.println("Translating " + keys.size() + " entries for " + targetLang);
+			List<TextResult> results = translation.translate(values, sourceLang, targetLang, DeepL2Translation.createDefaultPlainTextOptions());
+			if (results.size() != keys.size()) {
+				System.out.println("Error: translation result different size:" + results.size() + ", " + keys.size());
+				return;
+			}
+			for (int i = 0; i < keys.size(); i++) {
+				String text = results.get(i).getText();
+				String key = keys.get(i);
+				targetMap.put(key, text);
+			}
+
+			StringBuilder sb = new StringBuilder();
+			String previousTopic = "--";
+			for (String key : sourceMap.keySet()) {
+				String sourceText = sourceMap.get(key);
+				String translatedText = targetMap.get(key);
+				String topic = getTopic(key);
+				if (!topic.equals(previousTopic)) {
+					sb.append("\n\n");
+					previousTopic = topic;
+				}
+				sb.append("# ").append(sourceText).append("\n");
+				sb.append(key).append("=").append(translatedText).append("\n\n");
+			}
+			Files.writeString(targetFile.toPath(), sb.toString(), StandardCharsets.UTF_8);
+			System.out.println("Translated: " + targetLang + ", time: " + (System.currentTimeMillis() - time));
+		}
+	}
+
+	private TreeMap<String, String> readPropertyFile(File file) throws IOException {
+		TreeMap<String, String> map = new TreeMap<>();
+		if (!file.exists()) {
+			return map;
+		}
+		List<String> lines = Files.readAllLines(file.toPath(), StandardCharsets.UTF_8);
+		for (String line : lines) {
+			if (!line.isBlank() && !line.startsWith("#") && line.contains("=")) {
+				int pos = line.indexOf('=');
+				String key = line.substring(0, pos);
+				String value = line.substring(pos + 1);
+				map.put(key, value);
+			}
+		}
+		return map;
+	}
+
+	private String getTopic(String s) {
+		if (s == null || s.isBlank() || !s.contains(".")) {
+			return s;
+		}
+		if (s.startsWith("org.teamapps.dictionary.")) {
+			return s.substring(24, s.indexOf('.', 25));
+		} else {
+			return s.substring(0, s.indexOf('.'));
+		}
 	}
 
 	private void translateFiles(File path, Collection<String> targetLanguages) throws Exception {
