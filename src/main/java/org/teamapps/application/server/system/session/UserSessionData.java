@@ -19,6 +19,8 @@
  */
 package org.teamapps.application.server.system.session;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.teamapps.application.api.desktop.ApplicationDesktop;
 import org.teamapps.application.api.localization.ApplicationLocalizationProvider;
 import org.teamapps.application.api.privilege.ApplicationPrivilegeProvider;
@@ -44,6 +46,7 @@ import org.teamapps.uisession.statistics.UiSessionStats;
 import org.teamapps.ux.component.Component;
 import org.teamapps.ux.session.SessionContext;
 
+import java.lang.invoke.MethodHandles;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -51,6 +54,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class UserSessionData {
+	private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	private final User user;
 	private final SessionContext context;
@@ -105,14 +109,26 @@ public class UserSessionData {
 	}
 
 	public void addActivity() {
+		if (loginData == null) {
+			LOGGER.error("Error: missing login data");
+			return;
+		}
 		loginData.setActivityCount(loginData.getActivityCount() + 1);
 	}
 
 	public void addOpenApplicationsCount() {
+		if (loginData == null) {
+			LOGGER.error("Error: missing login data");
+			return;
+		}
 		loginData.setOpenApplicationsCount(loginData.getOpenApplicationsCount() + 1);
 	}
 
 	public void addOpenPerspectivesCount() {
+		if (loginData == null) {
+			LOGGER.error("Error: missing login data");
+			return;
+		}
 		loginData.setOpenPerspectivesCount(loginData.getOpenPerspectivesCount() + 1);
 	}
 
@@ -194,7 +210,7 @@ public class UserSessionData {
 	}
 
 	public void invalidate() {
-		sessionUser.onUserLogout().fire();
+		sessionUser.onUserLogout().fireIgnoringExceptions(null);
 		userPrivileges = null;
 		if (loginData != null) {
 			UiSessionStats sessionStats = sessionUser.getSessionContext().getUiSessionStats();

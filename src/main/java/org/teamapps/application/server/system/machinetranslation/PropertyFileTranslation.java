@@ -39,6 +39,10 @@ public class PropertyFileTranslation {
 		this.translation = new DeepL2Translation(key);
 	}
 
+	public void printUsage() {
+		translation.printUsage();
+	}
+
 	public static void main(String[] args) throws Exception {
 		if (args == null || args.length < 2) {
 			System.out.println("Error: missing key!");
