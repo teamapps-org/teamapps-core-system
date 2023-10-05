@@ -438,6 +438,17 @@ public class PropertyProviders {
 		};
 	}
 
+	public static PropertyProvider<UserView> createUserViewPropertyProvider(ApplicationInstanceData applicationInstanceData) {
+		return (u, propertyNames) -> {
+			User user = User.getById(u.getId());
+			Map<String, Object> map = new HashMap<>();
+			map.put(BaseTemplate.PROPERTY_IMAGE, getUserImageLink(user, applicationInstanceData));
+			map.put(BaseTemplate.PROPERTY_CAPTION, getUserCaptionWithTranslation(user));
+			map.put(BaseTemplate.PROPERTY_DESCRIPTION, getUserDescription(user, applicationInstanceData));
+			return map;
+		};
+	}
+
 	public static PropertyProvider<Integer> createUserIdPropertyProvider(ApplicationInstanceData applicationInstanceData) {
 		return (userId, propertyNames) -> {
 			User user = User.getById(userId);
