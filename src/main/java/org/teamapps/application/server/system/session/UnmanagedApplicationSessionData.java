@@ -78,7 +78,7 @@ public class UnmanagedApplicationSessionData implements ApplicationInstanceData 
 		this.privilegeProvider = privilegeProvider;
 		this.localizationProvider = localizationProvider;
 		this.documentConverterSupplier = registry.getDocumentConverterSupplier();
-		this.componentFactory = new SessionUiComponentFactory(this, userSessionData.getRegistry(), application);
+		this.componentFactory = userSessionData.getRegistry().getSessionUiComponentFactoryBuilder().build(this, userSessionData.getRegistry(), application);
 		this.applicationInitializer = userSessionData.getRegistry().getLoadedApplication(managedApplication.getMainApplication()).getApplicationInitializer();
 	}
 

@@ -86,7 +86,7 @@ public class PerspectiveSessionData implements ApplicationInstanceData {
 		this.localizationProvider = localizationProvider;
 		this.documentConverterSupplier = documentConverterSupplier;
 		this.userSessionData = managedApplicationSessionData.getUserSessionData();
-		this.componentFactory = new SessionUiComponentFactory(this, userSessionData.getRegistry(), managedApplication.getMainApplication());
+		this.componentFactory =  userSessionData.getRegistry().getSessionUiComponentFactoryBuilder().build(this, userSessionData.getRegistry(), managedApplication.getMainApplication());
 		this.applicationInitializer = userSessionData.getRegistry().getLoadedApplication(managedApplication.getMainApplication()).getApplicationInitializer();
 	}
 

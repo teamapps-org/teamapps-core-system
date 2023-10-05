@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,7 +19,6 @@
  */
 package org.teamapps.application.server.system.session;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.event.Level;
 import org.teamapps.application.api.application.ApplicationInstanceData;
 import org.teamapps.application.api.application.entity.EntityUpdate;
@@ -32,19 +31,18 @@ import org.teamapps.application.api.privilege.*;
 import org.teamapps.application.api.state.ReplicatedStateMachine;
 import org.teamapps.application.api.ui.UiComponentFactory;
 import org.teamapps.application.api.user.SessionUser;
-import org.teamapps.application.server.DatabaseLogAppender;
 import org.teamapps.application.server.PublicLinkResourceProvider;
 import org.teamapps.application.server.system.bootstrap.LoadedApplication;
 import org.teamapps.application.server.system.bootstrap.SystemRegistry;
 import org.teamapps.event.Event;
 import org.teamapps.message.protocol.message.Message;
-import org.teamapps.model.controlcenter.*;
-import org.teamapps.protocol.system.SystemLogEntry;
+import org.teamapps.model.controlcenter.OrganizationFieldView;
+import org.teamapps.model.controlcenter.OrganizationUnitView;
+import org.teamapps.model.controlcenter.User;
 import org.teamapps.reporting.convert.DocumentConverter;
 import org.teamapps.universaldb.index.translation.TranslatableText;
 import org.teamapps.universaldb.message.MessageStore;
 import org.teamapps.universaldb.record.EntityBuilder;
-import org.teamapps.ux.application.ResponsiveApplication;
 import org.teamapps.ux.application.perspective.Perspective;
 import org.teamapps.ux.component.progress.MultiProgressDisplay;
 import org.teamapps.ux.resource.Resource;
@@ -70,7 +68,7 @@ public class UserSessionApplicationInstanceData implements ApplicationInstanceDa
 		this.privilegeProvider = null;
 		this.localizationProvider = userSessionData.getLocalizationProvider();
 		this.documentConverterSupplier = registry.getDocumentConverterSupplier();
-		this.componentFactory = new SessionUiComponentFactory(this, userSessionData.getRegistry(), null);
+		this.componentFactory = userSessionData.getRegistry().getSessionUiComponentFactoryBuilder().build(this, userSessionData.getRegistry(), null);
 	}
 
 	@Override
@@ -162,6 +160,7 @@ public class UserSessionApplicationInstanceData implements ApplicationInstanceDa
 			return null;
 		}
 	}
+
 	@Override
 	public List<Integer> getOrganizationUsersWithRole(OrganizationUnitView orgUnit, UserRoleType userRoleType) {
 		return PerspectiveSessionData.getOrganizationUsersWithRole(orgUnit, userRoleType, getOrganizationField());

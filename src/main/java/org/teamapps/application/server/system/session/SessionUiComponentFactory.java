@@ -24,19 +24,20 @@ import org.teamapps.application.api.application.ApplicationInstanceData;
 import org.teamapps.application.api.ui.FormMetaFields;
 import org.teamapps.application.api.ui.TranslationKeyField;
 import org.teamapps.application.api.ui.UiComponentFactory;
+import org.teamapps.application.api.user.SessionUser;
 import org.teamapps.application.server.EmbeddedResourceStore;
 import org.teamapps.application.server.system.bootstrap.BaseResourceLinkProvider;
 import org.teamapps.application.server.system.bootstrap.SystemRegistry;
+import org.teamapps.application.server.system.organization.OrganizationUtils;
 import org.teamapps.application.server.system.template.PropertyProviders;
 import org.teamapps.application.server.ui.localize.LocalizationTranslationKeyField;
 import org.teamapps.application.ux.UiUtils;
+import org.teamapps.application.ux.combo.ComboBoxUtils;
 import org.teamapps.application.ux.form.FormMetaFieldsImpl;
 import org.teamapps.application.ux.localize.TranslatableField;
 import org.teamapps.application.ux.org.OrganizationViewUtils;
 import org.teamapps.icons.Icon;
-import org.teamapps.model.controlcenter.Application;
-import org.teamapps.model.controlcenter.OrganizationUnitTypeView;
-import org.teamapps.model.controlcenter.OrganizationUnitView;
+import org.teamapps.model.controlcenter.*;
 import org.teamapps.ux.component.field.TemplateField;
 import org.teamapps.ux.component.field.combobox.ComboBox;
 import org.teamapps.ux.component.field.combobox.TagComboBox;
@@ -46,10 +47,9 @@ import org.teamapps.ux.component.template.BaseTemplate;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Collection;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class SessionUiComponentFactory implements UiComponentFactory {
 
@@ -63,6 +63,10 @@ public class SessionUiComponentFactory implements UiComponentFactory {
 		this.systemRegistry = systemRegistry;
 		this.baseResourceLinkProvider = systemRegistry.getBaseResourceLinkProvider();
 		this.application = application;
+	}
+
+	public ApplicationInstanceData getApplicationInstanceData() {
+		return applicationInstanceData;
 	}
 
 	@Override
@@ -88,6 +92,30 @@ public class SessionUiComponentFactory implements UiComponentFactory {
 	@Override
 	public TemplateField<Integer> createUserTemplateField() {
 		return UiUtils.createTemplateField(BaseTemplate.LIST_ITEM_MEDIUM_ICON_SINGLE_LINE, PropertyProviders.createUserIdPropertyProvider(applicationInstanceData));
+	}
+
+	@Override
+	public ComboBox<UserView> createUserSelectionComboBox() {
+		Set<RoleType> LEADER_ROLE_TYPES = new HashSet<>(List.of(RoleType.LEADER, RoleType.MENTOR, RoleType.ASSISTANT));
+		User user = User.getById(getApplicationInstanceData().getUser().getId());
+		Set<OrganizationUnit> leaderUnitSet = user.getRoleAssignments().stream()
+				.filter(assignment -> LEADER_ROLE_TYPES.contains(assignment.getRole().getRoleType()))
+				.flatMap(assignment -> OrganizationUtils.getAllUnits(assignment.getOrganizationUnit()).stream())
+				.collect(Collectors.toSet());
+		Set<Integer> allowedUserIds = new HashSet<>();
+		for (User u : User.getAll()) {
+			if (leaderUnitSet.contains(u.getOrganizationUnit())
+			) {
+				allowedUserIds.add(u.getId());
+			}
+		}
+		ComboBox<UserView> userCombobox = ComboBoxUtils.createComboBox(query -> query == null || query.length() < 3 ?
+						Collections.emptyList() :
+						User.filter().parseFullTextFilter(query, User.FIELD_FIRST_NAME, User.FIELD_LAST_NAME, User.FIELD_FIRST_NAME_TRANSLATED, User.FIELD_LAST_NAME_TRANSLATED).execute().stream().filter(u -> allowedUserIds.contains(u.getId())).map(u -> UserView.getById(u.getId())).limit(50).toList(),
+				PropertyProviders.createUserViewPropertyProvider(getApplicationInstanceData()), BaseTemplate.LIST_ITEM_LARGE_ICON_TWO_LINES);
+		userCombobox.setDropDownButtonVisible(false);
+		userCombobox.setShowDropDownAfterResultsArrive(true);
+		return userCombobox;
 	}
 
 	@Override

@@ -45,6 +45,8 @@ import org.teamapps.application.server.system.localization.SystemLocalizationPro
 import org.teamapps.application.server.system.machinetranslation.MachineTranslation;
 import org.teamapps.application.server.system.machinetranslation.TranslationService;
 import org.teamapps.application.server.system.server.SessionRegistryHandler;
+import org.teamapps.application.server.system.session.SessionUiComponentFactory;
+import org.teamapps.application.server.system.session.SessionUiComponentFactoryBuilder;
 import org.teamapps.application.server.system.session.UserSessionData;
 import org.teamapps.application.ux.IconUtils;
 import org.teamapps.cluster.core.Cluster;
@@ -88,6 +90,7 @@ public class SystemRegistry {
 	private final SessionManager sessionManager;
 	private final WeakHashMap<UserSessionData, Long> activeUsersMap = new WeakHashMap<>();
 	private Map<String, MultiStateHandler> stateHandlerMap = new HashMap<>();
+	private SessionUiComponentFactoryBuilder sessionUiComponentFactoryBuilder = SessionUiComponentFactory::new;
 
 	public SystemRegistry(BootstrapSessionHandler bootstrapSessionHandler, ServerRegistry serverRegistry, SessionManager sessionManager, ApplicationConfig<SystemConfig> applicationConfig) {
 		this.serverRegistry = serverRegistry;
@@ -351,4 +354,11 @@ public class SystemRegistry {
 		stateHandlerMap.remove(name);
 	}
 
+	public SessionUiComponentFactoryBuilder getSessionUiComponentFactoryBuilder() {
+		return sessionUiComponentFactoryBuilder;
+	}
+
+	public void setSessionUiComponentFactoryBuilder(SessionUiComponentFactoryBuilder sessionUiComponentFactoryBuilder) {
+		this.sessionUiComponentFactoryBuilder = sessionUiComponentFactoryBuilder;
+	}
 }
