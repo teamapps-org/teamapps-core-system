@@ -453,7 +453,7 @@ public class PropertyProviders {
 		return (userId, propertyNames) -> {
 			User user = User.getById(userId);
 			Map<String, Object> map = new HashMap<>();
-			if (!user.isStored()) {
+			if (!user.isStored() && !user.isDeleted()) {
 				return map;
 			}
 			map.put(BaseTemplate.PROPERTY_IMAGE, getUserImageLink(user, applicationInstanceData));
