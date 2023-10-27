@@ -53,6 +53,7 @@ import org.teamapps.ux.component.timegraph.TimeGraph;
 import org.teamapps.ux.component.toolbar.*;
 import org.teamapps.ux.component.tree.Tree;
 import org.teamapps.ux.component.workspacelayout.definition.LayoutItemDefinition;
+import org.teamapps.ux.session.SessionContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -116,8 +117,11 @@ public class MobileAssembler implements ApplicationAssembler {
 
 		centerGroup = navigationToolbar.addButtonGroup(new ToolbarButtonGroup());
 		//todo workaround until distribute option is available
-		centerGroup.addButton(new ToolbarButton(BaseTemplate.LIST_ITEM_MEDIUM_ICON_SINGLE_LINE, new BaseTemplateRecord<>("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;")));
+		if (SessionContext.current().getClientInfo().getScreenWidth() > 350) {
+			centerGroup.addButton(new ToolbarButton(BaseTemplate.LIST_ITEM_MEDIUM_ICON_SINGLE_LINE, new BaseTemplateRecord<>("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;")));
+		}
 		centerGroup.setShowGroupSeparator(false);
+
 		ToolbarButton viewsButton = new ToolbarButton(BaseTemplate.LIST_ITEM_MEDIUM_ICON_SINGLE_LINE, new BaseTemplateRecord<>(ApplicationIcons.WINDOWS, getLocalized(Dictionary.VIEWS)));
 
 		viewsButton.setDropDownComponent(viewsItemView);
