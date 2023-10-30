@@ -326,6 +326,7 @@ public class LoginHandler {
 			SessionRegistryHandler sessionRegistryHandler = systemRegistry.getSessionRegistryHandler();
 			UserSessionData userSessionData = new UserSessionData(user, context, systemRegistry, rootPanel, sessionRegistryHandler != null ? sessionRegistryHandler.getAuthenticatedUserRole() : null);
 			UniversalDB.setUserId(userSessionData.getUser().getId());
+			context.setLocale(userSessionData.getSessionUser().getLocale());
 			String userInfo = user.getId() + "-" + user.getLastName() + "-" + user.getFirstName();
 			LOGGER.info("User logged in: {}", userInfo);
 			context.setName(userInfo);
