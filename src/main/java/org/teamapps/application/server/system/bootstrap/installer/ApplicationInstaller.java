@@ -88,13 +88,19 @@ public class ApplicationInstaller {
 	}
 
 	public boolean installApplication() {
-		if (applicationInfo.isChecked() && applicationInfo.getErrors().isEmpty()) {
-			applicationInstallationPhases.forEach(phase -> phase.installApplication(applicationInfo));
-			applicationInfo.getApplication().setInstalledVersion(applicationInfo.getApplicationVersion()).save();
-			LocalizationUtil.translateAllApplicationValues(translationService, applicationInfo.getApplication(), localizationConfig);
-			applicationInfo.getBaseApplicationBuilder().getOnApplicationInstalled().fire();
-			return true;
-		} else {
+		try {
+			if (applicationInfo.isChecked() && applicationInfo.getErrors().isEmpty()) {
+				applicationInstallationPhases.forEach(phase -> phase.installApplication(applicationInfo));
+				applicationInfo.getApplication().setInstalledVersion(applicationInfo.getApplicationVersion()).save();
+				LocalizationUtil.translateAllApplicationValues(translationService, applicationInfo.getApplication(), localizationConfig);
+				applicationInfo.getBaseApplicationBuilder().getOnApplicationInstalled().fire();
+				return true;
+			} else {
+				return false;
+			}
+		} catch (Throwable e) {
+			e.printStackTrace();
+			applicationInfo.getErrors().add(e.toString());
 			return false;
 		}
 	}

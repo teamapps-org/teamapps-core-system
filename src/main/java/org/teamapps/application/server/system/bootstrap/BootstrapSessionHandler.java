@@ -167,6 +167,8 @@ public class BootstrapSessionHandler implements SessionHandler, LogoutHandler {
 				LOGGER.warn("Error while loading application:", e);
 				e.printStackTrace();
 			}
+		} else {
+			LOGGER.error("Error loading app: {}, missing jar-file for installed version: {}", application.getName(), installedVersion.getVersion());
 		}
 	}
 
