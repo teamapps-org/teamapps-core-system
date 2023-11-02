@@ -85,6 +85,8 @@ public class MobileAssembler implements ApplicationAssembler {
 		mobileLayout = new MobileLayout();
 		viewsItemView = new SimpleItemView<>();
 		navigationToolbar = new Toolbar();
+		navigationToolbar.setCssStyle(".toolbar-filler", "flex", "0 0 0");
+		navigationToolbar.setCssStyle("--ta-border-radius", "0");
 		verticalLayout.addComponentAutoSize(navigationToolbar);
 		verticalLayout.addComponentFillRemaining(mobileLayout);
 		navigationToolbar.setBackgroundColor(Color.WHITE.withAlpha(0.6f));
@@ -116,10 +118,6 @@ public class MobileAssembler implements ApplicationAssembler {
 		});
 
 		centerGroup = navigationToolbar.addButtonGroup(new ToolbarButtonGroup());
-		//todo workaround until distribute option is available
-		if (SessionContext.current().getClientInfo().getScreenWidth() > 350) {
-			centerGroup.addButton(new ToolbarButton(BaseTemplate.LIST_ITEM_MEDIUM_ICON_SINGLE_LINE, new BaseTemplateRecord<>("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;")));
-		}
 		centerGroup.setShowGroupSeparator(false);
 
 		ToolbarButton viewsButton = new ToolbarButton(BaseTemplate.LIST_ITEM_MEDIUM_ICON_SINGLE_LINE, new BaseTemplateRecord<>(ApplicationIcons.WINDOWS, getLocalized(Dictionary.VIEWS)));
@@ -208,6 +206,7 @@ public class MobileAssembler implements ApplicationAssembler {
 			}
 		}
 
+		view.getPanel().setCssStyle("> .panel-body", "border-radius", "0");
 		if (newPos > lastPos) {
 			mobileLayout.setContent(view.getPanel(), PageTransition.MOVE_TO_LEFT_VS_MOVE_FROM_RIGHT, PAGE_TRANSITION_ANIMATION_DURATION);
 		} else {
