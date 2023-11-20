@@ -25,6 +25,7 @@ import org.teamapps.ux.component.field.DisplayField;
 import org.teamapps.ux.component.flexcontainer.FlexSizeUnit;
 import org.teamapps.ux.component.flexcontainer.FlexSizingPolicy;
 import org.teamapps.ux.component.flexcontainer.VerticalLayout;
+import org.teamapps.ux.component.notification.NotificationBar;
 import org.teamapps.ux.component.rootpanel.RootPanel;
 
 import java.util.HashMap;
@@ -34,11 +35,13 @@ import java.util.stream.Collectors;
 public class ApplicationRootPanel extends RootPanel {
 
 	private final DisplayField stylesField;
+	private final NotificationBar notificationBar;
 	private Component component;
 	private String baseStyles = "";
 	private Map<String, String> applicationStyles = new HashMap<>();
 
 	public ApplicationRootPanel() {
+		notificationBar = new NotificationBar();
 		stylesField = new DisplayField(false, true);
 		stylesField.setRemoveStyleTags(false);
 		stylesField.setVisible(false);
@@ -70,6 +73,7 @@ public class ApplicationRootPanel extends RootPanel {
 	public void setContent(Component component, PageTransition animation, long animationDuration) {
 		this.component = component;
 		VerticalLayout verticalLayout = new VerticalLayout();
+		verticalLayout.addComponent(notificationBar);
 		verticalLayout.addComponentFillRemaining(component);
 		updateStyles();
 		stylesField.render();
@@ -80,5 +84,9 @@ public class ApplicationRootPanel extends RootPanel {
 	@Override
 	public Component getContent() {
 		return component;
+	}
+
+	public NotificationBar getNotificationBar() {
+		return notificationBar;
 	}
 }
