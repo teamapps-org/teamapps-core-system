@@ -53,6 +53,15 @@ public class DeepL2Translation {
 		return result.getText();
 	}
 
+	public List<GlossaryLanguagePair> getGlossaries() {
+		try {
+			Translator translator = new Translator(apiKey);
+			return translator.getGlossaryLanguages();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public List<TextResult> translate(List<String> values, String sourceLang, String targetLang, TextTranslationOptions options) throws Exception {
 		targetLang = fixTargetLang(targetLang);
 		Translator translator = new Translator(apiKey);
