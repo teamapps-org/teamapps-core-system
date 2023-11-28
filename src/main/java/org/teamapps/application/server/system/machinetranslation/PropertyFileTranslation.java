@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 public class PropertyFileTranslation {
@@ -59,27 +60,48 @@ public class PropertyFileTranslation {
 		return translation;
 	}
 
-	public void updateTranslationFiles(File path, String sourceLang, boolean updateOriginal) throws Exception {
+	public void exportTranslationFiles(File path, String sourceLang, File modificationsFolder) throws Exception {
+		File sourceFile = getSourceFile(path, sourceLang);
+		String baseName = getBaseName(sourceFile);
+		for (String targetLang : DeepL2Translation.SUPPORTED_LANGUAGES) {
+			File file = new File(path, baseName + "_" + targetLang + ".properties");
+			File destFile = new File(modificationsFolder, targetLang + "/" + baseName + "_" + targetLang + ".properties.txt");
+			destFile.getParentFile().mkdir();
+			Files.copy(file.toPath(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		}
+	}
+
+	public void updateTranslationFiles(File path, String sourceLang, File modificationsFolder) throws Exception {
 		translation.printUsage();
-		File sourceFile = Arrays.stream(path.listFiles())
-				.filter(f -> f.getName().endsWith(".properties"))
-				.filter(f -> f.getName().contains("_" + sourceLang + "."))
-				.findFirst().orElseThrow();
-		String baseName = sourceFile.getName().substring(0, sourceFile.getName().indexOf('_'));
+		File sourceFile = getSourceFile(path, sourceLang);
+		String baseName = getBaseName(sourceFile);
 
 		TreeMap<String, String> sourceMap = readPropertyFile(sourceFile);
+		Set<String> modifiedKeys = readModifiedKeys(sourceFile);
 
 		for (String targetLang : DeepL2Translation.SUPPORTED_LANGUAGES) {
 			if (targetLang.equals(sourceLang)) {
 				continue;
 			}
-			File targetFile = new File(path, baseName + "_" + targetLang + ".properties");
-			updateTranslationFile(targetFile, sourceLang, targetLang, sourceMap);
+			File targetFile = new File(path, baseName + "_" + targetLang + ".properties.txt");
+			updateTranslationFile(targetFile, sourceLang, targetLang, sourceMap, modifiedKeys, baseName, modificationsFolder);
 		}
-		if (updateOriginal && sourceLang.equals("de")) {
+		if (sourceLang.equals("de")) {
 			File translatedFile = new File(path, baseName + "_en.properties");
 			updateOriginalFile(sourceFile, translatedFile, sourceMap);
 		}
+	}
+
+	private static String getBaseName(File sourceFile) {
+		return sourceFile.getName().substring(0, sourceFile.getName().indexOf('_'));
+	}
+
+	private static File getSourceFile(File path, String sourceLang) {
+		File sourceFile = Arrays.stream(path.listFiles())
+				.filter(f -> f.getName().endsWith(".properties"))
+				.filter(f -> f.getName().contains("_" + sourceLang + "."))
+				.findFirst().orElseThrow();
+		return sourceFile;
 	}
 
 	private void updateOriginalFile(File sourcFile, File translatedFile, TreeMap<String, String> sourceMap) throws IOException {
@@ -95,22 +117,25 @@ public class PropertyFileTranslation {
 				previousTopic = topic;
 			}
 			sb.append("# ").append(translatedText).append("\n");
+			sb.append("# original=").append(sourceText).append("\n");
 			sb.append(key).append("=").append(sourceText).append("\n\n");
 		}
 		Files.writeString(sourcFile.toPath(), sb.toString(), StandardCharsets.UTF_8);
 	}
 
-	private void updateTranslationFile(File targetFile, String sourceLang, String targetLang, TreeMap<String, String> sourceMap) throws Exception {
+	private void updateTranslationFile(File targetFile, String sourceLang, String targetLang, TreeMap<String, String> sourceMap, Set<String> modifiedKeys, String baseName, File modificationsFolder) throws Exception {
 		long time = System.currentTimeMillis();
 		TreeMap<String, String> targetMap = readPropertyFile(targetFile);
 		List<String> keys = new ArrayList<>();
 		List<String> values = new ArrayList<>();
 		for (String key : sourceMap.keySet()) {
-			if (!targetMap.containsKey(key)) {
+			if (!targetMap.containsKey(key) || modifiedKeys.contains(key)) {
 				keys.add(key);
 				values.add(sourceMap.get(key));
 			}
 		}
+		File modificationFile = new File(modificationsFolder, targetLang + "/" + baseName + "_" + targetLang + ".properties");
+		modificationFile.getParentFile().mkdir();
 		if (keys.isEmpty()) {
 			System.out.println("Skip language:" + targetLang + ", nothing to translate");
 		} else {
@@ -127,6 +152,7 @@ public class PropertyFileTranslation {
 			}
 
 			StringBuilder sb = new StringBuilder();
+			StringBuilder sbMod = new StringBuilder();
 			String previousTopic = "--";
 			for (String key : sourceMap.keySet()) {
 				String sourceText = sourceMap.get(key);
@@ -138,8 +164,30 @@ public class PropertyFileTranslation {
 				}
 				sb.append("# ").append(sourceText).append("\n");
 				sb.append(key).append("=").append(translatedText).append("\n\n");
+				if (keys.contains(key)) {
+					sbMod.append("# ").append(sourceText).append("\n");
+					sbMod.append(key).append("=").append(translatedText).append("\n\n");
+				}
+			}
+
+			HashSet<String> unusedKeys = new HashSet<>(targetMap.keySet());
+			unusedKeys.removeAll(sourceMap.keySet());
+			if (!unusedKeys.isEmpty()) {
+				System.out.println("Unused keys: " + unusedKeys.size());
+				sb.append("\n\n");
+				sb.append("# ------------------- UNUSED TRANSLATION KEYS: ------------------------\n");
+
+			}
+			for (String key : targetMap.keySet()) {
+				if (unusedKeys.contains(key)) {
+					String value = targetMap.get(key);
+					sb.append(key).append("=").append(value).append("\n");
+				}
 			}
 			Files.writeString(targetFile.toPath(), sb.toString(), StandardCharsets.UTF_8);
+			if (!sbMod.isEmpty()) {
+				Files.writeString(modificationFile.toPath(), sbMod.toString(), StandardCharsets.UTF_8);
+			}
 			System.out.println("Translated: " + targetLang + ", time: " + (System.currentTimeMillis() - time));
 		}
 	}
@@ -159,6 +207,32 @@ public class PropertyFileTranslation {
 			}
 		}
 		return map;
+	}
+
+	private Set<String> readModifiedKeys(File file) throws IOException {
+		Set<String> modifiedKeys = new HashSet<>();
+		List<String> lines = Files.readAllLines(file.toPath(), StandardCharsets.UTF_8);
+		String originalValue = null;
+		for (String line : lines) {
+			if (!line.isBlank() && line.contains("=")) {
+				if (line.startsWith("# original=")) {
+					originalValue = line.substring("# original=".length());
+				} else {
+					if (originalValue != null) {
+						int pos = line.indexOf('=');
+						String key = line.substring(0, pos);
+						String value = line.substring(pos + 1);
+						if (!originalValue.equals(value)) {
+							modifiedKeys.add(key);
+						}
+					}
+					originalValue = null;
+				}
+			} else {
+				originalValue = null;
+			}
+		}
+		return modifiedKeys;
 	}
 
 	private String getTopic(String s) {
