@@ -113,6 +113,11 @@ public class SessionUserImpl implements SessionUser {
 	}
 
 	@Override
+	public String getCountry() {
+		return user.getAddress() != null ? user.getAddress().getCountry() : null;
+	}
+
+	@Override
 	public String getProfilePictureLink() {
 		return userSessionData.getRegistry().getBaseResourceLinkProvider().getUserProfilePictureLink(user);
 	}
