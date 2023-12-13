@@ -8,10 +8,10 @@
 
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <teamapps-version>0.9.182</teamapps-version>
+        <teamapps-version>0.9.183</teamapps-version>
         <apache-commons-io>2.11.0</apache-commons-io>
     </properties>
 
@@ -68,7 +68,7 @@
         <dependency>
             <groupId>org.teamapps</groupId>
             <artifactId>teamapps-application-api</artifactId>
-            <version>0.96-SNAPSHOT</version>
+            <version>0.96</version>
         </dependency>
 
     </dependencies>
@@ -81,7 +81,7 @@
                 <dependency>
                     <groupId>org.teamapps</groupId>
                     <artifactId>teamapps-application-server</artifactId>
-                    <version>0.50</version>
+                    <version>0.52</version>
                     <exclusions>
                         <exclusion>
                             <groupId>*</groupId>
@@ -114,14 +114,14 @@
                 <dependency>
                     <groupId>org.teamapps</groupId>
                     <artifactId>teamapps-media</artifactId>
-                    <version>1.6</version>
+                    <version>1.7</version>
                     <scope>provided</scope>
                 </dependency>
 
                 <dependency>
                     <groupId>org.teamapps</groupId>
                     <artifactId>teamapps-reporting</artifactId>
-                    <version>1.10</version>
+                    <version>1.11</version>
                     <scope>provided</scope>
                 </dependency>
 
@@ -191,7 +191,7 @@
                 <dependency>
                     <groupId>org.teamapps</groupId>
                     <artifactId>universal-db</artifactId>
-                    <version>0.6.13</version>
+                    <version>0.6.14</version>
                     <exclusions>
                         <exclusion>
                             <groupId>*</groupId>

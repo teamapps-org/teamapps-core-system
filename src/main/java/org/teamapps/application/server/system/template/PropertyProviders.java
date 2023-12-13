@@ -296,7 +296,6 @@ public class PropertyProviders {
 		}
 	}
 
-
 	public static String getUserCaptionWithTranslation(User user) {
 		StringBuilder sb = new StringBuilder();
 		if (user == null) {
