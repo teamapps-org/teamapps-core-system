@@ -71,6 +71,18 @@ public class PropertyFileTranslation {
 		}
 	}
 
+	public void importTranslationFiles(File path, String sourceLang, File inputFolder) throws IOException {
+		File sourceFile = getSourceFile(path, sourceLang);
+		String baseName = getBaseName(sourceFile);
+		for (String targetLang : DeepL2Translation.SUPPORTED_LANGUAGES) {
+			File inputFile = new File(inputFolder, targetLang + "/" + baseName + "_" + targetLang + ".properties.txt");
+			File file = new File(path, baseName + "_" + targetLang + ".properties");
+			if (inputFile.exists() && inputFile.length() > 0) {
+				Files.copy(inputFile.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			}
+		}
+	}
+
 	public void updateTranslationFiles(File path, String sourceLang, File modificationsFolder) throws Exception {
 		translation.printUsage();
 		File sourceFile = getSourceFile(path, sourceLang);
@@ -83,7 +95,7 @@ public class PropertyFileTranslation {
 			if (targetLang.equals(sourceLang)) {
 				continue;
 			}
-			File targetFile = new File(path, baseName + "_" + targetLang + ".properties.txt");
+			File targetFile = new File(path, baseName + "_" + targetLang + ".properties");
 			updateTranslationFile(targetFile, sourceLang, targetLang, sourceMap, modifiedKeys, baseName, modificationsFolder);
 		}
 		if (sourceLang.equals("de")) {
@@ -134,7 +146,7 @@ public class PropertyFileTranslation {
 				values.add(sourceMap.get(key));
 			}
 		}
-		File modificationFile = new File(modificationsFolder, targetLang + "/" + baseName + "_" + targetLang + ".properties");
+		File modificationFile = new File(modificationsFolder, targetLang + "/" + baseName + "_" + targetLang + ".properties.txt");
 		modificationFile.getParentFile().mkdir();
 		if (keys.isEmpty()) {
 			System.out.println("Skip language:" + targetLang + ", nothing to translate");
