@@ -95,6 +95,7 @@ public class ApplicationLauncher {
 	private Component applicationLauncher;
 	private Set<ApplicationData> openedApplications = new HashSet<>();
 	private Map<ApplicationData, Tab> tabByApplicationData = new HashMap<>();
+	private Map<Tab, ApplicationData> applicationDataByTab = new HashMap<>();
 	private Map<Tab, Runnable> themeRunnableByDesktopTab = new HashMap<>();
 	private Map<ApplicationData, Component> mobilAppByApplicationData = new HashMap<>();
 	private Map<ApplicationData, ApplicationInstance> openedApplicationInstanceByApplicationData = new HashMap<>();
@@ -252,6 +253,9 @@ public class ApplicationLauncher {
 	}
 
 	private void setApplicationTheme(ManagedApplication application, boolean darkTheme) {
+		if (application == null) {
+			return;
+		}
 		LoadedApplication loadedApplication = registry.getLoadedApplication(application.getMainApplication());
 		String applicationName = loadedApplication.getApplication().getName();
 		String key = applicationName + "-" + (darkTheme ? "dark" : "bright");
@@ -357,11 +361,10 @@ public class ApplicationLauncher {
 		} else {
 			applicationsTabPanel = new TabPanel();
 			applicationsTabPanel.onTabSelected.addListener(tab -> {
-				tabByApplicationData.entrySet()
-						.stream()
-						.filter(entry -> entry.getValue().equals(tab))
-						.map(Map.Entry::getKey).findAny()
-						.ifPresent(applicationData -> selectedApplication.set(applicationData.getManagedApplication()));
+				ApplicationData applicationData = applicationDataByTab.get(tab);
+				if (applicationData != null) {
+					selectedApplication.set(applicationData.getManagedApplication());
+				}
 				if (themeRunnableByDesktopTab.containsKey(tab)) {
 					themeRunnableByDesktopTab.get(tab).run();
 				}
@@ -436,6 +439,7 @@ public class ApplicationLauncher {
 					tabByApplicationData.remove(runningApplication);
 					openedApplications.remove(runningApplication);
 					runningApplication.reloadApplicationData(userSessionData);
+					applicationDataByTab.remove(tab);
 				}
 			}
 		}
@@ -449,7 +453,7 @@ public class ApplicationLauncher {
 	private void openApplication(ApplicationData applicationData) {
 		selectedApplication.set(applicationData.getManagedApplication());
 		userSessionData.addOpenApplicationsCount();
-		LOGGER.info("Open app: " + (selectedPerspective.get() != null ? selectedPerspective.get().getApplicationPerspective().getQualifiedName() : null));
+		LOGGER.info("Open app: "  + applicationData.getManagedApplication().getQualifiedName()); //+ (selectedPerspective.get() != null ? selectedPerspective.get().getApplicationPerspective().getQualifiedName() : null));
 		if (openedApplications.contains(applicationData)) {
 			userSessionData.setDarkTheme(applicationData.getManagedApplication().isDarkTheme());
 			if (mobileView) {
@@ -475,8 +479,10 @@ public class ApplicationLauncher {
 				tab.setCloseable(true);
 				openedApplications.add(applicationData);
 				tabByApplicationData.put(applicationData, tab);
+				applicationDataByTab.put(tab, applicationData);
 				tab.onClosed.addListener(() -> {
 					tabByApplicationData.remove(applicationData);
+					applicationDataByTab.remove(tab);
 					openedApplications.remove(applicationData);
 					applicationData.reloadApplicationData(userSessionData);
 				});
@@ -508,7 +514,7 @@ public class ApplicationLauncher {
 					themeRunnableByDesktopTab.put(tab, () -> setApplicationTheme(managedApplication, darkTheme));
 					ApplicationData applicationData = ApplicationGroupData.getApplicationData(managedApplication, sortedApplicationGroups);
 					if (applicationData != null) {
-						tabByApplicationData.put(applicationData, tab);
+						applicationDataByTab.put(tab, applicationData);
 					}
 				}
 			}
