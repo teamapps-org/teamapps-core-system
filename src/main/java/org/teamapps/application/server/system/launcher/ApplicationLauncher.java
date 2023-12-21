@@ -95,6 +95,7 @@ public class ApplicationLauncher {
 	private Component applicationLauncher;
 	private Set<ApplicationData> openedApplications = new HashSet<>();
 	private Map<ApplicationData, Tab> tabByApplicationData = new HashMap<>();
+	private Map<Tab, Runnable> themeRunnableByDesktopTab = new HashMap<>();
 	private Map<ApplicationData, Component> mobilAppByApplicationData = new HashMap<>();
 	private Map<ApplicationData, ApplicationInstance> openedApplicationInstanceByApplicationData = new HashMap<>();
 	private TabPanel applicationsTabPanel;
@@ -247,6 +248,10 @@ public class ApplicationLauncher {
 
 	private void setApplicationTheme(ManagedApplication application) {
 		boolean darkTheme = application.isDarkTheme() || userSessionData.getUser().isDarkTheme();
+		setApplicationTheme(application, darkTheme);
+	}
+
+	private void setApplicationTheme(ManagedApplication application, boolean darkTheme) {
 		LoadedApplication loadedApplication = registry.getLoadedApplication(application.getMainApplication());
 		String applicationName = loadedApplication.getApplication().getName();
 		String key = applicationName + "-" + (darkTheme ? "dark" : "bright");
@@ -357,6 +362,9 @@ public class ApplicationLauncher {
 						.filter(entry -> entry.getValue().equals(tab))
 						.map(Map.Entry::getKey).findAny()
 						.ifPresent(applicationData -> selectedApplication.set(applicationData.getManagedApplication()));
+				if (themeRunnableByDesktopTab.containsKey(tab)) {
+					themeRunnableByDesktopTab.get(tab).run();
+				}
 				if (tab.equals(applicationLauncherTab)) {
 					handleApplicationLauncherSelection();
 				}
@@ -478,9 +486,11 @@ public class ApplicationLauncher {
 	}
 
 	public ApplicationDesktop createApplicationDesktop() {
-		return new ApplicationDesktop() {
-			private ResponsiveApplication application = createResponsiveApplication();
+		final ManagedApplication managedApplication = selectedApplication.get();
+		ApplicationDesktop applicationDesktop = new ApplicationDesktop() {
+			private final ResponsiveApplication application = createResponsiveApplication();
 			private Tab tab;
+			private boolean darkTheme;
 
 			@Override
 			public ResponsiveApplication getApplication() {
@@ -495,7 +505,18 @@ public class ApplicationLauncher {
 					tab = new Tab(icon, title, application.getUi());
 					tab.setCloseable(closable);
 					applicationsTabPanel.addTab(tab, select);
+					themeRunnableByDesktopTab.put(tab, () -> setApplicationTheme(managedApplication, darkTheme));
+					ApplicationData applicationData = ApplicationGroupData.getApplicationData(managedApplication, sortedApplicationGroups);
+					if (applicationData != null) {
+						tabByApplicationData.put(applicationData, tab);
+					}
 				}
+			}
+
+			@Override
+			public void setDarkTheme(boolean darkTheme) {
+				setApplicationTheme(managedApplication, darkTheme);
+				this.darkTheme = darkTheme;
 			}
 
 			@Override
@@ -507,6 +528,7 @@ public class ApplicationLauncher {
 				}
 			}
 		};
+		return applicationDesktop;
 	}
 
 	public ResponsiveApplication createResponsiveApplication() {

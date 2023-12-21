@@ -22,6 +22,7 @@ package org.teamapps.application.server.system.launcher;
 import org.teamapps.application.server.system.session.UserSessionData;
 import org.teamapps.application.ux.IconUtils;
 import org.teamapps.icons.Icon;
+import org.teamapps.model.controlcenter.ManagedApplication;
 import org.teamapps.model.controlcenter.ManagedApplicationGroup;
 
 import java.util.ArrayList;
@@ -75,5 +76,12 @@ public class ApplicationGroupData {
 		return groups.stream()
 				.sorted(Comparator.comparing(ApplicationGroupData::getGroupPosition))
 				.collect(Collectors.toList());
+	}
+
+	public static ApplicationData getApplicationData(ManagedApplication managedApplication, List<ApplicationGroupData> groups) {
+		return groups.stream()
+				.flatMap(group -> group.getSortedApplications().stream())
+				.filter(data -> data.getManagedApplication().equals(managedApplication))
+				.findFirst().orElse(null);
 	}
 }
