@@ -107,7 +107,7 @@ public class ControlCenterAppBuilder extends AbstractApplicationBuilder {
 
 	@Override
 	public ApplicationVersion getApplicationVersion() {
-		return ApplicationVersion.create(0, 63);
+		return ApplicationVersion.create(0, 64);
 	}
 
 	@Override
