@@ -21,18 +21,22 @@ package org.teamapps.application.server.system.session;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.teamapps.application.api.application.ApplicationInstanceData;
 import org.teamapps.application.api.desktop.ApplicationDesktop;
 import org.teamapps.application.api.localization.ApplicationLocalizationProvider;
 import org.teamapps.application.api.privilege.ApplicationPrivilegeProvider;
+import org.teamapps.application.api.search.UserSearch;
 import org.teamapps.application.api.state.ReplicatedStateMachine;
 import org.teamapps.application.api.user.SessionUser;
 import org.teamapps.application.server.system.bootstrap.ApplicationRootPanel;
 import org.teamapps.application.server.system.bootstrap.SystemRegistry;
+import org.teamapps.application.server.system.launcher.ApplicationLauncher;
 import org.teamapps.application.server.system.launcher.MobileApplicationNavigation;
 import org.teamapps.application.server.system.launcher.OnlineUsersView;
 import org.teamapps.application.server.system.localization.SessionApplicationLocalizationProvider;
 import org.teamapps.application.server.system.privilege.PrivilegeApplicationKey;
 import org.teamapps.application.server.system.privilege.UserPrivileges;
+import org.teamapps.application.server.system.search.UserSearchImpl;
 import org.teamapps.event.Event;
 import org.teamapps.icons.Icon;
 import org.teamapps.icons.SessionIconProvider;
@@ -60,6 +64,7 @@ public class UserSessionData {
 	private final SessionContext context;
 	private final SystemRegistry registry;
 	private final ApplicationRootPanel rootPanel;
+	private final Role authenticatedUserRole;
 	private UserPrivileges userPrivileges;
 	private final SessionUser sessionUser;
 	private final SessionIconProvider iconProvider;
@@ -75,17 +80,33 @@ public class UserSessionData {
 	private OnlineUsersView onlineUsersView;
 	private final Map<String, Object> customObjectsMap = new HashMap<>();
 
+	private ApplicationLauncher applicationLauncher;
+
 	public UserSessionData(User user, SessionContext context, SystemRegistry registry, ApplicationRootPanel rootPanel, Role authenticatedUserRole) {
 		this.user = user;
 		this.context = context;
 		this.registry = registry;
 		this.rootPanel = rootPanel;
+		this.authenticatedUserRole = authenticatedUserRole;
 		this.userPrivileges = new UserPrivileges(user, registry, authenticatedUserRole);
 		this.sessionUser = new SessionUserImpl(this);
 		this.localizationRankedLanguages = createLocalizationRankedLanguages();
 		this.iconProvider = context.getIconProvider();
 		this.localizationProvider = new SessionApplicationLocalizationProvider(null, localizationRankedLanguages, registry.getGlobalLocalizationProvider());
 		context.onDestroyed.addListener(this::invalidate);
+	}
+
+	public void setApplicationLauncher(ApplicationLauncher applicationLauncher) {
+		this.applicationLauncher = applicationLauncher;
+	}
+
+	public boolean hasSkippedMultiFactorRequiringPrivileges() {
+		return userPrivileges.hasSkippedMultiFactorRequiringPrivileges();
+	}
+
+	public void reloadPrivileges() {
+		this.userPrivileges = new UserPrivileges(user, registry, authenticatedUserRole);
+		applicationLauncher.reloadUserPrivileges();
 	}
 
 	private List<String> createLocalizationRankedLanguages() {
@@ -148,7 +169,7 @@ public class UserSessionData {
 		return localizationProviderByApplication.get(application);
 	}
 
-	private ApplicationLocalizationProvider createApplicationLocalizationProvider(Application application) {
+	public ApplicationLocalizationProvider createApplicationLocalizationProvider(Application application) {
 		return new SessionApplicationLocalizationProvider(application, localizationRankedLanguages, registry.getGlobalLocalizationProvider());
 	}
 
@@ -271,5 +292,12 @@ public class UserSessionData {
 
 	public Map<String, Object> getCustomObjectsMap() {
 		return customObjectsMap;
+	}
+
+	public UserSearch createUserSearch(String authCode, ApplicationInstanceData applicationInstanceData) {
+		if ("9FG7JBZHI3MBN".equals(authCode)) { //todo move to config!
+			return new UserSearchImpl(authCode, applicationInstanceData);
+		}
+		return null;
 	}
 }

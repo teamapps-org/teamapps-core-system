@@ -31,6 +31,7 @@ import org.teamapps.application.api.desktop.ApplicationDesktop;
 import org.teamapps.application.api.localization.ApplicationLocalizationProvider;
 import org.teamapps.application.api.organization.UserRoleType;
 import org.teamapps.application.api.privilege.*;
+import org.teamapps.application.api.search.UserSearch;
 import org.teamapps.application.api.state.ReplicatedStateMachine;
 import org.teamapps.application.api.ui.UiComponentFactory;
 import org.teamapps.application.api.user.SessionUser;
@@ -263,6 +264,11 @@ public class PerspectiveSessionData implements ApplicationInstanceData {
 	@Override
 	public <MESSAGE extends Message> MessageStore<MESSAGE> getMessageStore(String name) {
 		return applicationInitializer.getMessageStore(name);
+	}
+
+	@Override
+	public UserSearch createUserSearch(String authCode) {
+		return userSessionData.createUserSearch(authCode, this);
 	}
 
 	public static List<Integer> getOrganizationUsersWithRole(OrganizationUnitView orgUnit, UserRoleType userRoleType, OrganizationFieldView organizationFieldView) {
