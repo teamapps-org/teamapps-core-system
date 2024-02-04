@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -108,6 +108,7 @@ public class ApplicationLauncher {
 
 	public ApplicationLauncher(UserSessionData userSessionData, LogoutHandler logoutHandler) {
 		this.userSessionData = userSessionData;
+		userSessionData.setApplicationLauncher(this);
 		this.registry = userSessionData.getRegistry();
 		ClientInfo clientInfo = userSessionData.getContext().getClientInfo();
 		this.mobileView = clientInfo.isMobileDevice();
@@ -326,12 +327,13 @@ public class ApplicationLauncher {
 		createLauncherView(itemView, mobileView);
 	}
 
-	public void updateApplicationLauncher() {
+	public void reloadUserPrivileges() {
+		openedApplications.clear();
+		tabByApplicationData.clear();
+		applicationDataByTab.clear();
 		initApplicationData();
 		createApplicationLauncher();
-		if (applicationLauncherTab != null) {
-			applicationLauncherTab.setContent(applicationLauncher);
-		}
+		createMainView();
 	}
 
 	private void logout() {
@@ -453,7 +455,7 @@ public class ApplicationLauncher {
 	private void openApplication(ApplicationData applicationData) {
 		selectedApplication.set(applicationData.getManagedApplication());
 		userSessionData.addOpenApplicationsCount();
-		LOGGER.info("Open app: "  + applicationData.getManagedApplication().getQualifiedName()); //+ (selectedPerspective.get() != null ? selectedPerspective.get().getApplicationPerspective().getQualifiedName() : null));
+		LOGGER.info("Open app: " + applicationData.getManagedApplication().getQualifiedName()); //+ (selectedPerspective.get() != null ? selectedPerspective.get().getApplicationPerspective().getQualifiedName() : null));
 		if (openedApplications.contains(applicationData)) {
 			userSessionData.setDarkTheme(applicationData.getManagedApplication().isDarkTheme());
 			if (mobileView) {
@@ -528,7 +530,9 @@ public class ApplicationLauncher {
 			@Override
 			public void close() {
 				if (mobileView) {
-					userSessionData.setRootComponent(applicationLauncher);
+					if (userSessionData.getRootPanel().getContent().equals(application.getUi())) {
+						userSessionData.setRootComponent(applicationLauncher);
+					}
 				} else {
 					applicationsTabPanel.removeTab(tab);
 				}

@@ -49,10 +49,16 @@ public class UserPrivileges {
 	private final Map<PrivilegeApplicationKey, Map<RoleAssignmentDelegatedCustomPrivilegeGroup, Map<Privilege, Set<PrivilegeObject>>>> roleAssignmentDelegatedCustomPrivilegeMap = new HashMap<>();
 	private final Map<PrivilegeApplicationKey, UserApplicationPrivilege> userApplicationPrivilegeByApplication = new HashMap<>();
 
+	private boolean skippedMultiFactorRequiringPrivileges;
+
 	public UserPrivileges(User user, SystemRegistry systemRegistry, Role authenticatedUserRole) {
+		this(user, systemRegistry, authenticatedUserRole, false);
+	}
+
+	public UserPrivileges(User user, SystemRegistry systemRegistry, Role authenticatedUserRole, boolean multiFactorAuthenticationProvided) {
 		this.user = user;
 		this.systemRegistry = systemRegistry;
-		calculatePrivileges(authenticatedUserRole);
+		calculatePrivileges(authenticatedUserRole, multiFactorAuthenticationProvided);
 	}
 
 	public Set<PrivilegeApplicationKey> getKeys() {
@@ -95,17 +101,17 @@ public class UserPrivileges {
 		return groups;
 	}
 
-	private void calculatePrivileges(Role authenticatedUserRole) {
+	private void calculatePrivileges(Role authenticatedUserRole, boolean multiFactorAuthenticationProvided) {
 		if (authenticatedUserRole != null) {
 			OrganizationUnit organizationUnit = user.getOrganizationUnit();
 			Set<Role> privilegeRoles = RoleUtils.getAllPrivilegeRoles(authenticatedUserRole);
 			for (Role privilegeRole : privilegeRoles) {
 				for (RoleApplicationRoleAssignment roleApplicationRoleAssignment : privilegeRole.getApplicationRoleAssignments()) {
-					calculatePrivilegesFromApplicationRoleAssignment(organizationUnit, roleApplicationRoleAssignment, 0);
+					calculatePrivilegesFromApplicationRoleAssignment(organizationUnit, roleApplicationRoleAssignment, 0, multiFactorAuthenticationProvided, privilegeRole.equals(authenticatedUserRole));
 				}
 
 				for (RolePrivilegeAssignment privilegeAssignment : privilegeRole.getPrivilegeAssignments()) {
-					calculatePrivilegesFromRolePrivilegeAssignment(organizationUnit, privilegeAssignment, 0);
+					calculatePrivilegesFromRolePrivilegeAssignment(organizationUnit, privilegeAssignment, 0, multiFactorAuthenticationProvided, privilegeRole.equals(authenticatedUserRole));
 				}
 			}
 		}
@@ -116,17 +122,17 @@ public class UserPrivileges {
 			Set<Role> privilegeRoles = RoleUtils.getAllPrivilegeRoles(role);
 			for (Role privilegeRole : privilegeRoles) {
 				for (RoleApplicationRoleAssignment roleApplicationRoleAssignment : privilegeRole.getApplicationRoleAssignments()) {
-					calculatePrivilegesFromApplicationRoleAssignment(organizationUnit, roleApplicationRoleAssignment, delegatedCustomPrivilegeObjectId);
+					calculatePrivilegesFromApplicationRoleAssignment(organizationUnit, roleApplicationRoleAssignment, delegatedCustomPrivilegeObjectId, multiFactorAuthenticationProvided, privilegeRole.equals(role));
 				}
 
 				for (RolePrivilegeAssignment privilegeAssignment : privilegeRole.getPrivilegeAssignments()) {
-					calculatePrivilegesFromRolePrivilegeAssignment(organizationUnit, privilegeAssignment, delegatedCustomPrivilegeObjectId);
+					calculatePrivilegesFromRolePrivilegeAssignment(organizationUnit, privilegeAssignment, delegatedCustomPrivilegeObjectId, multiFactorAuthenticationProvided, privilegeRole.equals(role));
 				}
 			}
 		}
 	}
 
-	private void calculatePrivilegesFromApplicationRoleAssignment(OrganizationUnit organizationUnit, RoleApplicationRoleAssignment roleApplicationRoleAssignment, int delegatedCustomPrivilegeObjectId) {
+	private void calculatePrivilegesFromApplicationRoleAssignment(OrganizationUnit organizationUnit, RoleApplicationRoleAssignment roleApplicationRoleAssignment, int delegatedCustomPrivilegeObjectId, boolean multiFactorAuthenticationProvided, boolean isDirectRoleOwner) {
 		try {
 			Application application = roleApplicationRoleAssignment.getApplication();
 			String applicationRoleName = roleApplicationRoleAssignment.getApplicationRoleName();
@@ -142,6 +148,13 @@ public class UserPrivileges {
 					List<OrganizationUnitView> organizationUnitViews = OrganizationUtils.convertList(allUnits);
 					List<PrivilegeGroup> privilegeGroups = applicationRole.getPrivilegeGroups();
 					for (PrivilegeGroup privilegeGroup : privilegeGroups) {
+						if (privilegeGroup.isInheritanceForbidden() && !isDirectRoleOwner) {
+							continue;
+						}
+						if (privilegeGroup.isMultiFactorAuthenticationRequired() && !multiFactorAuthenticationProvided) {
+							skippedMultiFactorRequiringPrivileges = true;
+							continue;
+						}
 						switch (privilegeGroup.getType()) {
 							case SIMPLE_PRIVILEGE:
 								SimplePrivilege simplePrivilege = (SimplePrivilege) privilegeGroup;
@@ -223,7 +236,7 @@ public class UserPrivileges {
 		}
 	}
 
-	private void calculatePrivilegesFromRolePrivilegeAssignment(OrganizationUnit organizationUnit, RolePrivilegeAssignment privilegeAssignment, int delegatedCustomPrivilegeObjectId) {
+	private void calculatePrivilegesFromRolePrivilegeAssignment(OrganizationUnit organizationUnit, RolePrivilegeAssignment privilegeAssignment, int delegatedCustomPrivilegeObjectId, boolean multiFactorAuthenticationProvided, boolean isDirectRoleOwner) {
 		Application application = privilegeAssignment.getApplication();
 		LoadedApplication loadedApplication = systemRegistry.getLoadedApplication(application);
 		if (loadedApplication != null) {
@@ -241,6 +254,13 @@ public class UserPrivileges {
 			List<OrganizationUnitView> organizationUnitViews = OrganizationUtils.convertList(allUnits);
 			if (privilegeGroup == null) {
 				LOGGER.error("ERROR: missing privilege group from assignment: {}", privilegeAssignment.getPrivilegeGroup().getName());
+				return;
+			}
+			if (privilegeGroup.isInheritanceForbidden() && !isDirectRoleOwner) {
+				return;
+			}
+			if (privilegeGroup.isMultiFactorAuthenticationRequired() && !multiFactorAuthenticationProvided) {
+				skippedMultiFactorRequiringPrivileges = true;
 				return;
 			}
 			try {
@@ -359,5 +379,9 @@ public class UserPrivileges {
 
 	public User getUser() {
 		return user;
+	}
+
+	public boolean hasSkippedMultiFactorRequiringPrivileges() {
+		return skippedMultiFactorRequiringPrivileges;
 	}
 }

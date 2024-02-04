@@ -87,7 +87,7 @@ public class ApplicationScopePrivilegeProvider {
 	}
 
 	public List<PrivilegeObject> getPrivilegeObjects(PrivilegeGroup privilegeGroup, List<Integer> privilegeObjectIds, boolean withChildren) {
-		if (privilegeObjectIds == null || privilegeObjectIds.isEmpty() || privilegeGroup.getPrivilegeObjectsSupplier() == null) {
+		if (privilegeGroup == null || privilegeObjectIds == null || privilegeObjectIds.isEmpty() || privilegeGroup.getPrivilegeObjectsSupplier() == null) {
 			return null;
 		} else {
 			List<PrivilegeObject> result = new ArrayList<>();

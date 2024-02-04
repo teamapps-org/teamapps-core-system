@@ -11,7 +11,7 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <teamapps-version>0.9.183</teamapps-version>
+        <teamapps-version>0.9.184</teamapps-version>
         <apache-commons-io>2.11.0</apache-commons-io>
     </properties>
 
@@ -68,7 +68,7 @@
         <dependency>
             <groupId>org.teamapps</groupId>
             <artifactId>teamapps-application-api</artifactId>
-            <version>0.97</version>
+            <version>0.101-SNAPSHOT</version>
         </dependency>
 
     </dependencies>
