@@ -5,10 +5,7 @@ import org.teamapps.application.api.search.SearchEntry;
 import org.teamapps.application.api.search.UserMatch;
 import org.teamapps.application.api.search.UserSearch;
 import org.teamapps.application.api.search.UserSearchBuilder;
-import org.teamapps.model.controlcenter.Address;
-import org.teamapps.model.controlcenter.AddressQuery;
-import org.teamapps.model.controlcenter.User;
-import org.teamapps.model.controlcenter.UserQuery;
+import org.teamapps.model.controlcenter.*;
 import org.teamapps.universaldb.index.text.TextFilter;
 
 import java.util.Collections;
@@ -114,7 +111,7 @@ public class UserSearchImpl implements UserSearch {
 			score += searchBuilder.getScore(UserSearchBuilder.CITY, address.getCity());
 			score += searchBuilder.getScore(UserSearchBuilder.COUNTRY_CODE, address.getCountry());
 		}
-		return new UserMatch(user.getId(), null, user.getFirstName(), user.getLastName(), address.getStreet(), address.getPostalCode(), address.getCity(), address.getCountry(), user.getPhone(), user.getEmail(), score);
+		return new UserMatch(user.getId(), user.getGender() == Gender.MALE ? UserMatch.UserGender.MALE : UserMatch.UserGender.FEMALE, user.getFirstName(), user.getLastName(), address.getStreet(), address.getPostalCode(), address.getCity(), address.getCountry(), user.getPhone(), user.getEmail(), score);
 	}
 
 	@Override
