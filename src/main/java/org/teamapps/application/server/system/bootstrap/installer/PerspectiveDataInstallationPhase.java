@@ -175,7 +175,7 @@ public class PerspectiveDataInstallationPhase implements ApplicationInstallation
 		Map<String, PerspectiveData> perspectivesData = applicationBuilder.getRequiredPerspectivesData();
 		if (!requiredPerspectives.isEmpty()) {
 			for (ManagedApplication managedApplication : installedAsMainApplication) {
-				Set<String> availablePerspectives = managedApplication.getPerspectives().stream().map(p -> p.getApplicationPerspective().getName()).collect(Collectors.toSet());
+				Set<String> availablePerspectives = managedApplication.getPerspectives().stream().filter(p -> p.getApplicationPerspective() != null).map(p -> p.getApplicationPerspective().getName()).collect(Collectors.toSet());
 				for (int i = 0; i < requiredPerspectives.size(); i++) {
 					String perspectiveName = requiredPerspectives.get(i);
 					if (!availablePerspectives.contains(perspectiveName)) {
