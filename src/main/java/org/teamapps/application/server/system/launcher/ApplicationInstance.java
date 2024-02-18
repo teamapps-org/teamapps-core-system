@@ -303,7 +303,7 @@ public class ApplicationInstance implements PerspectiveByNameLauncher {
 		tree.setPropertyExtractor((perspectiveSessionData, propertyName) -> {
 			switch (propertyName) {
 				case BaseTemplate.PROPERTY_BADGE:
-					return null; //todo
+					return perspectiveSessionData.getPerspectiveBuilder().getBadgeValue(userSessionData.getApplicationPrivilegeProvider(applicationData.getManagedApplication()));
 				case BaseTemplate.PROPERTY_ICON:
 					return perspectiveSessionData.getIcon();
 				case BaseTemplate.PROPERTY_CAPTION:
@@ -322,7 +322,7 @@ public class ApplicationInstance implements PerspectiveByNameLauncher {
 		SimpleItemGroup<PerspectiveSessionData> itemGroup = itemView.addSingleColumnGroup(ApplicationIcons.WINDOWS, getLocalized(Dictionary.APPLICATION_PERSPECTIVE));
 		itemGroup.setItemTemplate(BaseTemplate.LIST_ITEM_VERY_LARGE_ICON_TWO_LINES);
 		sortedPerspectives.forEach(p -> {
-			itemGroup.addItem(p.getIcon(), p.getTitle(), p.getDescription()).setPayload(p);
+			itemGroup.addItem(p.getIcon(), p.getTitle(), p.getDescription()).setBadge(p.getPerspectiveBuilder().getBadgeValue(userSessionData.getApplicationPrivilegeProvider(applicationData.getManagedApplication()))).setPayload(p);
 		});
 		return itemView;
 	}
