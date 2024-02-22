@@ -71,6 +71,25 @@ public class UserSearchImpl implements UserSearch {
 		return convert(users, searchBuilder).stream().filter(u -> u.matchScore() >= minScore).toList();
 	}
 
+	@Override
+	public List<UserMatch> fullTextSearch(String query) {
+		List<User> users = User.filter()
+				.parseFullTextFilter(query,
+						User.FIELD_FIRST_NAME,
+						User.FIELD_LAST_NAME,
+						User.FIELD_FIRST_NAME_TRANSLATED,
+						User.FIELD_LAST_NAME_TRANSLATED,
+						User.FIELD_EMAIL,
+						User.FIELD_PHONE,
+						User.FIELD_MOBILE
+				)
+				.execute();
+		return users.stream()
+				.map(UserSearchImpl::convert)
+				.limit(100)
+				.toList();
+	}
+
 	private static TextFilter createTextFilter(SearchEntry searchEntry) {
 		if (searchEntry == null) return null;
 		return switch (searchEntry.getSearchType()) {

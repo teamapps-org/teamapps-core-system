@@ -138,6 +138,8 @@ public class RolesPerspective extends AbstractManagedApplicationPerspective {
 		TagComboBox<Role> privilegesSendingRolesTagCombo = createRoleTagComboBox();
 		CheckBox noDirectMembershipsCheckBox = new CheckBox(getLocalized("roles.noDirectMemberships"));
 		CheckBox customPrivilegeRoleCheckBox = new CheckBox(getLocalized("roles.customPrivilegeRole"));
+		CheckBox protectedAssignmentCheckBox = new CheckBox(getLocalized("roles.protectedAssignment"));
+		CheckBox twoFactorAuthCheckBox = new CheckBox(getLocalized("roles.twoFactorAuthenticationRequired"));
 
 		EntityListModelBuilder<UserRoleAssignment> userRoleAssignmentModelBuilder = new EntityListModelBuilder<>(getApplicationInstanceData(), userRoleAssignment -> userRoleAssignment.getUser().getFirstName() + " " + userRoleAssignment.getUser().getLastName());
 		Table<UserRoleAssignment> roleMemberTable = userRoleAssignmentModelBuilder.createListTable(true);
@@ -183,6 +185,8 @@ public class RolesPerspective extends AbstractManagedApplicationPerspective {
 		formLayout.addLabelAndField(null, getLocalized("roles.privilegesSendingRoles"), privilegesSendingRolesTagCombo);
 		formLayout.addLabelAndField(null, getLocalized("roles.noMemberships"), noDirectMembershipsCheckBox);
 		formLayout.addLabelAndField(null, getLocalized("roles.customPrivilegeRole"), customPrivilegeRoleCheckBox);
+		formLayout.addLabelAndField(null, getLocalized("roles.protected"), protectedAssignmentCheckBox);
+		formLayout.addLabelAndField(null, getLocalized("roles.twoFactor"), twoFactorAuthCheckBox);
 
 		formLayout.addSection(ApplicationIcons.USERS_CROWD, getLocalized("roles.members")).setCollapsed(true);
 		formLayout.addLabelAndComponent(roleMembersPanel.getPanel());
@@ -208,7 +212,10 @@ public class RolesPerspective extends AbstractManagedApplicationPerspective {
 					.setPrivilegesReceivingRoles(privilegesReceivingRolesTagCombo.getValue())
 					.setPrivilegesSendingRoles(privilegesSendingRolesTagCombo.getValue())
 					.setNoDirectMemberships(noDirectMembershipsCheckBox.getValue())
-					.setDelegatedCustomPrivilegeObjectRole(customPrivilegeRoleCheckBox.getValue());
+					.setDelegatedCustomPrivilegeObjectRole(customPrivilegeRoleCheckBox.getValue())
+					.setProtectedAssignments(protectedAssignmentCheckBox.getValue())
+					.setTwoFactorAuthRequired(twoFactorAuthCheckBox.getValue())
+			;
 			return true;
 		});
 
@@ -225,6 +232,8 @@ public class RolesPerspective extends AbstractManagedApplicationPerspective {
 			privilegesSendingRolesTagCombo.setValue(role.getPrivilegesSendingRoles());
 			noDirectMembershipsCheckBox.setValue(role.getNoDirectMemberships());
 			customPrivilegeRoleCheckBox.setValue(role.isDelegatedCustomPrivilegeObjectRole());
+			protectedAssignmentCheckBox.setValue(role.isProtectedAssignments());
+			twoFactorAuthCheckBox.setValue(role.isTwoFactorAuthRequired());
 			userRoleAssignmentModelBuilder.setRecords(RoleUtils.getMembers(role, true));
 
 			privilegesTree.removeAllNodes();
