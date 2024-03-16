@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -303,7 +303,7 @@ public class ApplicationInstance implements PerspectiveByNameLauncher {
 		tree.setPropertyExtractor((perspectiveSessionData, propertyName) -> {
 			switch (propertyName) {
 				case BaseTemplate.PROPERTY_BADGE:
-					return perspectiveSessionData.getPerspectiveBuilder().getBadgeValue(userSessionData.getApplicationPrivilegeProvider(applicationData.getManagedApplication()));
+					return perspectiveSessionData.getPerspectiveBuilder().getBadgeValue(perspectiveSessionData);
 				case BaseTemplate.PROPERTY_ICON:
 					return perspectiveSessionData.getIcon();
 				case BaseTemplate.PROPERTY_CAPTION:
@@ -321,8 +321,16 @@ public class ApplicationInstance implements PerspectiveByNameLauncher {
 		SimpleItemView<PerspectiveSessionData> itemView = new SimpleItemView<>();
 		SimpleItemGroup<PerspectiveSessionData> itemGroup = itemView.addSingleColumnGroup(ApplicationIcons.WINDOWS, getLocalized(Dictionary.APPLICATION_PERSPECTIVE));
 		itemGroup.setItemTemplate(BaseTemplate.LIST_ITEM_VERY_LARGE_ICON_TWO_LINES);
-		sortedPerspectives.forEach(p -> {
-			itemGroup.addItem(p.getIcon(), p.getTitle(), p.getDescription()).setBadge(p.getPerspectiveBuilder().getBadgeValue(userSessionData.getApplicationPrivilegeProvider(applicationData.getManagedApplication()))).setPayload(p);
+		sortedPerspectives.forEach(perspectiveSessionData -> {
+			itemGroup.addItem(
+							perspectiveSessionData.getIcon(),
+							perspectiveSessionData.getTitle(),
+							perspectiveSessionData.getDescription())
+					.setBadge(
+							perspectiveSessionData.getPerspectiveBuilder().getBadgeValue(perspectiveSessionData
+							)
+					)
+					.setPayload(perspectiveSessionData);
 		});
 		return itemView;
 	}

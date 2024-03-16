@@ -154,6 +154,10 @@ public class SystemRegistry {
 				.collect(Collectors.toList());
 	}
 
+	public synchronized List<UserSessionData> getSessionData() {
+		return new ArrayList<>(activeUsersMap.keySet());
+	}
+
 	public synchronized List<BaseTemplateRecord<Long>> getActiveUsers() {
 		List<BaseTemplateRecord<Long>> activeUserData = new ArrayList<>();
 		for (Map.Entry<UserSessionData, Long> entry : activeUsersMap.entrySet()) {

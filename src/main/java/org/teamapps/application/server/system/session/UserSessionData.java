@@ -201,6 +201,10 @@ public class UserSessionData {
 		return rootPanel;
 	}
 
+	public ApplicationLauncher getApplicationLauncher() {
+		return applicationLauncher;
+	}
+
 	public void setRooWrapperComponentFunction(Function<Component, Component> rootWrapperComponentFunction) {
 		this.rootWrapperComponentFunction = rootWrapperComponentFunction;
 		rootPanel.setContent(rootWrapperComponentFunction.apply(rootPanel.getContent()));
