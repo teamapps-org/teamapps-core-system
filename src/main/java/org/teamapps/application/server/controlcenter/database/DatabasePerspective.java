@@ -213,6 +213,13 @@ public class DatabasePerspective extends AbstractManagedApplicationPerspective {
 		}
 
 		public Icon getIcon() {
+			if (tableIndex != null) {
+				if (tableIndex.getTableModel().isDeprecated() || tableIndex.getTableModel().isDeleted()) {
+					return ApplicationIcons.GARBAGE;
+				} else if (tableIndex.getTableModel().isRemoteTable()) {
+					return ApplicationIcons.LINK;
+				}
+			}
 			return tableIndex != null ? ApplicationIcons.TABLE : ApplicationIcons.DATA_TABLE;
 		}
 
