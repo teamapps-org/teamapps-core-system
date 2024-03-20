@@ -101,6 +101,9 @@ public class PropertyFileTranslation {
 		if (sourceLang.equals("de")) {
 			File translatedFile = new File(path, baseName + "_en.properties");
 			updateOriginalFile(sourceFile, translatedFile, sourceMap);
+		} else if (sourceLang.equals("en")) {
+			File translatedFile = new File(path, baseName + "_de.properties");
+			updateOriginalFile(sourceFile, translatedFile, sourceMap);
 		}
 	}
 
@@ -252,7 +255,14 @@ public class PropertyFileTranslation {
 			return s;
 		}
 		if (s.startsWith("org.teamapps.dictionary.")) {
-			return s.substring(24, s.indexOf('.', 25));
+			int borderPos = s.indexOf("=");
+			if (borderPos < 0) return s;
+			int pos = s.substring(0, borderPos).lastIndexOf('.');
+			if (pos < 0) {
+				return "dictionary";
+			} else {
+				return s.substring(24, s.indexOf('.', 25));
+			}
 		} else {
 			return s.substring(0, s.indexOf('.'));
 		}
@@ -290,11 +300,7 @@ public class PropertyFileTranslation {
 				int pos = line.indexOf('=');
 				String key = line.substring(0, pos);
 				String value = line.substring(pos + 1);
-				String topic = key.contains(".") ? key.substring(0, key.indexOf('.')) : key;
-				if (key.startsWith("org.teamapps.dictionary.")) {
-					int endIndex = key.indexOf('.', 25);
-					topic = key.substring(24, endIndex < 0 ? key.length() : endIndex);
-				}
+				String topic = getTopic(key);
 				keys.add(key);
 				values.add(value);
 				topics.add(topic);
