@@ -311,11 +311,6 @@ public class PerspectiveSessionData implements ApplicationInstanceData {
 	}
 
 	@Override
-	public Function<TranslatableText, String> getTranslatableTextExtractor() {
-		return localizationProvider.getTranslatableTextExtractor();
-	}
-
-	@Override
 	public boolean isAllowed(SimplePrivilege simplePrivilege) {
 		return privilegeProvider.isAllowed(simplePrivilege);
 	}

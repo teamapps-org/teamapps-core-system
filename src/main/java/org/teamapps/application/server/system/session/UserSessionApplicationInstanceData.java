@@ -213,11 +213,6 @@ public class UserSessionApplicationInstanceData implements ApplicationInstanceDa
 	}
 
 	@Override
-	public Function<TranslatableText, String> getTranslatableTextExtractor() {
-		return localizationProvider.getTranslatableTextExtractor();
-	}
-
-	@Override
 	public boolean isAllowed(SimplePrivilege simplePrivilege) {
 		return privilegeProvider.isAllowed(simplePrivilege);
 	}

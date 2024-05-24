@@ -32,13 +32,11 @@ public class SessionApplicationLocalizationProvider implements ApplicationLocali
 	private final Application application;
 	private final List<String> rankedLanguages;
 	private final GlobalLocalizationProvider localizationProvider;
-	private final Function<TranslatableText, String> translatableTextExtractor;
 
 	public SessionApplicationLocalizationProvider(Application application, List<String> rankedLanguages, GlobalLocalizationProvider localizationProvider) {
 		this.application = application;
 		this.rankedLanguages = rankedLanguages;
 		this.localizationProvider = localizationProvider;
-		this.translatableTextExtractor = TranslatableTextUtils.createTranslatableTextExtractor(rankedLanguages);
 	}
 
 	public String getLocalized(Application application, String key) {
@@ -60,8 +58,4 @@ public class SessionApplicationLocalizationProvider implements ApplicationLocali
 		return localizationProvider.getLocalized(translatableText, rankedLanguages);
 	}
 
-	@Override
-	public Function<TranslatableText, String> getTranslatableTextExtractor() {
-		return translatableTextExtractor;
-	}
 }

@@ -35,7 +35,6 @@ import org.teamapps.data.extract.PropertyProvider;
 import org.teamapps.icons.Icon;
 import org.teamapps.icons.composite.CompositeIcon;
 import org.teamapps.model.controlcenter.*;
-import org.teamapps.universaldb.index.numeric.NumericFilter;
 import org.teamapps.universaldb.index.translation.TranslatableText;
 import org.teamapps.ux.component.template.BaseTemplate;
 import org.teamapps.ux.session.SessionContext;
@@ -234,8 +233,8 @@ public class PropertyProviders {
 		return (unitType, propertyNames) -> {
 			Map<String, Object> map = new HashMap<>();
 			map.put(BaseTemplate.PROPERTY_ICON, IconUtils.decodeIcon(unitType.getIcon()));
-			map.put(BaseTemplate.PROPERTY_CAPTION, applicationInstanceData.getTranslatableTextExtractor().apply(unitType.getName()));
-			map.put(BaseTemplate.PROPERTY_DESCRIPTION, applicationInstanceData.getTranslatableTextExtractor().apply(unitType.getAbbreviation()));
+			map.put(BaseTemplate.PROPERTY_CAPTION, applicationInstanceData.getLocalized(unitType.getName()));
+			map.put(BaseTemplate.PROPERTY_DESCRIPTION, applicationInstanceData.getLocalized(unitType.getAbbreviation()));
 			return map;
 		};
 	}
@@ -244,7 +243,7 @@ public class PropertyProviders {
 		if (type == null) {
 			return null;
 		} else {
-			return applicationInstanceData.getTranslatableTextExtractor().apply(type.getName());
+			return applicationInstanceData.getLocalized(type.getName());
 		}
 	}
 
@@ -254,7 +253,7 @@ public class PropertyProviders {
 			Map<String, Object> map = new HashMap<>();
 			map.put(BaseTemplate.PROPERTY_ICON, unit.getIcon() != null ? IconUtils.decodeIcon(unit.getIcon()) : IconUtils.decodeIcon(unit.getType() == null ? null : unit.getType().getIcon()));
 			map.put(BaseTemplate.PROPERTY_CAPTION, getOrganizationUnitTitle(unit, applicationInstanceData));
-			map.put(BaseTemplate.PROPERTY_DESCRIPTION, applicationInstanceData.getTranslatableTextExtractor().apply(unit.getType() == null ? null : unit.getType().getName()));
+			map.put(BaseTemplate.PROPERTY_DESCRIPTION, applicationInstanceData.getLocalized(unit.getType() == null ? null : unit.getType().getName()));
 			return map;
 		};
 	}
@@ -275,11 +274,11 @@ public class PropertyProviders {
 			return null;
 		}
 		String prefix = "";
-		String abbreviation = applicationInstanceData.getTranslatableTextExtractor().apply(unit.getType().getAbbreviation());
+		String abbreviation = applicationInstanceData.getLocalized(unit.getType().getAbbreviation());
 		if (abbreviation != null) {
 			prefix = abbreviation + "-";
 		}
-		String title = prefix + applicationInstanceData.getTranslatableTextExtractor().apply(unit.getName());
+		String title = prefix + applicationInstanceData.getLocalized(unit.getName());
 		return title;
 	}
 
@@ -338,13 +337,13 @@ public class PropertyProviders {
 		return sb.toString();
 	}
 
-	public static String getUserRoles(User user, int maxRoles, Function<TranslatableText, String> translatableTextExtractor) {
+	public static String getUserRoles(User user, int maxRoles, ApplicationInstanceData applicationInstanceData) {
 		return user.getRoleAssignments()
 				.stream()
 				.map(UserRoleAssignment::getRole)
 				.collect(Collectors.toSet())
 				.stream()
-				.map(role -> translatableTextExtractor.apply(role.getTitle()))
+				.map(role -> applicationInstanceData.getLocalized(role.getTitle()))
 				.limit(maxRoles)
 				.collect(Collectors.joining(", "));
 	}
@@ -409,12 +408,11 @@ public class PropertyProviders {
 	}
 
 	public static PropertyProvider<Role> createRolePropertyProvider(ApplicationInstanceData applicationInstanceData) {
-		Function<TranslatableText, String> translatableTextExtractor = TranslatableTextUtils.createTranslatableTextExtractor(applicationInstanceData);
 		return (role, propertyNames) -> {
 			Map<String, Object> map = new HashMap<>();
 			map.put(BaseTemplate.PROPERTY_ICON, IconUtils.decodeIcon(role.getIcon()));
 			map.put(BaseTemplate.PROPERTY_CAPTION, applicationInstanceData.getLocalized(role.getTitle()));
-			map.put(BaseTemplate.PROPERTY_DESCRIPTION, role.getOrganizationField() != null ? translatableTextExtractor.apply(role.getOrganizationField().getTitle()) : null);
+			map.put(BaseTemplate.PROPERTY_DESCRIPTION, role.getOrganizationField() != null ? applicationInstanceData.getLocalized(role.getOrganizationField().getTitle()) : null);
 			return map;
 		};
 	}
@@ -488,7 +486,7 @@ public class PropertyProviders {
 			}
 			map.put(BaseTemplate.PROPERTY_CAPTION, getUserCaptionWithTranslation(assignment.getUser()));
 			map.put(BaseTemplate.PROPERTY_DESCRIPTION, getOrganizationUnitTitle(assignment.getOrganizationUnit(), applicationInstanceData));
-			map.put(BaseTemplate.PROPERTY_BADGE, applicationInstanceData.getTranslatableTextExtractor().apply(assignment.getRole().getTitle()));
+			map.put(BaseTemplate.PROPERTY_BADGE, applicationInstanceData.getLocalized(assignment.getRole().getTitle()));
 			return map;
 		};
 	}
@@ -497,7 +495,7 @@ public class PropertyProviders {
 		return (assignment, propertyNames) -> {
 			Map<String, Object> map = new HashMap<>();
 			map.put(BaseTemplate.PROPERTY_ICON, assignment.getRole() != null ? IconUtils.decodeIcon(assignment.getRole().getIcon()) : null);
-			map.put(BaseTemplate.PROPERTY_CAPTION, applicationInstanceData.getTranslatableTextExtractor().apply(assignment.getRole().getTitle()));
+			map.put(BaseTemplate.PROPERTY_CAPTION, applicationInstanceData.getLocalized(assignment.getRole().getTitle()));
 			map.put(BaseTemplate.PROPERTY_DESCRIPTION, getOrganizationUnitTitle(assignment.getOrganizationUnit(), applicationInstanceData));
 			return map;
 		};
