@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,6 +20,8 @@
 package org.teamapps.application.server.system.machinetranslation;
 
 import com.deepl.api.TextResult;
+import com.ibm.icu.text.Transliterator;
+import org.apache.commons.text.WordUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,8 +29,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class PropertyFileTranslation {
+
+	private static final Transliterator TRANSLITERATOR = Transliterator.getInstance("Any-Latin; nfd; [:nonspacing mark:] remove; nfc");
 
 	private final DeepL2Translation translation;
 
@@ -38,10 +43,6 @@ public class PropertyFileTranslation {
 
 	public PropertyFileTranslation(String key) {
 		this.translation = new DeepL2Translation(key);
-	}
-
-	public void printUsage() {
-		translation.printUsage();
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -54,6 +55,22 @@ public class PropertyFileTranslation {
 		PropertyFileTranslation propertyFileTranslation = new PropertyFileTranslation(key);
 		propertyFileTranslation.getTranslation().printUsage();
 		propertyFileTranslation.translateFiles(path, DeepL2Translation.SUPPORTED_LANGUAGES);
+	}
+
+	private static String getBaseName(File sourceFile) {
+		return sourceFile.getName().substring(0, sourceFile.getName().indexOf('_'));
+	}
+
+	private static File getSourceFile(File path, String sourceLang) {
+		File sourceFile = Arrays.stream(path.listFiles())
+				.filter(f -> f.getName().endsWith(".properties"))
+				.filter(f -> f.getName().contains("_" + sourceLang + "."))
+				.findFirst().orElseThrow();
+		return sourceFile;
+	}
+
+	public void printUsage() {
+		translation.printUsage();
 	}
 
 	public DeepL2Translation getTranslation() {
@@ -107,16 +124,25 @@ public class PropertyFileTranslation {
 		}
 	}
 
-	private static String getBaseName(File sourceFile) {
-		return sourceFile.getName().substring(0, sourceFile.getName().indexOf('_'));
-	}
+	public String createDictionary(File path, String sourceLang) throws Exception {
+		File sourceFile = getSourceFile(path, sourceLang);
+		String baseName = getBaseName(sourceFile);
+		TreeMap<String, String> sourceMap = readPropertyFile(sourceFile);
 
-	private static File getSourceFile(File path, String sourceLang) {
-		File sourceFile = Arrays.stream(path.listFiles())
-				.filter(f -> f.getName().endsWith(".properties"))
-				.filter(f -> f.getName().contains("_" + sourceLang + "."))
-				.findFirst().orElseThrow();
-		return sourceFile;
+		StringBuilder sb = new StringBuilder();
+		String prefix = "org.teamapps.dictionary.";
+		for (String key : sourceMap.keySet()) {
+			String baseKey = key.substring(prefix.length());
+			String[] parts = baseKey.split("\\.");
+			if (parts.length == 1) {
+				sb.append("public static final String ").append(createConstant(baseKey)).append(" = \"").append(key).append("\";\n");
+			} else {
+				String newKey = Arrays.stream(parts).map(this::createConstant).collect(Collectors.joining("."));
+				sb.append("public static final String ").append(newKey).append(" = \"").append(key).append("\";\n");
+			}
+		}
+
+		return sb.toString();
 	}
 
 	private void updateOriginalFile(File sourcFile, File translatedFile, TreeMap<String, String> sourceMap) throws IOException {
@@ -325,5 +351,47 @@ public class PropertyFileTranslation {
 		}
 		Files.writeString(outputFile.toPath(), sb.toString(), StandardCharsets.UTF_8);
 		System.out.println("TIME:" + (System.currentTimeMillis() - time) + ", languages:" + sourceLang + "->" + targetLang);
+	}
+
+
+	private String cleanValue(String value) {
+		value = TRANSLITERATOR.transliterate(value);
+		value = WordUtils.capitalize(value);
+		value = value.replaceAll("\\.\\.\\.", "___");
+		value = removeNonAnsi(value);
+		value = value.replaceAll(" ", "");
+		value = value.substring(0, 1).toLowerCase() + value.substring(1);
+		return value;
+	}
+
+	private String createConstant(String value) {
+		if (value.contains("_")) {
+			return value;
+		}
+		value = cleanValue(value);
+		value = value.replaceAll("(.)(\\p{Upper})", "$1_$2").toUpperCase();
+		if (value.length() > 36) {
+			value = "SENTENCE_" + value.substring(0, 35) + "__";
+		}
+		return value;
+	}
+
+	public String removeNonAnsi(String s) {
+		if (s == null) return null;
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+			int code = c;
+			if (c == '_' || c == ' ') {
+				sb.append(c);
+			} else if (code > 64 && code < 91) {
+				sb.append(c);
+			} else if (code > 96 && code < 123) {
+				sb.append(c);
+			} else if (code > 47 && code < 58) {
+				sb.append(c);
+			}
+		}
+		return sb.toString();
 	}
 }
