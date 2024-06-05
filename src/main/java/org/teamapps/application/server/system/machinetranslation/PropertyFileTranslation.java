@@ -104,6 +104,7 @@ public class PropertyFileTranslation {
 		translation.printUsage();
 		File sourceFile = getSourceFile(path, sourceLang);
 		String baseName = getBaseName(sourceFile);
+		System.out.println("Translations for: " + baseName);
 
 		TreeMap<String, String> sourceMap = readPropertyFile(sourceFile);
 		Set<String> modifiedKeys = readModifiedKeys(sourceFile);
@@ -137,7 +138,7 @@ public class PropertyFileTranslation {
 			if (parts.length == 1) {
 				sb.append("public static final String ").append(createConstant(baseKey)).append(" = \"").append(key).append("\";\n");
 			} else {
-				String newKey = Arrays.stream(parts).map(this::createConstant).collect(Collectors.joining("."));
+				String newKey = Arrays.stream(parts).map(this::createConstant).collect(Collectors.joining("_"));
 				sb.append("public static final String ").append(newKey).append(" = \"").append(key).append("\";\n");
 			}
 		}

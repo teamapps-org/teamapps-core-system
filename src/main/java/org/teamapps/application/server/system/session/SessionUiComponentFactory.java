@@ -119,11 +119,6 @@ public class SessionUiComponentFactory implements UiComponentFactory {
 	}
 
 	@Override
-	public TranslatableField createTranslatableField() {
-		return new TranslatableField(applicationInstanceData);
-	}
-
-	@Override
 	public TranslationKeyField createTranslationKeyField(String linkButtonCaption, boolean allowMultiLine, boolean selectionFieldWithKey) {
 		return new LocalizationTranslationKeyField(linkButtonCaption, applicationInstanceData, systemRegistry, () -> application, allowMultiLine, selectionFieldWithKey);
 	}
@@ -149,7 +144,7 @@ public class SessionUiComponentFactory implements UiComponentFactory {
 				String link = null;
 				if (uploadedFile.getSizeInBytes() > 300_000) {
 					File newFile = Files.createTempFile("temp", ".jpg").toFile();
-					Thumbnailator.createThumbnail(uploadedFile.getAsFile(), newFile, 1200, 800);
+					Thumbnailator.createThumbnail(uploadedFile.getAsFile(), newFile, 1_200, 1_000);
 					link = createLink(newFile, bucket, uploadedFile.getName());
 				} else {
 					link = createLink(uploadedFile.getAsFile(), bucket, uploadedFile.getName());

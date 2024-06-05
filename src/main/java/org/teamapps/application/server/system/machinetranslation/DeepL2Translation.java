@@ -132,6 +132,17 @@ public class DeepL2Translation {
 		}
 	}
 
+	public void printGlossaries() {
+		try {
+			Translator translator = new Translator(apiKey);
+			for (GlossaryInfo glossary : translator.listGlossaries()) {
+				System.out.println(glossary.getGlossaryId() + ", " + glossary.getName() + ", " + glossary.getSourceLang() + ", " + glossary.getTargetLang() + ", " + glossary.getEntryCount());
+			}
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public List<TextResult> translate(List<String> values, String sourceLang, String targetLang, TextTranslationOptions options) throws Exception {
 		targetLang = fixTargetLang(targetLang);
 		Translator translator = new Translator(apiKey);
