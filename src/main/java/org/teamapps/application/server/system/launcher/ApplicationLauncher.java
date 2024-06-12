@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,6 +21,7 @@ package org.teamapps.application.server.system.launcher;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.teamapps.application.api.application.ApplicationInstanceData;
 import org.teamapps.application.api.application.BaseApplicationBuilder;
 import org.teamapps.application.api.application.UserProfileApplicationBuilder;
 import org.teamapps.application.api.application.perspective.PerspectiveBuilder;
@@ -445,6 +446,13 @@ public class ApplicationLauncher {
 				}
 			}
 		}
+	}
+
+	public ApplicationInstanceData createApplicationInstanceData(String appName) {
+		ApplicationData applicationData = sortedApplicationGroups.stream().flatMap(group -> group.getSortedApplications().stream()).filter(app -> app.getLoadedApplication().getApplication().getName().equals(appName)).findFirst().orElse(null);
+		ApplicationInstance applicationInstance = new ApplicationInstance(userSessionData, applicationData, applicationLauncher, selectedPerspective);
+		ManagedApplicationPerspective managedApplicationPerspective = applicationData.getManagedApplication().getPerspectives().stream().filter(p -> p.getApplicationPerspective().getApplication().getName().equals(appName)).findFirst().orElse(null);
+		return applicationInstance.createPerspectiveSessionData(managedApplicationPerspective);
 	}
 
 	private void openApplicationWithPerspective(ApplicationData applicationData, PerspectiveBuilder perspectiveBuilder) {
