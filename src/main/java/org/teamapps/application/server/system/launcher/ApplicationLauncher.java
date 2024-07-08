@@ -315,6 +315,7 @@ public class ApplicationLauncher {
 			itemGroup.setButtonWidth(220);
 			for (ApplicationData applicationData : applicationGroup.getSortedApplications()) {
 				SimpleItem<ApplicationData> item = itemGroup.addItem(applicationData.getIcon(), applicationData.getTitle(), applicationData.getDescription());
+				item.setBadge(applicationData.getApplicationBadgeCount());
 				item.onClick.addListener(() -> openApplication(applicationData));
 			}
 		}
