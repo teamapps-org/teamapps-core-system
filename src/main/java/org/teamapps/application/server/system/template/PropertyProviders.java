@@ -30,6 +30,7 @@ import org.teamapps.application.api.theme.ApplicationIcons;
 import org.teamapps.application.server.system.bootstrap.SystemRegistry;
 import org.teamapps.application.server.system.session.UserSessionData;
 import org.teamapps.application.ux.IconUtils;
+import org.teamapps.application.ux.localize.FlagMap;
 import org.teamapps.application.ux.localize.TranslatableTextUtils;
 import org.teamapps.data.extract.PropertyProvider;
 import org.teamapps.icons.Icon;
@@ -430,6 +431,23 @@ public class PropertyProviders {
 			Map<String, Object> map = new HashMap<>();
 			map.put(BaseTemplate.PROPERTY_IMAGE, getUserImageLink(user, applicationInstanceData));
 			map.put(BaseTemplate.PROPERTY_CAPTION, getUserCaptionWithTranslation(user));
+			map.put(BaseTemplate.PROPERTY_DESCRIPTION, getUserDescription(user, applicationInstanceData));
+			return map;
+		};
+	}
+
+	public static PropertyProvider<User> createUserWithCountryFlagPropertyProvider(ApplicationInstanceData applicationInstanceData) {
+		return (user, propertyNames) -> {
+			Map<String, Object> map = new HashMap<>();
+			String flagData = "";
+			if (user.getAddress() != null) {
+				String flag = FlagMap.getFlagByCountryCode(user.getAddress().getCountry());
+				if (flag != null) {
+					flagData = flag + " ";
+				}
+			}
+			map.put(BaseTemplate.PROPERTY_IMAGE, getUserImageLink(user, applicationInstanceData));
+			map.put(BaseTemplate.PROPERTY_CAPTION, flagData + getUserCaptionWithTranslation(user));
 			map.put(BaseTemplate.PROPERTY_DESCRIPTION, getUserDescription(user, applicationInstanceData));
 			return map;
 		};
