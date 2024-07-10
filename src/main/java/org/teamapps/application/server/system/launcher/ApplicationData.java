@@ -19,6 +19,8 @@
  */
 package org.teamapps.application.server.system.launcher;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.teamapps.application.api.application.perspective.PerspectiveBuilder;
 import org.teamapps.application.api.localization.ApplicationLocalizationProvider;
 import org.teamapps.application.server.system.bootstrap.LoadedApplication;
@@ -32,8 +34,10 @@ import org.teamapps.model.controlcenter.ManagedApplication;
 import org.teamapps.model.controlcenter.ManagedApplicationPerspective;
 import org.teamapps.model.controlcenter.OrganizationField;
 
-public class ApplicationData {
+import java.lang.invoke.MethodHandles;
 
+public class ApplicationData {
+	private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	private final ManagedApplication managedApplication;
 	private final Icon icon;
@@ -61,6 +65,10 @@ public class ApplicationData {
 		int count = 0;
 		for (ManagedApplicationPerspective managedApplicationPerspective : managedApplication.getPerspectives()) {
 			OrganizationField organizationField = managedApplicationPerspective.getManagedApplication().getOrganizationField();
+			if (managedApplicationPerspective.getApplicationPerspective() == null) {
+				LOGGER.warn("ERROR missing application perspective for app:{}, managed-perspective:{}", loadedApplication.getApplication().getName(), managedApplicationPerspective.getId());
+				continue;
+			}
 			LoadedApplication application = applicationSessionData.getUserSessionData().getRegistry().getLoadedApplication(managedApplicationPerspective.getApplicationPerspective().getApplication());
 			if (application != null) {
 				PerspectiveBuilder perspectiveBuilder = application.getPerspectiveBuilder(managedApplicationPerspective.getApplicationPerspective().getName());
