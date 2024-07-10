@@ -50,11 +50,20 @@ public class ApplicationJarInstallationPhase implements ApplicationInstallationP
 			BaseApplicationBuilder baseApplicationBuilder = null;
 			String fileHash = FileUtil.createFileHash(applicationInfo.getApplicationJar());
 			URLClassLoader classLoader = new URLClassLoader(new URL[]{applicationInfo.getApplicationJar().toURI().toURL()});
+
+
 			ScanResult scanResult = new ClassGraph()
 					.overrideClassLoaders(classLoader)
 					.enableAllInfo()
 					.scan();
-			ClassInfoList classes = scanResult.getClassesImplementing(ApplicationBuilder.class.getName()).getStandardClasses();
+
+
+			ClassInfoList classes = scanResult.getClassesWithAnnotation("org.teamapps.application.api.annotation.TeamAppsBootableClass");
+
+			if (classes.isEmpty()) {
+				classes = scanResult.getClassesImplementing(ApplicationBuilder.class.getName()).getStandardClasses();
+			}
+
 			if (classes.isEmpty()) {
 				classes = scanResult.getSubclasses(AbstractApplicationBuilder.class.getName()).getStandardClasses();
 			}
