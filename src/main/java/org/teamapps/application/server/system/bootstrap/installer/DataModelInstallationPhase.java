@@ -84,6 +84,10 @@ public class DataModelInstallationPhase implements ApplicationInstallationPhase 
 				installedModel = universalDB.getTransactionIndex().getCurrentModel();
 				if (!universalDB.getTransactionIndex().isValidModel(model)) {
 					applicationInfo.addError("Incompatible database models!");
+					LOGGER.error("Incompatible database models!");
+					for (String error : installedModel.checkCompatibilityErrors(model)) {
+						LOGGER.error("DB model error line: {}", error);
+					}
 					return;
 				}
 			}
