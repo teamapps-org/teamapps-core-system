@@ -174,20 +174,25 @@ public class ApplicationInstance implements PerspectiveByNameLauncher {
 			return responsiveApplication.getUi();
 		}
 
+		if (sortedPerspectives.size() > 1) {
+			mobileApplicationMenu = View.createView(StandardLayout.LEFT, ApplicationIcons.RADIO_BUTTON_GROUP, getLocalized(Dictionary.APPLICATION_MENU), null);
+			mobileApplicationMenu.getPanel().setBodyBackgroundColor(userSessionData.isDarkTheme() ? Color.fromRgba(30, 30, 30, .7f) : Color.WHITE.withAlpha(0.84f));
+			responsiveApplication.addApplicationView(mobileApplicationMenu);
+			mobileLayout = new MobileLayout();
+			mobileApplicationMenu.setComponent(mobileLayout);
+			mobileNavigation.setApplicationMenu(mobileApplicationMenu);
 
-		mobileApplicationMenu = View.createView(StandardLayout.LEFT, ApplicationIcons.RADIO_BUTTON_GROUP, getLocalized(Dictionary.APPLICATION_MENU), null);
-		mobileApplicationMenu.getPanel().setBodyBackgroundColor(userSessionData.isDarkTheme() ? Color.fromRgba(30, 30, 30, .7f) : Color.WHITE.withAlpha(0.84f));
-		responsiveApplication.addApplicationView(mobileApplicationMenu);
-		mobileLayout = new MobileLayout();
-		mobileApplicationMenu.setComponent(mobileLayout);
-		mobileNavigation.setApplicationMenu(mobileApplicationMenu);
+			Tree<PerspectiveSessionData> tree = createApplicationMenuTree(sortedPerspectives);
+			mobileLayout.setContent(tree);
 
-		Tree<PerspectiveSessionData> tree = createApplicationMenuTree(sortedPerspectives);
-		mobileLayout.setContent(tree);
-
-		tree.onNodeSelected.addListener(this::showMobilePerspective);
-		mobileNavigation.onBackOperation.addListener(() -> mobileLayout.setContent(tree, PageTransition.MOVE_TO_RIGHT_VS_MOVE_FROM_LEFT, 500));
-		mobileNavigation.onShowViewRequest().fire(mobileApplicationMenu);
+			tree.onNodeSelected.addListener(this::showMobilePerspective);
+			mobileNavigation.onBackOperation.addListener(() -> mobileLayout.setContent(tree, PageTransition.MOVE_TO_RIGHT_VS_MOVE_FROM_LEFT, 500));
+			mobileNavigation.onShowViewRequest().fire(mobileApplicationMenu);
+		} else {
+			if (!sortedPerspectives.isEmpty()) {
+				showMobilePerspective(sortedPerspectives.get(0));
+			}
+		}
 
 		return responsiveApplication.getUi();
 	}
