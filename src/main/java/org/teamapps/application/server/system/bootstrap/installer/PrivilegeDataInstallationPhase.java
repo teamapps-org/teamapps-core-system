@@ -117,7 +117,10 @@ public class PrivilegeDataInstallationPhase implements ApplicationInstallationPh
 		newPrivilegeGroups.forEach(group -> createApplicationPrivilegeGroup(group, application));
 
 		List<ApplicationPrivilegeGroup> removedPrivilegeGroups = keyCompare.getBEntriesNotInA();
-		removedPrivilegeGroups.forEach(Entity::delete);
+		for (ApplicationPrivilegeGroup privilegeGroup : removedPrivilegeGroups) {
+			privilegeGroup.getPrivileges().forEach(Entity::delete);
+			privilegeGroup.delete();
+		}
 
 		List<PrivilegeGroup> existingGroups = keyCompare.getAEntriesInB();
 		for (PrivilegeGroup group : existingGroups) {
