@@ -41,6 +41,7 @@ import org.teamapps.application.server.system.launcher.PerspectiveByNameLauncher
 import org.teamapps.application.server.system.organization.OrganizationUtils;
 import org.teamapps.application.server.system.utils.RoleUtils;
 import org.teamapps.application.ux.IconUtils;
+import org.teamapps.databinding.TwoWayBindableValue;
 import org.teamapps.event.Event;
 import org.teamapps.icons.Icon;
 import org.teamapps.message.protocol.message.Message;
@@ -249,6 +250,11 @@ public class PerspectiveSessionData implements ApplicationInstanceData {
 	@Override
 	public <TYPE> Event<TYPE> getUserSessionEvent(String name) {
 		return userSessionData.getUserSessionEvent(name);
+	}
+
+	@Override
+	public <TYPE> TwoWayBindableValue<TYPE> getBindableValue(String name) {
+		return userSessionData.getBindableValue(name);
 	}
 
 	@Override

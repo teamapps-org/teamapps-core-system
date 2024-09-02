@@ -38,6 +38,7 @@ import org.teamapps.application.server.DatabaseLogAppender;
 import org.teamapps.application.server.PublicLinkResourceProvider;
 import org.teamapps.application.server.system.bootstrap.LoadedApplication;
 import org.teamapps.application.server.system.bootstrap.SystemRegistry;
+import org.teamapps.databinding.TwoWayBindableValue;
 import org.teamapps.event.Event;
 import org.teamapps.message.protocol.message.Message;
 import org.teamapps.model.controlcenter.*;
@@ -206,6 +207,12 @@ public class UnmanagedApplicationSessionData implements ApplicationInstanceData 
 	public <TYPE> Event<TYPE> getUserSessionEvent(String name) {
 		return userSessionData.getUserSessionEvent(name);
 	}
+
+	@Override
+	public <TYPE> TwoWayBindableValue<TYPE> getBindableValue(String name) {
+		return userSessionData.getBindableValue(name);
+	}
+
 
 	@Override
 	public ReplicatedStateMachine getReplicatedStateMachine(String name) {

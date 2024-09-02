@@ -37,6 +37,7 @@ import org.teamapps.application.server.system.localization.SessionApplicationLoc
 import org.teamapps.application.server.system.privilege.PrivilegeApplicationKey;
 import org.teamapps.application.server.system.privilege.UserPrivileges;
 import org.teamapps.application.server.system.search.UserSearchImpl;
+import org.teamapps.databinding.TwoWayBindableValue;
 import org.teamapps.event.Event;
 import org.teamapps.icons.Icon;
 import org.teamapps.icons.SessionIconProvider;
@@ -76,6 +77,7 @@ public class UserSessionData {
 	private boolean darkTheme;
 	private LoginData loginData;
 	private final Map<String, Event<?>> userSessionEventByName = new ConcurrentHashMap<>();
+	private final Map<String, TwoWayBindableValue<?>> userSessionBindableValueByName = new ConcurrentHashMap<>();
 	private final Map<String, ReplicatedStateMachine> replicatedStateMachineMap = new HashMap<>();
 	private OnlineUsersView onlineUsersView;
 	private final Map<String, Object> customObjectsMap = new HashMap<>();
@@ -274,6 +276,10 @@ public class UserSessionData {
 
 	public <TYPE> Event<TYPE> getUserSessionEvent(String name) {
 		return (Event<TYPE>) userSessionEventByName.computeIfAbsent(name, s -> new Event<>());
+	}
+
+	public <TYPE> TwoWayBindableValue<TYPE> getBindableValue(String name) {
+		return (TwoWayBindableValue<TYPE>) userSessionBindableValueByName.computeIfAbsent(name, s -> TwoWayBindableValue.create());
 	}
 
 	public synchronized ReplicatedStateMachine getReplicatedStateMachine(String name) {
