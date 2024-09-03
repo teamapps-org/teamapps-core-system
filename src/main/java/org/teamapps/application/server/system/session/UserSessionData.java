@@ -41,10 +41,7 @@ import org.teamapps.databinding.TwoWayBindableValue;
 import org.teamapps.event.Event;
 import org.teamapps.icons.Icon;
 import org.teamapps.icons.SessionIconProvider;
-import org.teamapps.model.controlcenter.Application;
-import org.teamapps.model.controlcenter.ManagedApplication;
-import org.teamapps.model.controlcenter.Role;
-import org.teamapps.model.controlcenter.User;
+import org.teamapps.model.controlcenter.*;
 import org.teamapps.protocol.system.LoginData;
 import org.teamapps.uisession.statistics.SumStats;
 import org.teamapps.uisession.statistics.UiSessionStats;
@@ -161,6 +158,10 @@ public class UserSessionData {
 
 	public ApplicationPrivilegeProvider getApplicationPrivilegeProvider(ManagedApplication managedApplication) {
 		return getUserPrivileges().getApplicationPrivilegeProvider(PrivilegeApplicationKey.create(managedApplication));
+	}
+
+	public ApplicationPrivilegeProvider getApplicationPrivilegeProviderWithOrgField(ManagedApplication managedApplication) {
+		return getUserPrivileges().getApplicationPrivilegeProvider(PrivilegeApplicationKey.create(managedApplication.getMainApplication(), managedApplication.getOrganizationField() != null ? OrganizationField.getById(managedApplication.getOrganizationField().getId()) : null));
 	}
 
 	public ApplicationLocalizationProvider getApplicationLocalizationProvider(Application application) {
