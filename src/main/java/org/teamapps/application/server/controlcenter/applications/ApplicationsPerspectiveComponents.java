@@ -22,10 +22,7 @@ package org.teamapps.application.server.controlcenter.applications;
 import org.teamapps.application.api.application.ApplicationBuilder;
 import org.teamapps.application.api.application.ApplicationInstanceData;
 import org.teamapps.application.api.application.BaseApplicationBuilder;
-import org.teamapps.application.api.localization.ApplicationLocalizationProvider;
-import org.teamapps.application.api.localization.Dictionary;
-import org.teamapps.application.api.localization.LocalizationEntry;
-import org.teamapps.application.api.localization.LocalizationEntrySet;
+import org.teamapps.application.api.localization.*;
 import org.teamapps.application.api.privilege.ApplicationRole;
 import org.teamapps.application.api.privilege.Privilege;
 import org.teamapps.application.api.privilege.PrivilegeGroup;
@@ -63,6 +60,7 @@ import org.teamapps.ux.session.SessionContext;
 
 import java.io.File;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -171,11 +169,14 @@ public class ApplicationsPerspectiveComponents extends AbstractManagedApplicatio
 			}
 			LoadedApplication loadedApplication = userSessionData.getRegistry().getLoadedApplication(application);
 			StringBuilder sb = new StringBuilder();
-			for (LocalizationEntrySet localizationEntrySet : loadedApplication.getBaseApplicationBuilder().getLocalizationData().getLocalizationEntrySets()) {
-				String language = localizationEntrySet.getLanguage();
-				sb.append("<b>").append(language).append(":</b><br>");
-				for (LocalizationEntry entry : localizationEntrySet.getEntries().stream().sorted(Comparator.comparing(LocalizationEntry::getKey)).collect(Collectors.toList())) {
-					sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("<br>");
+			LocalizationData localizationData = loadedApplication.getBaseApplicationBuilder().getLocalizationData();
+			if (localizationData != null) {
+				for (LocalizationEntrySet localizationEntrySet : localizationData.getLocalizationEntrySets()) {
+					String language = localizationEntrySet.getLanguage();
+					sb.append("<b>").append(language).append(":</b><br>");
+					for (LocalizationEntry entry : localizationEntrySet.getEntries().stream().sorted(Comparator.comparing(LocalizationEntry::getKey)).collect(Collectors.toList())) {
+						sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("<br>");
+					}
 				}
 			}
 			showTextWindow(ApplicationIcons.DOCUMENT_TEXT, getLocalized("applications.applicationCaptions"), sb.toString());
@@ -283,7 +284,7 @@ public class ApplicationsPerspectiveComponents extends AbstractManagedApplicatio
 			applicationField.setValue(applicationInfo.getApplication());
 			formLayout.addLabelAndComponent(null, getLocalized("applications.application"), applicationField);
 		} else {
-			Map<String, String> localizationMap = baseApplicationBuilder.getLocalizationData().createLocalizationMapByLanguage().values().iterator().next();
+			Map<String, String> localizationMap = baseApplicationBuilder.getLocalizationData() == null ? new HashMap<>() : baseApplicationBuilder.getLocalizationData().createLocalizationMapByLanguage().values().iterator().next();
 			formLayout.addLabelAndComponent(null, getLocalized("applications.application"), UiUtils.createSingleValueTemplateField(baseApplicationBuilder.getApplicationIcon(), baseApplicationBuilder.getApplicationName()));
 			formLayout.addLabelAndComponent(null, getLocalized("applications.appTitle"), UiUtils.createSingleValueTextField(baseApplicationBuilder.getApplicationTitleKey() + " -> " + localizationMap.get(baseApplicationBuilder.getApplicationTitleKey())));
 			formLayout.addLabelAndComponent(null, getLocalized("applications.appDescription"), UiUtils.createSingleValueTextField(baseApplicationBuilder.getApplicationDescriptionKey() + " -> " + localizationMap.get(baseApplicationBuilder.getApplicationDescriptionKey())));
@@ -351,11 +352,13 @@ public class ApplicationsPerspectiveComponents extends AbstractManagedApplicatio
 
 		buttonGroup.addButton(ToolbarButton.create(ApplicationIcons.DOCUMENT_TEXT, getLocalized("applications.applicationCaptions"), getLocalized("applications.showApplicationCaptions"))).onClick.addListener(() -> {
 			StringBuilder sb = new StringBuilder();
-			for (LocalizationEntrySet localizationEntrySet : baseApplicationBuilder.getLocalizationData().getLocalizationEntrySets()) {
-				String language = localizationEntrySet.getLanguage();
-				sb.append("<b>").append(language).append(":</b><br>");
-				for (LocalizationEntry entry : localizationEntrySet.getEntries().stream().sorted(Comparator.comparing(LocalizationEntry::getKey)).collect(Collectors.toList())) {
-					sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("<br>");
+			if (baseApplicationBuilder.getLocalizationData() != null) {
+				for (LocalizationEntrySet localizationEntrySet : baseApplicationBuilder.getLocalizationData().getLocalizationEntrySets()) {
+					String language = localizationEntrySet.getLanguage();
+					sb.append("<b>").append(language).append(":</b><br>");
+					for (LocalizationEntry entry : localizationEntrySet.getEntries().stream().sorted(Comparator.comparing(LocalizationEntry::getKey)).collect(Collectors.toList())) {
+						sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("<br>");
+					}
 				}
 			}
 			showTextWindow(ApplicationIcons.DOCUMENT_TEXT, getLocalized("applications.applicationCaptions"), sb.toString());

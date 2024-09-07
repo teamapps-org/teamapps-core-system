@@ -183,6 +183,9 @@ public class UserSessionApplicationInstanceData implements ApplicationInstanceDa
 		return userSessionData.getBindableValue(name);
 	}
 
+	public <TYPE> TwoWayBindableValue<TYPE> getBindableValue(String name, boolean fireAlways) {
+		return userSessionData.getBindableValue(name, fireAlways);
+	}
 
 	@Override
 	public ReplicatedStateMachine getReplicatedStateMachine(String name) {

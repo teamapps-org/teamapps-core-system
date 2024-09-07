@@ -22,6 +22,7 @@ package org.teamapps.application.server.system.session;
 import com.ibm.icu.util.ULocale;
 import org.teamapps.application.api.user.LocalizedFormatter;
 import org.teamapps.application.api.user.SessionUser;
+import org.teamapps.application.api.user.UserAppConferenceHandler;
 import org.teamapps.event.Event;
 import org.teamapps.model.controlcenter.User;
 import org.teamapps.ux.session.SessionContext;
@@ -41,11 +42,15 @@ public class SessionUserImpl implements SessionUser {
 	private final Locale locale;
 	private final LocalizedFormatter localizedFormatter;
 	private final Event<Void> onLogout = new Event<>();
+	private final boolean appLogin;
+	private final UserAppConferenceHandler userAppConferenceHandler;
 
 	public SessionUserImpl(UserSessionData userSessionData) {
 		this.userSessionData = userSessionData;
 		this.user = userSessionData.getUser();
 		this.context = userSessionData.getContext();
+		this.appLogin = userSessionData.isAppLogin();
+		this.userAppConferenceHandler = userSessionData.getUserAppConferenceHandler();
 		rankedLanguages = new ArrayList<>();
 		List<String> languages = new ArrayList<>();
 		if (user.getDisplayLanguage() != null) {
@@ -158,6 +163,16 @@ public class SessionUserImpl implements SessionUser {
 	@Override
 	public Event<Void> onUserLogout() {
 		return onLogout;
+	}
+
+	@Override
+	public boolean isAppLogin() {
+		return appLogin;
+	}
+
+	@Override
+	public UserAppConferenceHandler getUserAppConferenceHandler() {
+		return userAppConferenceHandler;
 	}
 
 }

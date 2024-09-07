@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,11 +23,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.teamapps.application.api.application.ApplicationInstanceData;
 import org.teamapps.application.api.desktop.ApplicationDesktop;
+import org.teamapps.application.api.event.TwoWayBindableValueFireAlways;
 import org.teamapps.application.api.localization.ApplicationLocalizationProvider;
 import org.teamapps.application.api.privilege.ApplicationPrivilegeProvider;
 import org.teamapps.application.api.search.UserSearch;
 import org.teamapps.application.api.state.ReplicatedStateMachine;
 import org.teamapps.application.api.user.SessionUser;
+import org.teamapps.application.api.user.UserAppConferenceHandler;
 import org.teamapps.application.server.system.bootstrap.ApplicationRootPanel;
 import org.teamapps.application.server.system.bootstrap.SystemRegistry;
 import org.teamapps.application.server.system.launcher.ApplicationLauncher;
@@ -63,40 +65,43 @@ public class UserSessionData {
 	private final SystemRegistry registry;
 	private final ApplicationRootPanel rootPanel;
 	private final Role authenticatedUserRole;
-	private UserPrivileges userPrivileges;
+	private final boolean appLogin;
+	private final UserAppConferenceHandler userAppConferenceHandler;
 	private final SessionUser sessionUser;
 	private final SessionIconProvider iconProvider;
 	private final List<String> localizationRankedLanguages;
 	private final Map<Application, ApplicationLocalizationProvider> localizationProviderByApplication = new HashMap<>();
-	private Supplier<ApplicationDesktop> applicationDesktopSupplier;
-	private Function<Component, Component> rootWrapperComponentFunction;
 	private final ApplicationLocalizationProvider localizationProvider;
-	private boolean darkTheme;
-	private LoginData loginData;
 	private final Map<String, Event<?>> userSessionEventByName = new ConcurrentHashMap<>();
 	private final Map<String, TwoWayBindableValue<?>> userSessionBindableValueByName = new ConcurrentHashMap<>();
 	private final Map<String, ReplicatedStateMachine> replicatedStateMachineMap = new HashMap<>();
-	private OnlineUsersView onlineUsersView;
 	private final Map<String, Object> customObjectsMap = new HashMap<>();
-
+	private UserPrivileges userPrivileges;
+	private Supplier<ApplicationDesktop> applicationDesktopSupplier;
+	private Function<Component, Component> rootWrapperComponentFunction;
+	private boolean darkTheme;
+	private LoginData loginData;
+	private OnlineUsersView onlineUsersView;
 	private ApplicationLauncher applicationLauncher;
 
 	public UserSessionData(User user, SessionContext context, SystemRegistry registry, ApplicationRootPanel rootPanel, Role authenticatedUserRole) {
+		this(user, context, registry, rootPanel, authenticatedUserRole, false, null);
+	}
+
+	public UserSessionData(User user, SessionContext context, SystemRegistry registry, ApplicationRootPanel rootPanel, Role authenticatedUserRole, boolean appLogin, UserAppConferenceHandler userAppConferenceHandler) {
 		this.user = user;
 		this.context = context;
 		this.registry = registry;
 		this.rootPanel = rootPanel;
 		this.authenticatedUserRole = authenticatedUserRole;
+		this.appLogin = appLogin;
+		this.userAppConferenceHandler = userAppConferenceHandler;
 		this.userPrivileges = new UserPrivileges(user, registry, authenticatedUserRole);
 		this.sessionUser = new SessionUserImpl(this);
 		this.localizationRankedLanguages = createLocalizationRankedLanguages();
 		this.iconProvider = context.getIconProvider();
 		this.localizationProvider = new SessionApplicationLocalizationProvider(null, localizationRankedLanguages, registry.getGlobalLocalizationProvider());
 		context.onDestroyed.addListener(this::invalidate);
-	}
-
-	public void setApplicationLauncher(ApplicationLauncher applicationLauncher) {
-		this.applicationLauncher = applicationLauncher;
 	}
 
 	public boolean hasSkippedMultiFactorRequiringPrivileges() {
@@ -208,6 +213,10 @@ public class UserSessionData {
 		return applicationLauncher;
 	}
 
+	public void setApplicationLauncher(ApplicationLauncher applicationLauncher) {
+		this.applicationLauncher = applicationLauncher;
+	}
+
 	public void setRooWrapperComponentFunction(Function<Component, Component> rootWrapperComponentFunction) {
 		this.rootWrapperComponentFunction = rootWrapperComponentFunction;
 		rootPanel.setContent(rootWrapperComponentFunction.apply(rootPanel.getContent()));
@@ -235,6 +244,14 @@ public class UserSessionData {
 
 	public UserPrivileges getUserPrivileges() {
 		return userPrivileges;
+	}
+
+	public boolean isAppLogin() {
+		return appLogin;
+	}
+
+	public UserAppConferenceHandler getUserAppConferenceHandler() {
+		return userAppConferenceHandler;
 	}
 
 	public void invalidate() {
@@ -280,7 +297,11 @@ public class UserSessionData {
 	}
 
 	public <TYPE> TwoWayBindableValue<TYPE> getBindableValue(String name) {
-		return (TwoWayBindableValue<TYPE>) userSessionBindableValueByName.computeIfAbsent(name, s -> TwoWayBindableValue.create());
+		return getBindableValue(name, true);
+	}
+
+	public <TYPE> TwoWayBindableValue<TYPE> getBindableValue(String name, boolean fireAlways) {
+		return (TwoWayBindableValue<TYPE>) userSessionBindableValueByName.computeIfAbsent(name, s -> fireAlways ? TwoWayBindableValueFireAlways.create() : TwoWayBindableValue.create());
 	}
 
 	public synchronized ReplicatedStateMachine getReplicatedStateMachine(String name) {

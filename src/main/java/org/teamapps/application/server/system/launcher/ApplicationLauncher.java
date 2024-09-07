@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.teamapps.application.api.application.ApplicationInstanceData;
 import org.teamapps.application.api.application.BaseApplicationBuilder;
 import org.teamapps.application.api.application.UserProfileApplicationBuilder;
+import org.teamapps.application.api.application.perspective.ApplicationPerspective;
 import org.teamapps.application.api.application.perspective.PerspectiveBuilder;
 import org.teamapps.application.api.application.theme.ApplicationTheme;
 import org.teamapps.application.api.application.theme.CustomApplicationTheme;
@@ -456,9 +457,9 @@ public class ApplicationLauncher {
 		return applicationInstance.createPerspectiveSessionData(managedApplicationPerspective);
 	}
 
-	private void openApplicationWithPerspective(ApplicationData applicationData, PerspectiveBuilder perspectiveBuilder) {
+	public ApplicationPerspective openApplicationWithPerspective(ApplicationData applicationData, PerspectiveBuilder perspectiveBuilder) {
 		openApplication(applicationData);
-		openedApplicationInstanceByApplicationData.get(applicationData).showApplicationPerspective(perspectiveBuilder.getName());
+		return openedApplicationInstanceByApplicationData.get(applicationData).showApplicationPerspective(perspectiveBuilder.getName());
 	}
 
 	private void openApplication(ApplicationData applicationData) {
@@ -572,7 +573,7 @@ public class ApplicationLauncher {
 		applicationLauncher = panel;
 	}
 
-	private List<ApplicationData> getAllApplications() {
+	public List<ApplicationData> getAllApplications() {
 		return sortedApplicationGroups.stream()
 				.flatMap(group -> group.getSortedApplications().stream())
 				.collect(Collectors.toList());
