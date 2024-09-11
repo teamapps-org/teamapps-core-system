@@ -135,6 +135,21 @@ public class OrganizationUtils {
 		}
 	}
 
+	public static Set<OrganizationUnit> getAllActiveChildren(OrganizationUnit organizationUnit) {
+		Set<OrganizationUnit> result = new HashSet<>();
+		getAllActiveChildren(organizationUnit, result);
+		return result;
+	}
+
+	private static void getAllActiveChildren(OrganizationUnit unit, Set<OrganizationUnit> result) {
+		for (OrganizationUnit child : unit.getChildren()) {
+			if (child.getOrgUnitLifeCycleStatus() == OrgUnitLifeCycleStatus.ACTIVE && !result.contains(child)) {
+				result.add(child);
+				getAllActiveChildren(child, result);
+			}
+		}
+	}
+
 	public static Set<OrganizationUnit> getUnitWithAllParents(OrganizationUnit unit) {
 		Set<OrganizationUnit> units = new HashSet<>();
 		OrganizationUnit parent = unit;
