@@ -73,6 +73,8 @@ public class SystemRegistry {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+	public static boolean SKIP_TRANSACTION_CHECK = false;
+
 	private final BootstrapSessionHandler bootstrapSessionHandler;
 	private final ApplicationConfig<SystemConfig> applicationConfig;
 	private TranslationService translationService;
@@ -201,6 +203,7 @@ public class SystemRegistry {
 		File transactionsPath = createPath(config.getTransactionLogPath(), applicationName);
 		return UniversalDbBuilder.create()
 				.databaseManager(serverRegistry.getDatabaseManager())
+				.skipTransactionIndexCheck(SKIP_TRANSACTION_CHECK)
 				.indexPath(indexPath)
 				.fullTextIndexPath(textPath)
 				.fileStorePath(filesPath)
