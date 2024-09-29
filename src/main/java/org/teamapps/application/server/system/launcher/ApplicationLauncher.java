@@ -51,6 +51,7 @@ import org.teamapps.protocol.system.LoginData;
 import org.teamapps.universaldb.UniversalDB;
 import org.teamapps.ux.application.ResponsiveApplication;
 import org.teamapps.ux.application.assembler.DesktopApplicationAssembler;
+import org.teamapps.ux.application.layout.ExtendedLayout;
 import org.teamapps.ux.application.layout.StandardLayout;
 import org.teamapps.ux.application.perspective.Perspective;
 import org.teamapps.ux.application.view.View;
@@ -282,6 +283,7 @@ public class ApplicationLauncher {
 
 	private void handleApplicationLauncherSelection() {
 		selectedApplication.set(null);
+		userSessionData.onLauncherSelection.fire();
 		if (userSessionData.getOnlineUsersView() != null) {
 			userSessionData.getOnlineUsersView().refresh();
 		}
@@ -379,11 +381,12 @@ public class ApplicationLauncher {
 			});
 			ResponsiveApplication application = ResponsiveApplication.createApplication();
 
-			Perspective perspective = Perspective.createPerspective(new SplitPaneDefinition("split", SplitDirection.VERTICAL, SplitSize.lastFixed(200f), new ViewGroupDefinition(StandardLayout.CENTER, true), new ViewGroupDefinition(StandardLayout.RIGHT, true)));
+			Perspective perspective = Perspective.createPerspective(StandardLayout.createLayout(SplitSize.firstFixed(250), SplitSize.relative(.5f), SplitSize.firstFixed(150), SplitSize.lastFixed(220f), SplitSize.relative(.5f), SplitSize.relative(.5f)));
+			userSessionData.setDesktopLauncherPerspective(perspective);
 			application.showPerspective(perspective);
 			perspective.addView(launcherView);
 			if (userSessionData.getOnlineUsersView() != null) {
-				View onlineUsers = View.createView(StandardLayout.RIGHT, ApplicationIcons.USERS_CROWD, "Online Users", userSessionData.getOnlineUsersView().getComponent());
+				View onlineUsers = View.createView(StandardLayout.RIGHT_BOTTOM, ApplicationIcons.USERS_CROWD, "Online Users", userSessionData.getOnlineUsersView().getComponent());
 				onlineUsers.getPanel().setBodyBackgroundColor(Color.WHITE.withAlpha(0.74f));
 				perspective.addView(onlineUsers);
 			}
@@ -399,8 +402,10 @@ public class ApplicationLauncher {
 			profileButton.setCaption(PropertyProviders.getUserCaptionWithTranslation(userSessionData.getUser()));
 			SimpleItemView<?> itemView = new SimpleItemView<>();
 			if (userProfileApp != null) {
+
 				BaseApplicationBuilder baseApplicationBuilder = userProfileApp.getLoadedApplication().getBaseApplicationBuilder();
 				UserProfileApplicationBuilder builder = (UserProfileApplicationBuilder) baseApplicationBuilder;
+				builder.updateLauncherView(userSessionData.getUser().getId(), userSessionData.getApplicationLauncher().createApplicationInstanceData(userProfileApp.getLoadedApplication().getApplication().getName()), perspective, userSessionData.onLauncherSelection);
 				SimpleItemGroup<?> itemGroup = itemView.addSingleColumnGroup(baseApplicationBuilder.getApplicationIcon(), getLocalized(baseApplicationBuilder.getApplicationTitleKey()));
 				for (PerspectiveBuilder perspectiveBuilder : builder.getUserProfilePerspectiveBuilders()) {
 					itemGroup.addItem(perspectiveBuilder.getIcon(), getLocalized(perspectiveBuilder.getTitleKey()), getLocalized(perspectiveBuilder.getDescriptionKey())).onClick.addListener(() -> {

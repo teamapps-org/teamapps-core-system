@@ -47,6 +47,7 @@ import org.teamapps.model.controlcenter.*;
 import org.teamapps.protocol.system.LoginData;
 import org.teamapps.uisession.statistics.SumStats;
 import org.teamapps.uisession.statistics.UiSessionStats;
+import org.teamapps.ux.application.perspective.Perspective;
 import org.teamapps.ux.component.Component;
 import org.teamapps.ux.session.SessionContext;
 
@@ -59,6 +60,8 @@ import java.util.function.Supplier;
 
 public class UserSessionData {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+	public Event<Void> onLauncherSelection = new Event<>();
 
 	private final User user;
 	private final SessionContext context;
@@ -83,6 +86,7 @@ public class UserSessionData {
 	private LoginData loginData;
 	private OnlineUsersView onlineUsersView;
 	private ApplicationLauncher applicationLauncher;
+	private Perspective desktopLauncherPerspective;
 
 	public UserSessionData(User user, SessionContext context, SystemRegistry registry, ApplicationRootPanel rootPanel, Role authenticatedUserRole) {
 		this(user, context, registry, rootPanel, authenticatedUserRole, false, null);
@@ -215,6 +219,14 @@ public class UserSessionData {
 
 	public void setApplicationLauncher(ApplicationLauncher applicationLauncher) {
 		this.applicationLauncher = applicationLauncher;
+	}
+
+	public Perspective getDesktopLauncherPerspective() {
+		return desktopLauncherPerspective;
+	}
+
+	public void setDesktopLauncherPerspective(Perspective desktopLauncherPerspective) {
+		this.desktopLauncherPerspective = desktopLauncherPerspective;
 	}
 
 	public void setRooWrapperComponentFunction(Function<Component, Component> rootWrapperComponentFunction) {
