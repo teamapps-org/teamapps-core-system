@@ -408,7 +408,11 @@ public class ApplicationLauncher {
 
 				BaseApplicationBuilder baseApplicationBuilder = userProfileApp.getLoadedApplication().getBaseApplicationBuilder();
 				UserProfileApplicationBuilder builder = (UserProfileApplicationBuilder) baseApplicationBuilder;
-				builder.updateLauncherView(userSessionData.getUser().getId(), userSessionData.getApplicationLauncher().createApplicationInstanceData(userProfileApp.getLoadedApplication().getApplication().getName()), perspective, userSessionData.onLauncherSelection);
+				try {
+					builder.updateLauncherView(userSessionData.getUser().getId(), userSessionData.getApplicationLauncher().createApplicationInstanceData(userProfileApp.getLoadedApplication().getApplication().getName()), perspective, userSessionData.onLauncherSelection);
+				} catch (Throwable e) {
+					e.printStackTrace();
+				}
 				SimpleItemGroup<?> itemGroup = itemView.addSingleColumnGroup(baseApplicationBuilder.getApplicationIcon(), getLocalized(baseApplicationBuilder.getApplicationTitleKey()));
 				for (PerspectiveBuilder perspectiveBuilder : builder.getUserProfilePerspectiveBuilders()) {
 					itemGroup.addItem(perspectiveBuilder.getIcon(), getLocalized(perspectiveBuilder.getTitleKey()), getLocalized(perspectiveBuilder.getDescriptionKey())).onClick.addListener(() -> {
