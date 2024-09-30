@@ -295,6 +295,9 @@ public class ApplicationLauncher {
 			ApplicationGroupData applicationGroupData = new ApplicationGroupData(applicationGroup, userSessionData);
 			applicationGroups.add(applicationGroupData);
 			for (ManagedApplication managedApplication : applicationGroup.getApplications()) {
+				if (managedApplication.isHidden()) {
+					continue;
+				}
 				Application application = managedApplication.getMainApplication();
 				LoadedApplication loadedApplication = registry.getLoadedApplication(application);
 				if (loadedApplication != null && (loadedApplication.getBaseApplicationBuilder().isApplicationAccessible(userSessionData.getApplicationPrivilegeProvider(managedApplication)) || loadedApplication.getBaseApplicationBuilder().isApplicationAccessible(userSessionData.getApplicationPrivilegeProviderWithOrgField(managedApplication)))) {
