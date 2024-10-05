@@ -21,6 +21,7 @@ package org.teamapps.application.server.system.bootstrap.installer;
 
 import org.teamapps.application.api.application.ApplicationInitializer;
 import org.teamapps.application.api.application.BaseApplicationBuilder;
+import org.teamapps.application.server.ApiServlet;
 import org.teamapps.application.server.system.bootstrap.ApplicationInfo;
 import org.teamapps.application.server.system.bootstrap.LoadedApplication;
 import org.teamapps.application.server.system.config.LocalizationConfig;
@@ -125,6 +126,9 @@ public class ApplicationInstaller {
 
 			ApplicationInitializer applicationInitializer = applicationInfo.getLoadedApplication().getApplicationInitializer();
 			applicationInfo.getBaseApplicationBuilder().getOnApplicationLoaded().fire(applicationInitializer);
+			if (applicationInfo.getBaseApplicationBuilder().getApiHandler() != null) {
+				ApiServlet.getInstance().addHandler(applicationInfo.getName().toLowerCase(), applicationInfo.getBaseApplicationBuilder().getApiHandler());
+			}
 			return applicationInfo.getLoadedApplication();
 		}
 		return null;
