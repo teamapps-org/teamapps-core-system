@@ -21,9 +21,11 @@ package org.teamapps.application.server.system.bootstrap.installer;
 
 import org.teamapps.application.api.application.ApplicationInitializer;
 import org.teamapps.application.api.application.BaseApplicationBuilder;
+import org.teamapps.application.api.application.UserProfileApplicationBuilder;
 import org.teamapps.application.server.ApiServlet;
 import org.teamapps.application.server.system.bootstrap.ApplicationInfo;
 import org.teamapps.application.server.system.bootstrap.LoadedApplication;
+import org.teamapps.application.server.system.bootstrap.SystemRegistry;
 import org.teamapps.application.server.system.config.LocalizationConfig;
 import org.teamapps.application.server.system.localization.LocalizationUtil;
 import org.teamapps.application.server.system.machinetranslation.TranslationService;
@@ -106,7 +108,7 @@ public class ApplicationInstaller {
 		}
 	}
 
-	public LoadedApplication loadApplication(File basePath) {
+	public LoadedApplication loadApplication(File basePath, SystemRegistry systemRegistry) {
 		if (applicationInfo.isChecked() && applicationInfo.getErrors().isEmpty()) {
 			applicationInfo.createLoadedApplication(basePath);
 			applicationInstallationPhases.forEach(phase -> phase.loadApplication(applicationInfo));
@@ -127,7 +129,16 @@ public class ApplicationInstaller {
 			ApplicationInitializer applicationInitializer = applicationInfo.getLoadedApplication().getApplicationInitializer();
 			applicationInfo.getBaseApplicationBuilder().getOnApplicationLoaded().fire(applicationInitializer);
 			if (applicationInfo.getBaseApplicationBuilder().getApiHandler() != null) {
+				System.out.println("add api handler for app:" + applicationInfo.getName().toLowerCase());
 				ApiServlet.getInstance().addHandler(applicationInfo.getName().toLowerCase(), applicationInfo.getBaseApplicationBuilder().getApiHandler());
+				if (applicationInfo.getBaseApplicationBuilder() instanceof UserProfileApplicationBuilder) {
+					UserProfileApplicationBuilder userProfileApplicationBuilder = (UserProfileApplicationBuilder) applicationInfo.getBaseApplicationBuilder();
+					try {
+						systemRegistry.setSystemAppNotificationHandler(userProfileApplicationBuilder.getSystemAppNotificationHandler());
+					} catch (Throwable e) {
+						System.out.println("ERROR could not set system notification handler!");
+					}
+				}
 			}
 			return applicationInfo.getLoadedApplication();
 		}

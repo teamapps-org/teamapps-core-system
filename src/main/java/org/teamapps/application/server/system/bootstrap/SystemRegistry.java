@@ -25,6 +25,7 @@ import org.teamapps.application.api.application.BaseApplicationBuilder;
 import org.teamapps.application.api.application.entity.EntityUpdate;
 import org.teamapps.application.api.config.ApplicationConfig;
 import org.teamapps.application.api.localization.Dictionary;
+import org.teamapps.application.api.notification.SystemAppNotificationHandler;
 import org.teamapps.application.api.state.MultiStateHandler;
 import org.teamapps.application.api.state.ReplicatedStateMachine;
 import org.teamapps.application.api.theme.ApplicationIcons;
@@ -54,10 +55,8 @@ import org.teamapps.icons.Icon;
 import org.teamapps.model.controlcenter.*;
 import org.teamapps.reporting.convert.DocumentConverter;
 import org.teamapps.universaldb.DatabaseManager;
-import org.teamapps.universaldb.UniversalDB;
 import org.teamapps.universaldb.UniversalDbBuilder;
 import org.teamapps.universaldb.record.EntityBuilder;
-import org.teamapps.universaldb.schema.ModelProvider;
 import org.teamapps.ux.component.template.BaseTemplateRecord;
 import org.teamapps.ux.session.SessionContext;
 
@@ -93,6 +92,7 @@ public class SystemRegistry {
 	private final WeakHashMap<UserSessionData, Long> activeUsersMap = new WeakHashMap<>();
 	private Map<String, MultiStateHandler> stateHandlerMap = new HashMap<>();
 	private SessionUiComponentFactoryBuilder sessionUiComponentFactoryBuilder = SessionUiComponentFactory::new;
+	private SystemAppNotificationHandler systemAppNotificationHandler;
 
 	public SystemRegistry(BootstrapSessionHandler bootstrapSessionHandler, ServerRegistry serverRegistry, SessionManager sessionManager, ApplicationConfig<SystemConfig> applicationConfig) {
 		this.serverRegistry = serverRegistry;
@@ -239,7 +239,7 @@ public class SystemRegistry {
 
 	public void loadApplication(ApplicationInstaller applicationInstaller) {
 		try {
-			LoadedApplication loadedApplication = applicationInstaller.loadApplication(serverRegistry.getAppsBasePath());
+			LoadedApplication loadedApplication = applicationInstaller.loadApplication(serverRegistry.getAppsBasePath(), this);
 			updateGlobalLocalizationProvider();
 			LOGGER.info("Loaded app:" + applicationInstaller.getApplicationInfo().getName());
 			if (applicationInstaller.getApplicationInfo().getErrors().isEmpty()) {
@@ -367,5 +367,13 @@ public class SystemRegistry {
 
 	public void setSessionUiComponentFactoryBuilder(SessionUiComponentFactoryBuilder sessionUiComponentFactoryBuilder) {
 		this.sessionUiComponentFactoryBuilder = sessionUiComponentFactoryBuilder;
+	}
+
+	public SystemAppNotificationHandler getSystemAppNotificationHandler() {
+		return systemAppNotificationHandler;
+	}
+
+	public void setSystemAppNotificationHandler(SystemAppNotificationHandler systemAppNotificationHandler) {
+		this.systemAppNotificationHandler = systemAppNotificationHandler;
 	}
 }

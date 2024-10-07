@@ -28,6 +28,7 @@ import org.teamapps.application.api.application.perspective.ApplicationPerspecti
 import org.teamapps.application.api.config.ApplicationConfig;
 import org.teamapps.application.api.desktop.ApplicationDesktop;
 import org.teamapps.application.api.localization.ApplicationLocalizationProvider;
+import org.teamapps.application.api.notification.ApplicationNotificationHandler;
 import org.teamapps.application.api.organization.UserRoleType;
 import org.teamapps.application.api.privilege.*;
 import org.teamapps.application.api.search.UserSearch;
@@ -311,4 +312,10 @@ public class UnmanagedApplicationSessionData implements ApplicationInstanceData 
 	public List<PrivilegeObject> getAllowedPrivilegeObjects(RoleAssignmentDelegatedCustomPrivilegeGroup group, Privilege privilege) {
 		return privilegeProvider.getAllowedPrivilegeObjects(group, privilege);
 	}
+
+	@Override
+	public ApplicationNotificationHandler getNotificationHandler() {
+		return userSessionData.getRegistry().getSystemAppNotificationHandler().getNotificationHandler(getOrganizationField());
+	}
+
 }

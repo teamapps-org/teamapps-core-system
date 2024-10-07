@@ -58,6 +58,7 @@ import org.teamapps.ux.application.view.View;
 import org.teamapps.ux.component.Component;
 import org.teamapps.ux.component.absolutelayout.Length;
 import org.teamapps.ux.component.dialogue.FormDialogue;
+import org.teamapps.ux.component.field.Button;
 import org.teamapps.ux.component.field.FieldEditingMode;
 import org.teamapps.ux.component.field.TemplateField;
 import org.teamapps.ux.component.field.TextField;
@@ -65,9 +66,11 @@ import org.teamapps.ux.component.itemview.SimpleItem;
 import org.teamapps.ux.component.itemview.SimpleItemGroup;
 import org.teamapps.ux.component.itemview.SimpleItemView;
 import org.teamapps.ux.component.panel.Panel;
+import org.teamapps.ux.component.script.Script;
 import org.teamapps.ux.component.tabpanel.Tab;
 import org.teamapps.ux.component.tabpanel.TabPanel;
 import org.teamapps.ux.component.template.BaseTemplate;
+import org.teamapps.ux.component.toolbar.ToolbarButton;
 import org.teamapps.ux.component.toolbutton.ToolButton;
 import org.teamapps.ux.component.workspacelayout.SplitDirection;
 import org.teamapps.ux.component.workspacelayout.definition.SplitPaneDefinition;
@@ -421,7 +424,18 @@ public class ApplicationLauncher {
 				}
 			}
 			SimpleItemGroup<?> itemGroup = itemView.addSingleColumnGroup(ApplicationIcons.LOG_OUT, getLocalized(Dictionary.LOGOUT));
-			itemGroup.addItem(ApplicationIcons.LOG_OUT, getLocalized(Dictionary.LOGOUT), "Vom System abmelden").onClick.addListener(this::logout); //todo dictionary entry
+			itemGroup.addItem(ApplicationIcons.LOG_OUT, getLocalized(Dictionary.LOGOUT), "Vom System abmelden").onClick.addListener(() -> {
+				if (userSessionData.isAppLogin()) {
+					UiUtils.showQuestion(ApplicationIcons.QUESTION, "Logout", "Do you really want to log out?", () -> {
+						//todo invalidate app login
+						Script script = new Script("export function refreshPage() {window.location.reload()}");
+						script.render();
+						script.callFunction("refreshPage");
+					}, createApplicationInstanceData(userProfileApp.getLoadedApplication().getApplication().getName()));
+				} else {
+					logout();
+				}
+			}); //todo dictionary entry
 			profileButton.setDropDownComponent(itemView);
 			profileButton.setMinDropDownWidth(250);
 			profileButton.setIconSize(20);
