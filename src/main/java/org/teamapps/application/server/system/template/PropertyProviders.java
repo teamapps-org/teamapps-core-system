@@ -283,11 +283,6 @@ public class PropertyProviders {
 		return title;
 	}
 
-	public static String getOrganizationUnitPath(OrganizationUnit unit, int maxPathLength, Set<OrganizationUnitType> rootNodesSet, ApplicationInstanceData applicationInstanceData) {
-		//todo implement
-		return null;
-	}
-
 	public static Icon getOrganizationUnitIcon(OrganizationUnit unit) {
 		if (unit == null) {
 			return null;
@@ -382,6 +377,20 @@ public class PropertyProviders {
 		while (unit.getParent() != null) {
 			pathElements.add(getOrganizationUnitTitle(unit, applicationInstanceData));
 			if (rootNodes != null && rootNodes.contains(unit.getType())) {
+				break;
+			}
+			unit = unit.getParent();
+		}
+		Collections.reverse(pathElements);
+		return pathElements.stream().collect(Collectors.joining("/"));
+	}
+
+	public static String getOrganizationUnitPath(OrganizationUnit organizationUnit, int maxPathLength, Set<OrganizationUnitType> rootNodes, ApplicationInstanceData applicationInstanceData) {
+		List<String> pathElements = new ArrayList<>();
+		OrganizationUnit unit = organizationUnit;
+		while (unit.getParent() != null) {
+			pathElements.add(getOrganizationUnitTitle(unit, applicationInstanceData));
+			if ((rootNodes != null && rootNodes.contains(unit.getType())) || pathElements.size() >= maxPathLength) {
 				break;
 			}
 			unit = unit.getParent();

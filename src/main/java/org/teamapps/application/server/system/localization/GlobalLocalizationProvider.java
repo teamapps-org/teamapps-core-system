@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GlobalLocalizationProvider {
+public class GlobalLocalizationProvider implements  LocalizationProvider{
 
 	private final DictionaryLocalizationProvider dictionary;
 	private final SystemLocalizationProvider systemDictionary;
@@ -128,5 +128,10 @@ public class GlobalLocalizationProvider {
 			}
 			return translatableText.getText();
 		}
+	}
+
+	@Override
+	public String getLocalizationValue(String key, List<String> languagePriorityOrder) {
+		return getLocalized(key, null, languagePriorityOrder);
 	}
 }
