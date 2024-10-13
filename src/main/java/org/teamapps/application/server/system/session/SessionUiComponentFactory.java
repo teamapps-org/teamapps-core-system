@@ -95,30 +95,6 @@ public class SessionUiComponentFactory implements UiComponentFactory {
 	}
 
 	@Override
-	public ComboBox<UserView> createUserSelectionComboBox() {
-		Set<RoleType> LEADER_ROLE_TYPES = new HashSet<>(List.of(RoleType.LEADER, RoleType.MENTOR, RoleType.ASSISTANT));
-		User user = User.getById(getApplicationInstanceData().getUser().getId());
-		Set<OrganizationUnit> leaderUnitSet = user.getRoleAssignments().stream()
-				.filter(assignment -> LEADER_ROLE_TYPES.contains(assignment.getRole().getRoleType()))
-				.flatMap(assignment -> OrganizationUtils.getAllUnits(assignment.getOrganizationUnit()).stream())
-				.collect(Collectors.toSet());
-		Set<Integer> allowedUserIds = new HashSet<>();
-		for (User u : User.getAll()) {
-			if (leaderUnitSet.contains(u.getOrganizationUnit())
-			) {
-				allowedUserIds.add(u.getId());
-			}
-		}
-		ComboBox<UserView> userCombobox = ComboBoxUtils.createComboBox(query -> query == null || query.length() < 3 ?
-						Collections.emptyList() :
-						User.filter().parseFullTextFilter(query, User.FIELD_FIRST_NAME, User.FIELD_LAST_NAME, User.FIELD_FIRST_NAME_TRANSLATED, User.FIELD_LAST_NAME_TRANSLATED).execute().stream().filter(u -> allowedUserIds.contains(u.getId())).map(u -> UserView.getById(u.getId())).limit(50).toList(),
-				PropertyProviders.createUserViewPropertyProvider(getApplicationInstanceData()), BaseTemplate.LIST_ITEM_LARGE_ICON_TWO_LINES);
-		userCombobox.setDropDownButtonVisible(false);
-		userCombobox.setShowDropDownAfterResultsArrive(true);
-		return userCombobox;
-	}
-
-	@Override
 	public TranslationKeyField createTranslationKeyField(String linkButtonCaption, boolean allowMultiLine, boolean selectionFieldWithKey) {
 		return new LocalizationTranslationKeyField(linkButtonCaption, applicationInstanceData, systemRegistry, () -> application, allowMultiLine, selectionFieldWithKey);
 	}
