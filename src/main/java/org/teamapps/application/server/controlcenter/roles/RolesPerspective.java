@@ -48,6 +48,7 @@ import org.teamapps.universaldb.pojo.Query;
 import org.teamapps.ux.component.absolutelayout.Length;
 import org.teamapps.ux.component.field.CheckBox;
 import org.teamapps.ux.component.field.TemplateField;
+import org.teamapps.ux.component.field.TextField;
 import org.teamapps.ux.component.field.combobox.ComboBox;
 import org.teamapps.ux.component.field.combobox.TagBoxWrappingMode;
 import org.teamapps.ux.component.field.combobox.TagComboBox;
@@ -126,6 +127,7 @@ public class RolesPerspective extends AbstractManagedApplicationPerspective {
 				PropertyProviders.createRolePropertyProvider(getApplicationInstanceData()),
 				BaseTemplate.LIST_ITEM_SMALL_ICON_SINGLE_LINE
 		);
+		TextField roleKeyField = new TextField();
 		TagComboBox<OrganizationUnitType> allowedOrganizationUnitTypesTagCombo = createOrgUnitTypeTagComboBox();
 		ComboBox<OrganizationField> organizationFieldComboBox = ComboBoxUtils.createRecordComboBox(
 				() -> isAppFilter() ? Collections.singletonList(getOrganizationField()) : OrganizationField.getAll(),
@@ -176,6 +178,7 @@ public class RolesPerspective extends AbstractManagedApplicationPerspective {
 
 		formLayout.addLabelAndField(null, getLocalized("roles.parentRole"), parentRoleComboBox);
 		formLayout.addLabelAndField(null, getLocalized("roles.allowedOrganizationUnitTypes"), allowedOrganizationUnitTypesTagCombo);
+		formLayout.addLabelAndField(null, getLocalized("Key"), roleKeyField);
 		if (!isOrgFieldFilterApplied()) {
 			formLayout.addLabelAndField(null, getLocalized("roles.organizationField"), organizationFieldComboBox);
 		}
@@ -215,6 +218,7 @@ public class RolesPerspective extends AbstractManagedApplicationPerspective {
 					.setDelegatedCustomPrivilegeObjectRole(customPrivilegeRoleCheckBox.getValue())
 					.setProtectedAssignments(protectedAssignmentCheckBox.getValue())
 					.setTwoFactorAuthRequired(twoFactorAuthCheckBox.getValue())
+					.setRoleKey(roleKeyField.getValue())
 			;
 			return true;
 		});
@@ -235,7 +239,7 @@ public class RolesPerspective extends AbstractManagedApplicationPerspective {
 			protectedAssignmentCheckBox.setValue(role.isProtectedAssignments());
 			twoFactorAuthCheckBox.setValue(role.isTwoFactorAuthRequired());
 			userRoleAssignmentModelBuilder.setRecords(RoleUtils.getMembers(role, true));
-
+			roleKeyField.setValue(role.getRoleKey());
 			privilegesTree.removeAllNodes();
 			List<MergedApplicationPrivileges> mergedApplicationPrivileges = RoleUtils.calcPrivileges(role, userSessionData);
 			List<BaseTemplateTreeNode<Object>> treeNodes = mergedApplicationPrivileges.stream().flatMap(priv -> priv.getTreeRecords().stream()).collect(Collectors.toList());
