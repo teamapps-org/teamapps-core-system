@@ -133,6 +133,30 @@ public class MobileAssembler implements ApplicationAssembler {
 		navigationToolbarMenuButton = new ToolbarButton(BaseTemplate.LIST_ITEM_MEDIUM_ICON_SINGLE_LINE, new BaseTemplateRecord<>(ApplicationIcons.DROP_DOWN_LIST, getLocalized(Dictionary.MENU)));
 		rightGroup.addButton(navigationToolbarMenuButton);
 
+		navigationToolbarMenuButton.onClick.addListener(() -> {
+			if (navigationToolbarMenuButton.getDropDownComponentSupplier() != null && navigationToolbarMenuButton.getDropDownComponentSupplier().get() != null) {
+				Component component = navigationToolbarMenuButton.getDropDownComponentSupplier().get();
+				if (component instanceof ToolAccordion toolAccordion) {
+					if (toolAccordion.getToolbarButtonGroups().isEmpty()) {
+						ToolbarButtonGroup buttonGroup = toolAccordion.addButtonGroup(new ToolbarButtonGroup(ToolbarButtonGroupPosition.LAST));
+						ToolbarButton button = buttonGroup.addButton(ToolbarButton.create(ApplicationIcons.WINDOW_EXPLORER, getLocalized(Dictionary.APPLICATION_LAUNCHER), getLocalized(Dictionary.OPEN_NEW_APPLICATION)));
+						button.onClick.addListener(() -> {
+							showView(null);
+						});
+						if (button.getDropDownComponentSupplier() != null) {
+							Component c = button.getDropDownComponentSupplier().get();
+							if (c instanceof SimpleItemView<?> itemView) {
+								itemView.onItemClicked.addListener((event, disposable) -> {
+									navigationToolbarMenuButton.closeDropDown();
+									disposable.dispose();
+								});
+							}
+						}
+					}
+				}
+			}
+		});
+
 		setNavigationToolbarVisible(false);
 	}
 
