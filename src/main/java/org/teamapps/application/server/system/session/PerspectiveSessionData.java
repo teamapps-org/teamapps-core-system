@@ -57,11 +57,10 @@ import org.teamapps.ux.application.perspective.Perspective;
 import org.teamapps.ux.component.progress.MultiProgressDisplay;
 import org.teamapps.ux.resource.Resource;
 
-import java.io.IOException;
+import java.io.File;
 import java.time.Duration;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -152,6 +151,16 @@ public class PerspectiveSessionData implements ApplicationInstanceData {
 	@Override
 	public MultiProgressDisplay getMultiProgressDisplay() {
 		return managedApplicationSessionData.getResponsiveApplication().getMultiProgressDisplay();
+	}
+
+	@Override
+	public File createTempFile() {
+		return managedApplicationSessionData.getUserSessionData().getRegistry().createTempFile();
+	}
+
+	@Override
+	public File createTempFile(String prefix, String suffix) {
+		return managedApplicationSessionData.getUserSessionData().getRegistry().createTempFile(prefix, suffix);
 	}
 
 	@Override

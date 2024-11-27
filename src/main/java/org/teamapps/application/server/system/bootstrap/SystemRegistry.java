@@ -52,7 +52,10 @@ import org.teamapps.application.server.system.session.UserSessionData;
 import org.teamapps.application.ux.IconUtils;
 import org.teamapps.cluster.core.Cluster;
 import org.teamapps.icons.Icon;
-import org.teamapps.model.controlcenter.*;
+import org.teamapps.model.controlcenter.Application;
+import org.teamapps.model.controlcenter.ManagedApplication;
+import org.teamapps.model.controlcenter.ManagedApplicationGroup;
+import org.teamapps.model.controlcenter.User;
 import org.teamapps.reporting.convert.DocumentConverter;
 import org.teamapps.universaldb.DatabaseManager;
 import org.teamapps.universaldb.UniversalDbBuilder;
@@ -61,7 +64,9 @@ import org.teamapps.ux.component.template.BaseTemplateRecord;
 import org.teamapps.ux.session.SessionContext;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -375,5 +380,18 @@ public class SystemRegistry {
 
 	public void setSystemAppNotificationHandler(SystemAppNotificationHandler systemAppNotificationHandler) {
 		this.systemAppNotificationHandler = systemAppNotificationHandler;
+	}
+
+	public File createTempFile() {
+		return createTempFile("temp", ".tmp");
+	}
+
+	public File createTempFile(String prefix, String suffix) {
+		File tempPath = serverRegistry.getServerConfig().getTempPath();
+		try {
+			return Files.createTempFile(tempPath.toPath(), prefix, suffix).toFile();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

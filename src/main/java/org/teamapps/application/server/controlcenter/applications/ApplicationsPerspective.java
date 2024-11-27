@@ -99,7 +99,7 @@ public class ApplicationsPerspective extends AbstractManagedApplicationPerspecti
 		applicationModelBuilder.getOnSelectionEvent().addListener(app -> perspectiveComponents.getSelectedApplication().set(app));
 
 		EntityListModelBuilder<ApplicationVersion> applicationVersionModelBuilder = new EntityListModelBuilder<>(getApplicationInstanceData());
-		Table<ApplicationVersion> applicationVersionTable = applicationVersionModelBuilder.createTemplateFieldTableList(BaseTemplate.LIST_ITEM_LARGE_ICON_TWO_LINES, PropertyProviders.createApplicationVersionPropertyProvider(userSessionData), 36);
+		Table<ApplicationVersion> applicationVersionTable = applicationVersionModelBuilder.createTemplateFieldTableList(BaseTemplate.LIST_ITEM_LARGE_ICON_TWO_LINES, PropertyProviders.createApplicationVersionPropertyProvider(userSessionData), 36, true);
 		applicationVersionModelBuilder.attachSearchField(applicationVersionsView);
 		applicationVersionModelBuilder.attachViewCountHandler(applicationVersionsView, () -> getLocalized("applications.versions"));
 		applicationVersionModelBuilder.updateModels();

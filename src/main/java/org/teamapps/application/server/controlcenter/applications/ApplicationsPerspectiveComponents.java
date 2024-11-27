@@ -19,7 +19,6 @@
  */
 package org.teamapps.application.server.controlcenter.applications;
 
-import org.teamapps.application.api.application.ApplicationBuilder;
 import org.teamapps.application.api.application.ApplicationInstanceData;
 import org.teamapps.application.api.application.BaseApplicationBuilder;
 import org.teamapps.application.api.localization.*;
@@ -27,6 +26,7 @@ import org.teamapps.application.api.privilege.ApplicationRole;
 import org.teamapps.application.api.privilege.Privilege;
 import org.teamapps.application.api.privilege.PrivilegeGroup;
 import org.teamapps.application.api.theme.ApplicationIcons;
+import org.teamapps.application.server.ServerMode;
 import org.teamapps.application.server.system.application.AbstractManagedApplicationPerspective;
 import org.teamapps.application.server.system.bootstrap.ApplicationInfo;
 import org.teamapps.application.server.system.bootstrap.LoadedApplication;
@@ -212,27 +212,36 @@ public class ApplicationsPerspectiveComponents extends AbstractManagedApplicatio
 
 
 	public void showInstallApplicationDialogue(Application fixedApplication) {
-		FormDialogue dialogue = FormDialogue.create(ApplicationIcons.UPLOAD, getLocalized("applications.upload"), getLocalized("applications.uploadApplicationJar"));
-		SimpleFileField fileField = new SimpleFileField();
-		fileField.setMaxFiles(1);
-		fileField.setDisplayType(FileFieldDisplayType.LIST);
-		dialogue.addField(ApplicationIcons.JAR, getLocalized("applications.applicationJar"), fileField);
-		dialogue.addOkCancelButtons(ApplicationIcons.CHECK, getLocalized(Dictionary.O_K), ApplicationIcons.ERROR, getLocalized(Dictionary.CANCEL));
-		dialogue.setCloseable(true);
-		dialogue.setAutoCloseOnOk(true);
-		dialogue.setCloseOnEscape(true);
-		dialogue.show();
+		Runnable showInstallDialogue = () -> {
+			FormDialogue dialogue = FormDialogue.create(ApplicationIcons.UPLOAD, getLocalized("applications.upload"), getLocalized("applications.uploadApplicationJar"));
+			SimpleFileField fileField = new SimpleFileField();
+			fileField.setMaxFiles(1);
+			fileField.setDisplayType(FileFieldDisplayType.LIST);
+			dialogue.addField(ApplicationIcons.JAR, getLocalized("applications.applicationJar"), fileField);
+			dialogue.addOkCancelButtons(ApplicationIcons.CHECK, getLocalized(Dictionary.O_K), ApplicationIcons.ERROR, getLocalized(Dictionary.CANCEL));
+			dialogue.setCloseable(true);
+			dialogue.setAutoCloseOnOk(true);
+			dialogue.setCloseOnEscape(true);
+			dialogue.show();
 
-		dialogue.onOk.addListener(() -> {
-			if (!fileField.getValue().isEmpty()) {
-				FileItem fileItem = fileField.getValue().get(0);
-				File jarFile = fileItem.getFile();
-				if (fileItem.getFileName().endsWith("jar")) {
-					showInstaller(jarFile, fixedApplication);
+			dialogue.onOk.addListener(() -> {
+				if (!fileField.getValue().isEmpty()) {
+					FileItem fileItem = fileField.getValue().get(0);
+					File jarFile = fileItem.getFile();
+					if (fileItem.getFileName().endsWith("jar")) {
+						showInstaller(jarFile, fixedApplication);
+					}
 				}
-			}
-			dialogue.close();
-		});
+				dialogue.close();
+			});
+		};
+
+		ServerMode serverMode = userSessionData.getRegistry().getServerRegistry().getServerConfig().getServerMode();
+		if (serverMode == ServerMode.PRODUCTION) {
+			UiUtils.showQuestion(ApplicationIcons.SIGN_WARNING, "THIS IS THE PRODUCTION SYSTEM!", "Do you really want to install the app on the production system?", showInstallDialogue, getApplicationInstanceData());
+		} else {
+			showInstallDialogue.run();
+		}
 	}
 
 	public void showInstaller(File jarFile, Application fixedApplication) {

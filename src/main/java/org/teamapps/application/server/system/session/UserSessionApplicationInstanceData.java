@@ -39,7 +39,6 @@ import org.teamapps.application.server.system.bootstrap.SystemRegistry;
 import org.teamapps.databinding.TwoWayBindableValue;
 import org.teamapps.event.Event;
 import org.teamapps.message.protocol.message.Message;
-import org.teamapps.model.controlcenter.OrganizationField;
 import org.teamapps.model.controlcenter.OrganizationFieldView;
 import org.teamapps.model.controlcenter.OrganizationUnitView;
 import org.teamapps.model.controlcenter.User;
@@ -51,10 +50,10 @@ import org.teamapps.ux.application.perspective.Perspective;
 import org.teamapps.ux.component.progress.MultiProgressDisplay;
 import org.teamapps.ux.resource.Resource;
 
+import java.io.File;
 import java.time.Duration;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class UserSessionApplicationInstanceData implements ApplicationInstanceData {
@@ -98,6 +97,16 @@ public class UserSessionApplicationInstanceData implements ApplicationInstanceDa
 	@Override
 	public MultiProgressDisplay getMultiProgressDisplay() {
 		return null;
+	}
+
+	@Override
+	public File createTempFile() {
+		return userSessionData.getRegistry().createTempFile();
+	}
+
+	@Override
+	public File createTempFile(String prefix, String suffix) {
+		return userSessionData.getRegistry().createTempFile(prefix, suffix);
 	}
 
 	@Override
