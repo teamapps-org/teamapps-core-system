@@ -19,6 +19,7 @@
  */
 package org.teamapps.application.server.system.launcher;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.teamapps.application.api.application.ApplicationInstanceData;
@@ -29,6 +30,7 @@ import org.teamapps.application.api.application.perspective.PerspectiveBuilder;
 import org.teamapps.application.api.application.theme.ApplicationTheme;
 import org.teamapps.application.api.application.theme.CustomApplicationTheme;
 import org.teamapps.application.api.desktop.ApplicationDesktop;
+import org.teamapps.application.api.localization.ApplicationLocalizationProvider;
 import org.teamapps.application.api.localization.Dictionary;
 import org.teamapps.application.api.localization.Language;
 import org.teamapps.application.api.theme.ApplicationIcons;
@@ -51,17 +53,13 @@ import org.teamapps.protocol.system.LoginData;
 import org.teamapps.universaldb.UniversalDB;
 import org.teamapps.ux.application.ResponsiveApplication;
 import org.teamapps.ux.application.assembler.DesktopApplicationAssembler;
-import org.teamapps.ux.application.layout.ExtendedLayout;
 import org.teamapps.ux.application.layout.StandardLayout;
 import org.teamapps.ux.application.perspective.Perspective;
 import org.teamapps.ux.application.view.View;
 import org.teamapps.ux.component.Component;
 import org.teamapps.ux.component.absolutelayout.Length;
 import org.teamapps.ux.component.dialogue.FormDialogue;
-import org.teamapps.ux.component.field.Button;
-import org.teamapps.ux.component.field.FieldEditingMode;
-import org.teamapps.ux.component.field.TemplateField;
-import org.teamapps.ux.component.field.TextField;
+import org.teamapps.ux.component.field.*;
 import org.teamapps.ux.component.itemview.SimpleItem;
 import org.teamapps.ux.component.itemview.SimpleItemGroup;
 import org.teamapps.ux.component.itemview.SimpleItemView;
@@ -70,12 +68,8 @@ import org.teamapps.ux.component.script.Script;
 import org.teamapps.ux.component.tabpanel.Tab;
 import org.teamapps.ux.component.tabpanel.TabPanel;
 import org.teamapps.ux.component.template.BaseTemplate;
-import org.teamapps.ux.component.toolbar.ToolbarButton;
 import org.teamapps.ux.component.toolbutton.ToolButton;
-import org.teamapps.ux.component.workspacelayout.SplitDirection;
-import org.teamapps.ux.component.workspacelayout.definition.SplitPaneDefinition;
 import org.teamapps.ux.component.workspacelayout.definition.SplitSize;
-import org.teamapps.ux.component.workspacelayout.definition.ViewGroupDefinition;
 import org.teamapps.ux.resource.ByteArrayResource;
 import org.teamapps.ux.session.ClientInfo;
 import org.teamapps.ux.session.SessionConfiguration;
@@ -188,6 +182,21 @@ public class ApplicationLauncher {
 		TemplateField<ManagedApplication> managedApplicationField = UiUtils.createTemplateField(BaseTemplate.LIST_ITEM_SMALL_ICON_SINGLE_LINE, PropertyProviders.createManagedApplicationPropertyProvider(userSessionData));
 		TemplateField<ManagedApplicationPerspective> perspectiveField = UiUtils.createTemplateField(BaseTemplate.LIST_ITEM_SMALL_ICON_SINGLE_LINE, PropertyProviders.createManagedApplicationPerspectivePropertyProvider(userSessionData));
 		TextField errorField = new TextField();
+
+		ApplicationLocalizationProvider localizationProvider = userSessionData.getLocalizationProvider();
+		CheckBox wantToReportCheckBox = new CheckBox(localizationProvider.getLocalized("system.IWantToReportThisError"));
+		DisplayField reportInfoField = new DisplayField();
+		reportInfoField.setValue(getLocalized("system.pleaseDescribeWhatYouWhereDoingWhenTheErrorOccurred"));
+		MultiLineTextField notesField = new MultiLineTextField();
+		notesField.setAdjustHeightToContent(true);
+		reportInfoField.setVisible(false);
+		notesField.setVisible(false);
+
+		wantToReportCheckBox.onValueChanged.addListener(val -> {
+			reportInfoField.setVisible(val);
+			notesField.setVisible(val);
+		});
+
 		errorField.setEditingMode(FieldEditingMode.READONLY);
 		managedApplicationField.setValue(managedApplication);
 		perspectiveField.setValue(perspective);
@@ -195,12 +204,33 @@ public class ApplicationLauncher {
 		dialogue.addField(null, getLocalized(Dictionary.APPLICATION), managedApplicationField);
 		dialogue.addField(null, getLocalized(Dictionary.APPLICATION_PERSPECTIVE), perspectiveField);
 		dialogue.addField(null, getLocalized(Dictionary.ERROR), errorField);
-		dialogue.addOkButton(getLocalized(Dictionary.O_K));
+
+		dialogue.addField(null, getLocalized("system.reportError"), wantToReportCheckBox);
+		dialogue.addField(null, null, reportInfoField);
+		dialogue.addField(null, getLocalized("system.errorReport"), notesField);
+
+		Button<?> okButton = dialogue.addOkButton(getLocalized(Dictionary.O_K));
 		dialogue.setCloseOnEscape(true);
-		dialogue.setAutoCloseOnOk(true);
 		dialogue.setCloseable(true);
 		dialogue.enableAutoHeight();
 		dialogue.show();
+
+		okButton.onClicked.addListener(() -> {
+			dialogue.close();
+			if (wantToReportCheckBox.getValue()) {
+				User user = userSessionData.getUser();
+				String stackTrace = ExceptionUtils.getStackTrace(e);
+				String rootCauseMessage = ExceptionUtils.getRootCauseMessage(e);
+				CrashReport.create()
+						.setUser(user)
+						.setManagedApp(managedApplication)
+						.setManagedAppPerspective(perspective)
+						.setUserDescription(notesField.getValue())
+						.setRootCause(rootCauseMessage)
+						.setStackTrace(stackTrace)
+						.save();
+			}
+		});
 	}
 
 	private void handleApplicationSelection(ManagedApplication application) {
