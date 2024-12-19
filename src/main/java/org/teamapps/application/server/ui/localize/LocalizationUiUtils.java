@@ -75,7 +75,7 @@ public class LocalizationUiUtils {
 			} else {
 				String q = query.toLowerCase();
 				return keys.stream()
-						.filter(key -> key.getKey().toLowerCase().contains(q) || localizationProvider.getLocalized(key.getKey()).toLowerCase().contains(q))
+						.filter(key -> key.getKey().toLowerCase().contains(q) || (localizationProvider.getLocalized(key.getKey()) != null && localizationProvider.getLocalized(key.getKey()).toLowerCase().contains(q)))
 						.limit(150)
 						.map(LocalizationKey::getKey)
 						.collect(Collectors.toList());

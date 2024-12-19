@@ -69,6 +69,7 @@ public class UserPrivileges {
 		keySet.addAll(standardPrivilegeMap.keySet());
 		keySet.addAll(organizationPrivilegeGroupMap.keySet());
 		keySet.addAll(customObjectPrivilegeGroupMap.keySet());
+		keySet.addAll(roleAssignmentDelegatedCustomPrivilegeMap.keySet());
 		return keySet;
 	}
 
@@ -98,33 +99,38 @@ public class UserPrivileges {
 			groups.addAll(organizationPrivilegeGroupMap.get(applicationKey).keySet());
 		if (customObjectPrivilegeGroupMap.containsKey(applicationKey))
 			groups.addAll(customObjectPrivilegeGroupMap.get(applicationKey).keySet());
+		if (roleAssignmentDelegatedCustomPrivilegeMap.containsKey(applicationKey))
+			groups.addAll(roleAssignmentDelegatedCustomPrivilegeMap.get(applicationKey).keySet());
 		return groups;
 	}
 
 	private void calculatePrivileges(Role authenticatedUserRole, boolean multiFactorAuthenticationProvided) {
+		List<UserRoleAssignment> roleAssignments = new ArrayList<>(user.getRoleAssignments());
 		if (authenticatedUserRole != null) {
-			OrganizationUnit organizationUnit = user.getOrganizationUnit();
-			Set<Role> privilegeRoles = RoleUtils.getAllPrivilegeRoles(authenticatedUserRole);
-			for (Role privilegeRole : privilegeRoles) {
-				for (RoleApplicationRoleAssignment roleApplicationRoleAssignment : privilegeRole.getApplicationRoleAssignments()) {
-					calculatePrivilegesFromApplicationRoleAssignment(organizationUnit, roleApplicationRoleAssignment, 0, multiFactorAuthenticationProvided, privilegeRole.equals(authenticatedUserRole));
-				}
-
-				for (RolePrivilegeAssignment privilegeAssignment : privilegeRole.getPrivilegeAssignments()) {
-					calculatePrivilegesFromRolePrivilegeAssignment(organizationUnit, privilegeAssignment, 0, multiFactorAuthenticationProvided, privilegeRole.equals(authenticatedUserRole));
-				}
-			}
+			roleAssignments.add(UserRoleAssignment.create()
+					.setRole(authenticatedUserRole)
+					.setUser(user)
+					.setOrganizationUnit(user.getOrganizationUnit())
+			);
 		}
-		for (UserRoleAssignment roleAssignment : user.getRoleAssignments()) {
+
+		for (UserRoleAssignment roleAssignment : roleAssignments) {
 			Role role = roleAssignment.getRole();
 			int delegatedCustomPrivilegeObjectId = roleAssignment.getDelegatedCustomPrivilegeObjectId();
 			OrganizationUnit organizationUnit = roleAssignment.getOrganizationUnit();
 			Set<Role> privilegeRoles = RoleUtils.getAllPrivilegeRoles(role);
 			for (Role privilegeRole : privilegeRoles) {
 				for (RoleApplicationRoleAssignment roleApplicationRoleAssignment : privilegeRole.getApplicationRoleAssignments()) {
-					calculatePrivilegesFromApplicationRoleAssignment(organizationUnit, roleApplicationRoleAssignment, delegatedCustomPrivilegeObjectId, multiFactorAuthenticationProvided, privilegeRole.equals(role));
+					if (roleApplicationRoleAssignment.isInheritOrgFieldFromRole()) {
+						OrganizationField organizationField = roleAssignment.getRole().getOrganizationField();
+						calculatePrivilegesFromApplicationRoleAssignment(organizationUnit, roleApplicationRoleAssignment.getApplication(), organizationField, roleApplicationRoleAssignment, delegatedCustomPrivilegeObjectId, multiFactorAuthenticationProvided, privilegeRole.equals(role));
+					} else {
+						calculatePrivilegesFromApplicationRoleAssignment(organizationUnit, roleApplicationRoleAssignment.getApplication(), roleApplicationRoleAssignment.getOrganizationFieldFilter(), roleApplicationRoleAssignment, delegatedCustomPrivilegeObjectId, multiFactorAuthenticationProvided, privilegeRole.equals(role));
+						for (OrganizationField additionalOrgField : roleApplicationRoleAssignment.getAdditionalOrgFields()) {
+							calculatePrivilegesFromApplicationRoleAssignment(organizationUnit, roleApplicationRoleAssignment.getApplication(), additionalOrgField, roleApplicationRoleAssignment, delegatedCustomPrivilegeObjectId, multiFactorAuthenticationProvided, privilegeRole.equals(role));
+						}
+					}
 				}
-
 				for (RolePrivilegeAssignment privilegeAssignment : privilegeRole.getPrivilegeAssignments()) {
 					calculatePrivilegesFromRolePrivilegeAssignment(organizationUnit, privilegeAssignment, delegatedCustomPrivilegeObjectId, multiFactorAuthenticationProvided, privilegeRole.equals(role));
 				}
@@ -132,11 +138,10 @@ public class UserPrivileges {
 		}
 	}
 
-	private void calculatePrivilegesFromApplicationRoleAssignment(OrganizationUnit organizationUnit, RoleApplicationRoleAssignment roleApplicationRoleAssignment, int delegatedCustomPrivilegeObjectId, boolean multiFactorAuthenticationProvided, boolean isDirectRoleOwner) {
+	private void calculatePrivilegesFromApplicationRoleAssignment(OrganizationUnit organizationUnit, Application application, OrganizationField organizationField, RoleApplicationRoleAssignment roleApplicationRoleAssignment, int delegatedCustomPrivilegeObjectId, boolean multiFactorAuthenticationProvided, boolean isDirectRoleOwner) {
 		try {
-			Application application = roleApplicationRoleAssignment.getApplication();
 			String applicationRoleName = roleApplicationRoleAssignment.getApplicationRoleName();
-			PrivilegeApplicationKey privilegeApplicationKey = PrivilegeApplicationKey.create(roleApplicationRoleAssignment);
+			PrivilegeApplicationKey privilegeApplicationKey = PrivilegeApplicationKey.create(application, organizationField);
 			OrganizationUnit fixedOrganizationRoot = roleApplicationRoleAssignment.getFixedOrganizationRoot();
 			List<OrganizationUnitType> organizationUnitTypeFilter = roleApplicationRoleAssignment.getOrganizationUnitTypeFilter();
 			boolean noInheritanceOfOrganizationalUnits = roleApplicationRoleAssignment.isNoInheritanceOfOrganizationalUnits();

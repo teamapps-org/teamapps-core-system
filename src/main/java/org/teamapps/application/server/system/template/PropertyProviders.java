@@ -31,17 +31,14 @@ import org.teamapps.application.server.system.bootstrap.SystemRegistry;
 import org.teamapps.application.server.system.session.UserSessionData;
 import org.teamapps.application.ux.IconUtils;
 import org.teamapps.application.ux.localize.FlagMap;
-import org.teamapps.application.ux.localize.TranslatableTextUtils;
 import org.teamapps.data.extract.PropertyProvider;
 import org.teamapps.icons.Icon;
 import org.teamapps.icons.composite.CompositeIcon;
 import org.teamapps.model.controlcenter.*;
-import org.teamapps.universaldb.index.translation.TranslatableText;
 import org.teamapps.ux.component.template.BaseTemplate;
 import org.teamapps.ux.session.SessionContext;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 

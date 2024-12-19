@@ -21,13 +21,10 @@ package org.teamapps.application.server.system.utils;
 
 import org.teamapps.application.api.localization.ApplicationLocalizationProvider;
 import org.teamapps.application.api.privilege.ApplicationRole;
-import org.teamapps.application.server.system.privilege.MergedApplicationPrivileges;
-import org.teamapps.application.server.system.privilege.MergedPrivilegeGroup;
-import org.teamapps.application.api.privilege.Privilege;
 import org.teamapps.application.api.privilege.PrivilegeGroup;
-import org.teamapps.application.server.system.bootstrap.LoadedApplication;
 import org.teamapps.application.server.system.bootstrap.SystemRegistry;
 import org.teamapps.application.server.system.organization.OrganizationUtils;
+import org.teamapps.application.server.system.privilege.MergedApplicationPrivileges;
 import org.teamapps.application.server.system.session.UserSessionData;
 import org.teamapps.application.ux.IconUtils;
 import org.teamapps.model.controlcenter.*;
@@ -66,6 +63,7 @@ public class RoleUtils {
 			}
 		}
 	}
+
 	public static Set<Role> getAllPrivilegeRoles(Role role) {
 		Set<Role> roleSet = new HashSet<>();
 		calculatePrivilegeRoles(role, roleSet);
@@ -80,6 +78,24 @@ public class RoleUtils {
 			}
 			for (Role privilegesSendingRole : role.getPrivilegesSendingRoles()) {
 				calculatePrivilegeRoles(privilegesSendingRole, roleSet);
+			}
+		}
+	}
+
+	public static Set<Role> getAllRightsReceivingRoles(Role role) {
+		Set<Role> roleSet = new HashSet<>();
+		calculateRightsReceivingRoles(role, roleSet);
+		return roleSet;
+	}
+
+	private static void calculateRightsReceivingRoles(Role role, Set<Role> roleSet) {
+		if (!roleSet.contains(role)) {
+			roleSet.add(role);
+			for (Role specializationRole : role.getSpecializationRoles()) {
+				calculateRightsReceivingRoles(specializationRole, roleSet);
+			}
+			for (Role privilegesReceivingRole : role.getPrivilegesReceivingRoles()) {
+				calculateRightsReceivingRoles(privilegesReceivingRole, roleSet);
 			}
 		}
 	}
