@@ -156,6 +156,9 @@ public class UserPrivileges {
 						if (privilegeGroup.isInheritanceForbidden() && !isDirectRoleOwner) {
 							continue;
 						}
+						if (user.getBlockedPrivilegesCount() > 0 && user.getBlockedPrivileges().stream().anyMatch(apg -> apg.getApplication() != null && apg.getApplication().getName().equals(application.getName()) && privilegeGroup.getName().equals(apg.getName()))) {
+							continue;
+						}
 						if (privilegeGroup.isMultiFactorAuthenticationRequired() && !multiFactorAuthenticationProvided) {
 							skippedMultiFactorRequiringPrivileges = true;
 							continue;
@@ -262,6 +265,9 @@ public class UserPrivileges {
 				return;
 			}
 			if (privilegeGroup.isInheritanceForbidden() && !isDirectRoleOwner) {
+				return;
+			}
+			if (user.getBlockedPrivilegesCount() > 0 && user.getBlockedPrivileges().stream().anyMatch(apg -> apg.getApplication() != null && apg.getApplication().getName().equals(application.getName()) && privilegeGroup.getName().equals(apg.getName()))) {
 				return;
 			}
 			if (privilegeGroup.isMultiFactorAuthenticationRequired() && !multiFactorAuthenticationProvided) {
