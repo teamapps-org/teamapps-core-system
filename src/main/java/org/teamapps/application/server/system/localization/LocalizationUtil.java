@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -154,10 +154,14 @@ public class LocalizationUtil {
 				if (machineTranslatedLanguages.contains(language)) {
 					String applicationTranslation = translations.get(language);
 					String machineTranslation = localizationValue.getMachineTranslation();
+					String displayValue = localizationValue.getCurrentDisplayValue();
+					TranslationState translationState = localizationValue.getTranslationState();
 					if (applicationTranslation != null &&
 							!applicationTranslation.isBlank() &&
-							!applicationTranslation.equals(machineTranslation)) {
+							(!applicationTranslation.equals(machineTranslation) || (translationState == TranslationState.TRANSLATION_REQUESTED && !applicationTranslation.equals(displayValue)))
+					) {
 						localizationValue
+								.setCurrentDisplayValue(applicationTranslation)
 								.setMachineTranslation(applicationTranslation)
 								.setMachineTranslationState(MachineTranslationState.OK);
 						if (localizationValue.getTranslation() == null) {
@@ -361,10 +365,14 @@ public class LocalizationUtil {
 
 	private static LocalizationTopic getTopic(LocalizationKeyType keyType, Application application) {
 		return switch (keyType) {
-			case APPLICATION_RESOURCE_KEY -> getOrCreateTopic(application.getName(), application.getIcon(), application);
-			case DICTIONARY_KEY -> getOrCreateTopic("Dictionary", IconUtils.encodeNoStyle(ApplicationIcons.DICTIONARY), application);
-			case SYSTEM_KEY -> getOrCreateTopic("System", IconUtils.encodeNoStyle(ApplicationIcons.SYSTEM), application);
-			case REPORTING_KEY -> getOrCreateTopic("Reporting", IconUtils.encodeNoStyle(ApplicationIcons.FORM), application);
+			case APPLICATION_RESOURCE_KEY ->
+					getOrCreateTopic(application.getName(), application.getIcon(), application);
+			case DICTIONARY_KEY ->
+					getOrCreateTopic("Dictionary", IconUtils.encodeNoStyle(ApplicationIcons.DICTIONARY), application);
+			case SYSTEM_KEY ->
+					getOrCreateTopic("System", IconUtils.encodeNoStyle(ApplicationIcons.SYSTEM), application);
+			case REPORTING_KEY ->
+					getOrCreateTopic("Reporting", IconUtils.encodeNoStyle(ApplicationIcons.FORM), application);
 		};
 	}
 
