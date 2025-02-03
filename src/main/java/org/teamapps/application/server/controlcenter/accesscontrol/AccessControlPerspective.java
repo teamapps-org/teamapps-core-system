@@ -20,11 +20,9 @@
 package org.teamapps.application.server.controlcenter.accesscontrol;
 
 import org.teamapps.application.api.application.ApplicationInstanceData;
-import org.teamapps.application.api.localization.Dictionary;
 import org.teamapps.application.api.privilege.PrivilegeGroup;
 import org.teamapps.application.api.privilege.PrivilegeObject;
 import org.teamapps.application.api.theme.ApplicationIcons;
-import org.teamapps.application.api.ui.FormMetaFields;
 import org.teamapps.application.server.controlcenter.Privileges;
 import org.teamapps.application.server.system.application.AbstractManagedApplicationPerspective;
 import org.teamapps.application.server.system.bootstrap.LoadedApplication;
@@ -33,20 +31,16 @@ import org.teamapps.application.server.system.session.PerspectiveSessionData;
 import org.teamapps.application.server.system.session.UserSessionData;
 import org.teamapps.application.server.system.template.PropertyProviders;
 import org.teamapps.application.server.system.utils.ValueConverterUtils;
+import org.teamapps.application.tools.EntityModelBuilder;
 import org.teamapps.application.ux.UiUtils;
 import org.teamapps.application.ux.combo.ComboBoxUtils;
-import org.teamapps.application.tools.EntityModelBuilder;
 import org.teamapps.application.ux.form.FormController;
 import org.teamapps.application.ux.view.MasterDetailController;
-import org.teamapps.common.format.Color;
 import org.teamapps.data.extract.PropertyProvider;
 import org.teamapps.databinding.MutableValue;
-import org.teamapps.databinding.TwoWayBindableValue;
 import org.teamapps.model.controlcenter.*;
 import org.teamapps.universaldb.index.numeric.NumericFilter;
 import org.teamapps.universaldb.pojo.Query;
-import org.teamapps.ux.application.layout.StandardLayout;
-import org.teamapps.ux.application.view.View;
 import org.teamapps.ux.component.field.AbstractField;
 import org.teamapps.ux.component.field.CheckBox;
 import org.teamapps.ux.component.field.TemplateField;
@@ -58,8 +52,6 @@ import org.teamapps.ux.component.form.ResponsiveFormLayout;
 import org.teamapps.ux.component.table.Table;
 import org.teamapps.ux.component.table.TableColumn;
 import org.teamapps.ux.component.template.BaseTemplate;
-import org.teamapps.ux.component.toolbar.ToolbarButton;
-import org.teamapps.ux.component.toolbar.ToolbarButtonGroup;
 import org.teamapps.ux.model.ComboBoxModel;
 
 import java.util.Collections;
@@ -356,6 +348,7 @@ public class AccessControlPerspective extends AbstractManagedApplicationPerspect
 	private List<Application> getAvailableApplications() {
 		if (isAppFilter()) {
 			return getManagedApplication().getPerspectives().stream()
+					.filter(p -> p.getApplicationPerspective() != null)
 					.map(p -> p.getApplicationPerspective().getApplication())
 					.distinct()
 					.collect(Collectors.toList());
