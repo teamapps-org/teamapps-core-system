@@ -250,6 +250,7 @@ public class MessageWindow extends AbstractApplicationView {
 		}
 		application.showPerspective(perspective);
 		window = new Window(1100, 800, application.getUi());
+		window.setResizable(true);
 		window.setIcon(ApplicationIcons.MESSAGE);
 		window.setTitle(getLocalized("newsBoard.message"));
 		window.setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.3f));
