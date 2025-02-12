@@ -30,6 +30,7 @@ import org.teamapps.application.api.search.UserSearch;
 import org.teamapps.application.api.state.ReplicatedStateMachine;
 import org.teamapps.application.api.user.SessionUser;
 import org.teamapps.application.api.user.UserAppConferenceHandler;
+import org.teamapps.application.server.ServerMode;
 import org.teamapps.application.server.system.bootstrap.ApplicationRootPanel;
 import org.teamapps.application.server.system.bootstrap.SystemRegistry;
 import org.teamapps.application.server.system.launcher.ApplicationLauncher;
@@ -343,5 +344,9 @@ public class UserSessionData {
 			return new UserSearchImpl(authCode, applicationInstanceData);
 		}
 		return null;
+	}
+
+	public ServerMode getServerMode() {
+		return getRegistry().getServerRegistry().getServerConfig().getServerMode();
 	}
 }

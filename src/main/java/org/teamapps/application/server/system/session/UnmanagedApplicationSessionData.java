@@ -37,6 +37,7 @@ import org.teamapps.application.api.ui.UiComponentFactory;
 import org.teamapps.application.api.user.SessionUser;
 import org.teamapps.application.server.DatabaseLogAppender;
 import org.teamapps.application.server.PublicLinkResourceProvider;
+import org.teamapps.application.server.ServerMode;
 import org.teamapps.application.server.system.bootstrap.LoadedApplication;
 import org.teamapps.application.server.system.bootstrap.SystemRegistry;
 import org.teamapps.databinding.TwoWayBindableValue;
@@ -326,6 +327,11 @@ public class UnmanagedApplicationSessionData implements ApplicationInstanceData 
 	@Override
 	public ApplicationNotificationHandler getNotificationHandler() {
 		return userSessionData.getRegistry().getSystemAppNotificationHandler().getNotificationHandler(getOrganizationField());
+	}
+
+	@Override
+	public ServerMode getServerMode() {
+		return userSessionData.getServerMode();
 	}
 
 }

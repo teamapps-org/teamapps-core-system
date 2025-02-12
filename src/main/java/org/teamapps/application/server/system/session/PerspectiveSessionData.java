@@ -38,6 +38,7 @@ import org.teamapps.application.api.ui.UiComponentFactory;
 import org.teamapps.application.api.user.SessionUser;
 import org.teamapps.application.server.DatabaseLogAppender;
 import org.teamapps.application.server.PublicLinkResourceProvider;
+import org.teamapps.application.server.ServerMode;
 import org.teamapps.application.server.system.launcher.PerspectiveByNameLauncher;
 import org.teamapps.application.server.system.organization.OrganizationUtils;
 import org.teamapps.application.server.system.utils.RoleUtils;
@@ -393,5 +394,10 @@ public class PerspectiveSessionData implements ApplicationInstanceData {
 	@Override
 	public ApplicationNotificationHandler getNotificationHandler() {
 		return userSessionData.getRegistry().getSystemAppNotificationHandler().getNotificationHandler(getOrganizationField());
+	}
+
+	@Override
+	public ServerMode getServerMode() {
+		return userSessionData.getServerMode();
 	}
 }
