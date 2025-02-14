@@ -222,6 +222,7 @@ public class ApplicationInstance implements PerspectiveByNameLauncher {
 		LOGGER.info("Open perspective");
 		ResponsiveApplication responsiveApplication = perspectiveSessionData.getManagedApplicationSessionData().getResponsiveApplication();
 		ApplicationPerspective applicationPerspective = applicationPerspectiveByPerspectiveBuilder.get(perspectiveSessionData);
+		boolean refreshPerspective = false;
 		if (applicationPerspective == null) {
 			userSessionData.addOpenPerspectivesCount();
 			applicationPerspective = perspectiveSessionData.getPerspectiveBuilder().build(perspectiveSessionData, null);
@@ -245,7 +246,7 @@ public class ApplicationInstance implements PerspectiveByNameLauncher {
 				}
 			}
 		} else {
-			applicationPerspective.getOnPerspectiveRefreshRequested().fire();
+			refreshPerspective = true;
 		}
 		if (applicationMenuTree != null && !perspectiveSessionData.equals(applicationMenuTree.getSelectedNode())) {
 			applicationMenuTree.setSelectedNode(perspectiveSessionData);
@@ -256,6 +257,10 @@ public class ApplicationInstance implements PerspectiveByNameLauncher {
 			perspectiveSessionData.getManagedApplicationSessionData().setPerspectiveToolbarMenuComponent(null);
 		}
 		responsiveApplication.showPerspective(applicationPerspective.getPerspective());
+
+		if (refreshPerspective) {
+			applicationPerspective.getOnPerspectiveRefreshRequested().fire();
+		}
 
 		if (mobileLayout != null && applicationPerspective.getPerspectiveMenuPanel() != null && !perspectiveSessionData.getManagedApplicationPerspective().getToolbarPerspectiveMenu()) {
 			backButton.setVisible(true);

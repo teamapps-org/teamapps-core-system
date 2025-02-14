@@ -328,6 +328,18 @@ public class ApplicationLauncher {
 			ApplicationGroupData applicationGroupData = new ApplicationGroupData(applicationGroup, userSessionData);
 			applicationGroups.add(applicationGroupData);
 			for (ManagedApplication managedApplication : applicationGroup.getApplications()) {
+				/*
+				todo: prepare auth update in apps before
+				if (isApplicationAccessible(managedApplication)) {
+					LoadedApplication loadedApplication = registry.getLoadedApplication(managedApplication.getMainApplication());
+					ManagedApplicationSessionData applicationSessionData = userSessionData.createManageApplicationSessionData(managedApplication, new MobileApplicationNavigation());
+					ApplicationData applicationData = new ApplicationData(managedApplication, loadedApplication, applicationSessionData);
+					applicationGroupData.addApplicationData(applicationData);
+					if (applicationData.getLoadedApplication().getBaseApplicationBuilder() instanceof UserProfileApplicationBuilder) {
+						userProfileApp = applicationData;
+					}
+				}
+				*/
 				if (managedApplication.isHidden()) {
 					continue;
 				}
@@ -344,6 +356,28 @@ public class ApplicationLauncher {
 			}
 		}
 		sortedApplicationGroups = ApplicationGroupData.getSortedGroups(applicationGroups.stream().filter(group -> !group.getSortedApplications().isEmpty()).collect(Collectors.toList()));
+	}
+
+	private boolean isApplicationAccessible(ManagedApplication managedApplication) {
+		if (managedApplication.isHidden() || registry.getLoadedApplication(managedApplication.getMainApplication()) == null) {
+			return false;
+		}
+		for (ManagedApplicationPerspective managedApplicationPerspective : managedApplication.getPerspectives()) {
+			if (managedApplicationPerspective.getApplicationPerspective() != null) {
+				Application application = managedApplicationPerspective.getApplicationPerspective().getApplication();
+				LoadedApplication loadedApplication = registry.getLoadedApplication(application);
+				if (loadedApplication != null) {
+					PerspectiveBuilder perspectiveBuilder = loadedApplication.getPerspectiveBuilder(managedApplicationPerspective.getApplicationPerspective().getName());
+					if (perspectiveBuilder != null) {
+						boolean accessible = perspectiveBuilder.isPerspectiveAccessible(userSessionData.getApplicationPrivilegeProvider(managedApplication));
+						if (accessible) {
+							return true;
+						}
+					}
+				}
+			}
+		}
+		return false;
 	}
 
 	private void createApplicationLauncher() {
