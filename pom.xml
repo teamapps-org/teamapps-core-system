@@ -66,7 +66,7 @@
         <dependency>
             <groupId>org.teamapps</groupId>
             <artifactId>teamapps-application-api</artifactId>
-            <version>0.107-SNAPSHOT</version>
+            <version>0.107</version>
         </dependency>
 
     </dependencies>
