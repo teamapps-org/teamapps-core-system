@@ -26,6 +26,7 @@ import org.teamapps.application.api.privilege.ApplicationRole;
 import org.teamapps.application.api.privilege.Privilege;
 import org.teamapps.application.api.privilege.PrivilegeGroup;
 import org.teamapps.application.api.theme.ApplicationIcons;
+import org.teamapps.application.server.ServerData;
 import org.teamapps.application.server.ServerMode;
 import org.teamapps.application.server.system.application.AbstractManagedApplicationPerspective;
 import org.teamapps.application.server.system.bootstrap.ApplicationInfo;
@@ -236,7 +237,7 @@ public class ApplicationsPerspectiveComponents extends AbstractManagedApplicatio
 			});
 		};
 
-		ServerMode serverMode = userSessionData.getRegistry().getServerRegistry().getServerConfig().getServerMode();
+		ServerMode serverMode = ServerData.getServerMode();
 		if (serverMode == ServerMode.PRODUCTION) {
 			UiUtils.showQuestion(ApplicationIcons.SIGN_WARNING, "THIS IS THE PRODUCTION SYSTEM!", "Do you really want to install the app on the production system?", showInstallDialogue, getApplicationInstanceData());
 		} else {
