@@ -272,7 +272,7 @@ public class PropertyProviders {
 			return null;
 		}
 		String prefix = "";
-		String abbreviation = applicationInstanceData.getLocalized(unit.getType().getAbbreviation());
+		String abbreviation = unit.getType() == null ? null : applicationInstanceData.getLocalized(unit.getType().getAbbreviation());
 		if (abbreviation != null) {
 			prefix = abbreviation + "-";
 		}
