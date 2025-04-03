@@ -36,6 +36,9 @@ public class RoleUtils {
 
 	public static Set<Role> getAllRoleInstances(Role role) {
 		Set<Role> roleSet = new HashSet<>();
+		if (role == null) {
+			return roleSet;
+		}
 		calculateRoleInstances(role, roleSet);
 		return roleSet;
 	}
