@@ -33,6 +33,7 @@ import org.teamapps.application.api.desktop.ApplicationDesktop;
 import org.teamapps.application.api.localization.ApplicationLocalizationProvider;
 import org.teamapps.application.api.localization.Dictionary;
 import org.teamapps.application.api.localization.Language;
+import org.teamapps.application.api.privilege.ApplicationPrivilegeProvider;
 import org.teamapps.application.api.theme.ApplicationIcons;
 import org.teamapps.application.server.DatabaseLogAppender;
 import org.teamapps.application.server.PublicLinkResourceProvider;
@@ -41,6 +42,7 @@ import org.teamapps.application.server.system.bootstrap.LoadedApplication;
 import org.teamapps.application.server.system.bootstrap.LogoutHandler;
 import org.teamapps.application.server.system.bootstrap.SystemRegistry;
 import org.teamapps.application.server.system.config.ThemingConfig;
+import org.teamapps.application.server.system.privilege.PrivilegeApplicationKey;
 import org.teamapps.application.server.system.session.ManagedApplicationSessionData;
 import org.teamapps.application.server.system.session.UserSessionData;
 import org.teamapps.application.server.system.template.PropertyProviders;
@@ -328,24 +330,8 @@ public class ApplicationLauncher {
 			ApplicationGroupData applicationGroupData = new ApplicationGroupData(applicationGroup, userSessionData);
 			applicationGroups.add(applicationGroupData);
 			for (ManagedApplication managedApplication : applicationGroup.getApplications()) {
-				/*
-				todo: prepare auth update in apps before
 				if (isApplicationAccessible(managedApplication)) {
 					LoadedApplication loadedApplication = registry.getLoadedApplication(managedApplication.getMainApplication());
-					ManagedApplicationSessionData applicationSessionData = userSessionData.createManageApplicationSessionData(managedApplication, new MobileApplicationNavigation());
-					ApplicationData applicationData = new ApplicationData(managedApplication, loadedApplication, applicationSessionData);
-					applicationGroupData.addApplicationData(applicationData);
-					if (applicationData.getLoadedApplication().getBaseApplicationBuilder() instanceof UserProfileApplicationBuilder) {
-						userProfileApp = applicationData;
-					}
-				}
-				*/
-				if (managedApplication.isHidden()) {
-					continue;
-				}
-				Application application = managedApplication.getMainApplication();
-				LoadedApplication loadedApplication = registry.getLoadedApplication(application);
-				if (loadedApplication != null && (loadedApplication.getBaseApplicationBuilder().isApplicationAccessible(userSessionData.getApplicationPrivilegeProvider(managedApplication)) || loadedApplication.getBaseApplicationBuilder().isApplicationAccessible(userSessionData.getApplicationPrivilegeProviderWithOrgField(managedApplication)))) {
 					ManagedApplicationSessionData applicationSessionData = userSessionData.createManageApplicationSessionData(managedApplication, new MobileApplicationNavigation());
 					ApplicationData applicationData = new ApplicationData(managedApplication, loadedApplication, applicationSessionData);
 					applicationGroupData.addApplicationData(applicationData);
@@ -369,7 +355,8 @@ public class ApplicationLauncher {
 				if (loadedApplication != null) {
 					PerspectiveBuilder perspectiveBuilder = loadedApplication.getPerspectiveBuilder(managedApplicationPerspective.getApplicationPerspective().getName());
 					if (perspectiveBuilder != null) {
-						boolean accessible = perspectiveBuilder.isPerspectiveAccessible(userSessionData.getApplicationPrivilegeProvider(managedApplication));
+						ApplicationPrivilegeProvider applicationPrivilegeProvider = userSessionData.getUserPrivileges().getApplicationPrivilegeProvider(PrivilegeApplicationKey.create(managedApplicationPerspective));
+						boolean accessible = perspectiveBuilder.isPerspectiveAccessible(applicationPrivilegeProvider);
 						if (accessible) {
 							return true;
 						}
