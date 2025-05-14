@@ -267,6 +267,50 @@ public class PropertyProviders {
 		};
 	}
 
+	public static PropertyProvider<OrganizationUnit> creatOrganizationUnitWithPathPropertyProvider(ApplicationInstanceData applicationInstanceData) {
+		PropertyProvider<OrganizationUnit> unitPropertyProvider = creatOrganizationUnitPropertyProvider(applicationInstanceData);
+		return (unit, propertyNames) -> {
+
+			List<OrganizationUnit> units = new ArrayList<>();
+			units.add(unit);
+			OrganizationUnit parent = unit.getParent();
+			while (parent != null) {
+				units.add(parent);
+				if (parent.getType() != null && (parent.getType().getId() == 7 || parent.getType().getId() == 21)) { //todo add constants
+					break;
+				}
+				parent = parent.getParent();
+			}
+			Collections.reverse(units);
+			String path = units.stream().map(u -> getUnitNameWithFlag(u, applicationInstanceData)).collect(Collectors.joining(" ➔ "));
+			Map<String, Object> map = new HashMap<>();
+			map.put(BaseTemplate.PROPERTY_ICON, unit.getIcon() != null ? IconUtils.decodeIcon(unit.getIcon()) : IconUtils.decodeIcon(unit.getType() == null ? null : unit.getType().getIcon()));
+			map.put(BaseTemplate.PROPERTY_CAPTION, getOrganizationUnitTitle(unit, applicationInstanceData));
+			map.put(BaseTemplate.PROPERTY_DESCRIPTION, path);
+			return map;
+		};
+	}
+
+	public static String getUnitNameWithFlag(OrganizationUnit unit, ApplicationInstanceData applicationInstanceData) {
+		String name = applicationInstanceData.getLocalized(unit.getName());
+		if (unit.getType() != null && unit.getType().getAbbreviation() != null) {
+			name = applicationInstanceData.getLocalized(unit.getType().getAbbreviation()) + "-" + name;
+		}
+		if (unit.getType() != null && unit.getType().getGeoLocationType() == GeoLocationType.COUNTRY && unit.getAddress() != null) {
+			String flag = FlagMap.getFlagByCountryCode(unit.getAddress().getCountry());
+			if (flag != null) {
+				return flag + " " + name;
+			}
+		}
+		if (unit.getLanguage() != null) {
+			String flag = FlagMap.getFlagByLanguageCode(unit.getLanguage());
+			if (flag != null) {
+				return flag + " " + name;
+			}
+		}
+		return name;
+	}
+
 	public static String getOrganizationUnitTitle(OrganizationUnit unit, ApplicationInstanceData applicationInstanceData) {
 		if (unit == null) {
 			return null;
@@ -396,23 +440,6 @@ public class PropertyProviders {
 		return pathElements.stream().collect(Collectors.joining("/"));
 	}
 
-	public static PropertyProvider<OrganizationUnit> creatOrganizationUnitWithPathPropertyProvider(ApplicationInstanceData applicationInstanceData) {
-		PropertyProvider<OrganizationUnit> unitPropertyProvider = creatOrganizationUnitPropertyProvider(applicationInstanceData);
-		return (unit, propertyNames) -> {
-			Map<String, Object> map = unitPropertyProvider.getValues(unit, propertyNames);
-			String path = (String) map.get(BaseTemplate.PROPERTY_CAPTION);
-			int level = 0;
-			OrganizationUnit parent = unit.getParent();
-			while (parent != null && level < 3) {
-				Map<String, Object> parentMap = unitPropertyProvider.getValues(parent, propertyNames);
-				path = parentMap.get(BaseTemplate.PROPERTY_CAPTION) + "/" + path;
-				level++;
-				parent = parent.getParent();
-			}
-			map.put(BaseTemplate.PROPERTY_DESCRIPTION, path);
-			return map;
-		};
-	}
 
 	public static PropertyProvider<Role> createRolePropertyProvider(ApplicationInstanceData applicationInstanceData) {
 		return (role, propertyNames) -> {
