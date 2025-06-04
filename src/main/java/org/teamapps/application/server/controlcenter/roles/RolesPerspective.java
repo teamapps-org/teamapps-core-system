@@ -146,7 +146,8 @@ public class RolesPerspective extends AbstractManagedApplicationPerspective {
 		EntityListModelBuilder<UserRoleAssignment> userRoleAssignmentModelBuilder = new EntityListModelBuilder<>(getApplicationInstanceData(), userRoleAssignment -> userRoleAssignment.getUser().getFirstName() + " " + userRoleAssignment.getUser().getLastName());
 		Table<UserRoleAssignment> roleMemberTable = userRoleAssignmentModelBuilder.createListTable(true);
 		roleMemberTable.setHideHeaders(true);
-
+		roleMemberTable.setDisplayAsList(true);
+		roleMemberTable.setRowHeight(40);
 		TemplateField<User> userTemplateField = UiUtils.createTemplateField(BaseTemplate.LIST_ITEM_MEDIUM_ICON_SINGLE_LINE, PropertyProviders.createUserPropertyProvider(getApplicationInstanceData()));
 		TemplateField<OrganizationUnit> organizationUnitTemplateField = UiUtils.createTemplateField(BaseTemplate.LIST_ITEM_MEDIUM_ICON_SINGLE_LINE, PropertyProviders.creatOrganizationUnitPropertyProvider(getApplicationInstanceData()));
 		roleMemberTable.addColumn(new TableColumn<>("user", userTemplateField));

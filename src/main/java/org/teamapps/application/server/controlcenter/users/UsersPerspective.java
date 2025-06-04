@@ -157,8 +157,10 @@ public class UsersPerspective extends AbstractManagedApplicationPerspective {
 		EntityListModelBuilder<UserRoleAssignment> userRoleAssignmentModelBuilder = new EntityListModelBuilder<>(getApplicationInstanceData(), userRoleAssignment ->  userRoleAssignment.getRole().getTitle().getText() + " " + userRoleAssignment.getOrganizationUnit().getName().getText());
 		Table<UserRoleAssignment> roleMemberTable = userRoleAssignmentModelBuilder.createListTable(true);
 		roleMemberTable.setHideHeaders(true);
-		TemplateField<Role> roleTemplateField = UiUtils.createTemplateField(BaseTemplate.LIST_ITEM_MEDIUM_ICON_SINGLE_LINE, PropertyProviders.createRolePropertyProvider(getApplicationInstanceData()));
-		TemplateField<OrganizationUnit> organizationUnitTemplateField = UiUtils.createTemplateField(BaseTemplate.LIST_ITEM_MEDIUM_ICON_SINGLE_LINE, PropertyProviders.creatOrganizationUnitPropertyProvider(getApplicationInstanceData()));
+		roleMemberTable.setDisplayAsList(true);
+		roleMemberTable.setRowHeight(40);
+		TemplateField<Role> roleTemplateField = UiUtils.createTemplateField(BaseTemplate.LIST_ITEM_LARGE_ICON_TWO_LINES, PropertyProviders.createRolePropertyProvider(getApplicationInstanceData()));
+		TemplateField<OrganizationUnit> organizationUnitTemplateField = UiUtils.createTemplateField(BaseTemplate.LIST_ITEM_LARGE_ICON_TWO_LINES, PropertyProviders.creatOrganizationUnitWithPathPropertyProvider(getApplicationInstanceData()));
 		roleMemberTable.addColumn(new TableColumn<>("role", roleTemplateField));
 		roleMemberTable.addColumn(new TableColumn<>("orgUnit", organizationUnitTemplateField));
 		roleMemberTable.setPropertyExtractor((userRoleAssignment, propertyName) -> switch (propertyName){
