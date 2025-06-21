@@ -165,6 +165,16 @@ public class UserSessionApplicationInstanceData implements ApplicationInstanceDa
 	}
 
 	@Override
+	public Integer getOrganizationUserWithDelegatedObjectId(OrganizationUnitView orgUnit, int objectId) {
+		List<Integer> organizationUsersWithRole = PerspectiveSessionData.getOrganizationUsersWithDelegatedObjectId(orgUnit, objectId, getOrganizationField());
+		if (organizationUsersWithRole != null && !organizationUsersWithRole.isEmpty()) {
+			return organizationUsersWithRole.getFirst();
+		} else {
+			return null;
+		}
+	}
+
+	@Override
 	public String getOrganizationUserNameWithRole(OrganizationUnitView orgUnit, UserRoleType userRoleType, boolean lastNameFirst) {
 		Integer userId = getOrganizationUserWithRole(orgUnit, userRoleType);
 		if (userId != null) {
@@ -173,6 +183,11 @@ public class UserSessionApplicationInstanceData implements ApplicationInstanceDa
 		} else {
 			return null;
 		}
+	}
+
+	@Override
+	public List<Integer> getOrganizationUsersWithDelegatedObjectId(OrganizationUnitView orgUnit, int objectId) {
+		return PerspectiveSessionData.getOrganizationUsersWithDelegatedObjectId(orgUnit, objectId, getOrganizationField());
 	}
 
 	@Override

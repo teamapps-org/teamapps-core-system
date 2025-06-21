@@ -231,7 +231,17 @@ public class PerspectiveSessionData implements ApplicationInstanceData {
 	public Integer getOrganizationUserWithRole(OrganizationUnitView orgUnit, UserRoleType userRoleType) {
 		List<Integer> organizationUsersWithRole = getOrganizationUsersWithRole(orgUnit, userRoleType, getOrganizationField());
 		if (organizationUsersWithRole != null && !organizationUsersWithRole.isEmpty()) {
-			return organizationUsersWithRole.get(0);
+			return organizationUsersWithRole.getFirst();
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public Integer getOrganizationUserWithDelegatedObjectId(OrganizationUnitView orgUnit, int objectId) {
+		List<Integer> organizationUsersWithRole = getOrganizationUsersWithDelegatedObjectId(orgUnit, objectId, getOrganizationField());
+		if (organizationUsersWithRole != null && !organizationUsersWithRole.isEmpty()) {
+			return organizationUsersWithRole.getFirst();
 		} else {
 			return null;
 		}
@@ -251,6 +261,11 @@ public class PerspectiveSessionData implements ApplicationInstanceData {
 	@Override
 	public List<Integer> getOrganizationUsersWithRole(OrganizationUnitView orgUnit, UserRoleType userRoleType) {
 		return getOrganizationUsersWithRole(orgUnit, userRoleType, getOrganizationField());
+	}
+
+	@Override
+	public List<Integer> getOrganizationUsersWithDelegatedObjectId(OrganizationUnitView orgUnit, int objectId) {
+		return getOrganizationUsersWithDelegatedObjectId(orgUnit, objectId, getOrganizationField());
 	}
 
 	@Override
@@ -315,6 +330,24 @@ public class PerspectiveSessionData implements ApplicationInstanceData {
 				.map(assignment -> assignment.getUser().getId())
 				.collect(Collectors.toList());
 	}
+
+	public static List<Integer> getOrganizationUsersWithDelegatedObjectId(OrganizationUnitView orgUnit, int objectId, OrganizationFieldView organizationFieldView) {
+		if (objectId <= 0) {
+			return null;
+		}
+		OrganizationField organizationField = OrganizationUtils.convert(organizationFieldView);
+		return UserRoleAssignment.filter()
+				.organizationUnit(NumericFilter.equalsFilter(orgUnit.getId()))
+				.execute()
+				.stream()
+				.filter(userRoleAssignment -> organizationField == null || userRoleAssignment.getRole().getOrganizationField().equals(organizationField))
+				.filter(userRoleAssignment -> userRoleAssignment.getDelegatedCustomPrivilegeObjectId() == objectId)
+				.filter(userRoleAssignment -> userRoleAssignment.getUser() != null)
+				.sorted(RoleUtils.createRoleTypeAndMainResponsibleComparator())
+				.map(assignment -> assignment.getUser().getId())
+				.collect(Collectors.toList());
+	}
+
 
 	@Override
 	public String getLocalized(String s, Object... objects) {
