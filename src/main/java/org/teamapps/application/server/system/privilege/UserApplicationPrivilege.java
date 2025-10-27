@@ -21,6 +21,8 @@ package org.teamapps.application.server.system.privilege;
 
 
 import org.teamapps.application.api.privilege.*;
+import org.teamapps.model.controlcenter.OrganizationField;
+import org.teamapps.model.controlcenter.OrganizationFieldView;
 import org.teamapps.model.controlcenter.OrganizationUnitView;
 
 import java.util.*;
@@ -36,6 +38,7 @@ public class UserApplicationPrivilege implements ApplicationPrivilegeProvider {
 	private Map<OrganizationalPrivilegeGroup, Map<Privilege, Set<OrganizationUnitView>>> organizationalPrivilegeGroupMap;
 	private Map<CustomObjectPrivilegeGroup, Map<Privilege, Set<PrivilegeObject>>> customObjectPrivilegeGroupMap;
 	private Map<RoleAssignmentDelegatedCustomPrivilegeGroup, Map<Privilege, Set<PrivilegeObject>>> delegatedCustomPrivilegeGroupMap;
+	private Map<OrganizationFieldView, ApplicationPrivilegeProvider> multiOrganizationFieldPrivilegeProviderMap;
 
 	public UserApplicationPrivilege(UserPrivileges userPrivileges, PrivilegeApplicationKey privilegeApplicationKey) {
 		this.userPrivileges = userPrivileges;
@@ -53,8 +56,133 @@ public class UserApplicationPrivilege implements ApplicationPrivilegeProvider {
 		delegatedCustomPrivilegeGroupMap = userPrivileges.getRoleAssignmentDelegatedCustomPrivilegeMap().get(privilegeApplicationKey);
 	}
 
+	private void merge(UserApplicationPrivilege other) {
+		if (other.simplePrivileges != null) {
+			if (simplePrivileges == null) {
+				simplePrivileges = new HashSet<>();
+			}
+			simplePrivileges.addAll(other.simplePrivileges);
+		}
+		if (other.simpleOrganizationalPrivilegeSetMap != null) {
+			if (simpleOrganizationalPrivilegeSetMap == null) {
+				simpleOrganizationalPrivilegeSetMap = new HashMap<>();
+			}
+			other.simpleOrganizationalPrivilegeSetMap.forEach((simpleOrganizationalPrivilege, organizationUnitViews) -> {
+				if (simpleOrganizationalPrivilegeSetMap.containsKey(simpleOrganizationalPrivilege)) {
+					simpleOrganizationalPrivilegeSetMap.get(simpleOrganizationalPrivilege).addAll(organizationUnitViews);
+				} else {
+					simpleOrganizationalPrivilegeSetMap.put(simpleOrganizationalPrivilege, new HashSet<>(organizationUnitViews));
+				}
+			});
+		}
+		if (other.simpleCustomObjectPrivilegeSetMap != null) {
+			if (simpleCustomObjectPrivilegeSetMap == null) {
+				simpleCustomObjectPrivilegeSetMap = new HashMap<>();
+			}
+			other.simpleCustomObjectPrivilegeSetMap.forEach((simpleCustomObjectPrivilege, privilegeObjects) -> {
+				if (simpleCustomObjectPrivilegeSetMap.containsKey(simpleCustomObjectPrivilege)) {
+					simpleCustomObjectPrivilegeSetMap.get(simpleCustomObjectPrivilege).addAll(privilegeObjects);
+				} else {
+					simpleCustomObjectPrivilegeSetMap.put(simpleCustomObjectPrivilege, new HashSet<>(privilegeObjects));
+				}
+			});
+		}
+		if (other.standardPrivilegeGroupSetMap != null) {
+			if (standardPrivilegeGroupSetMap == null) {
+				standardPrivilegeGroupSetMap = new HashMap<>();
+			}
+			other.standardPrivilegeGroupSetMap.forEach((standardPrivilegeGroup, privileges) -> {
+				if (standardPrivilegeGroupSetMap.containsKey(standardPrivilegeGroup)) {
+					standardPrivilegeGroupSetMap.get(standardPrivilegeGroup).addAll(privileges);
+				} else {
+					standardPrivilegeGroupSetMap.put(standardPrivilegeGroup, new HashSet<>(privileges));
+				}
+			});
+		}
+		if (other.organizationalPrivilegeGroupMap != null) {
+			if (organizationalPrivilegeGroupMap == null) {
+				organizationalPrivilegeGroupMap = new HashMap<>();
+			}
+			other.organizationalPrivilegeGroupMap.forEach((organizationalPrivilegeGroup, privilegeMap) -> {
+				if (organizationalPrivilegeGroupMap.containsKey(organizationalPrivilegeGroup)) {
+					privilegeMap.forEach((privilege, organizationUnitViews) -> {
+						if (organizationalPrivilegeGroupMap.get(organizationalPrivilegeGroup).containsKey(privilege)) {
+							organizationalPrivilegeGroupMap.get(organizationalPrivilegeGroup).get(privilege).addAll(organizationUnitViews);
+						} else {
+							organizationalPrivilegeGroupMap.get(organizationalPrivilegeGroup).put(privilege, new HashSet<>(organizationUnitViews));
+						}
+					});
+				} else {
+					organizationalPrivilegeGroupMap.put(organizationalPrivilegeGroup, privilegeMap);
+				}
+			});
+		}
+		if (other.customObjectPrivilegeGroupMap != null) {
+			if (customObjectPrivilegeGroupMap == null) {
+				customObjectPrivilegeGroupMap = new HashMap<>();
+			}
+			other.customObjectPrivilegeGroupMap.forEach((customObjectPrivilegeGroup, privilegeMap) -> {
+				if (customObjectPrivilegeGroupMap.containsKey(customObjectPrivilegeGroup)) {
+					privilegeMap.forEach((privilege, privilegeObjects) -> {
+						if (customObjectPrivilegeGroupMap.get(customObjectPrivilegeGroup).containsKey(privilege)) {
+							customObjectPrivilegeGroupMap.get(customObjectPrivilegeGroup).get(privilege).addAll(privilegeObjects);
+						} else {
+							customObjectPrivilegeGroupMap.get(customObjectPrivilegeGroup).put(privilege, new HashSet<>(privilegeObjects));
+						}
+					});
+				} else {
+					customObjectPrivilegeGroupMap.put(customObjectPrivilegeGroup, privilegeMap);
+				}
+			});
+		}
+		if (other.delegatedCustomPrivilegeGroupMap != null) {
+			if (delegatedCustomPrivilegeGroupMap == null) {
+				delegatedCustomPrivilegeGroupMap = new HashMap<>();
+			}
+			other.delegatedCustomPrivilegeGroupMap.forEach((delegatedCustomPrivilegeGroup, privilegeMap) -> {
+				if (delegatedCustomPrivilegeGroupMap.containsKey(delegatedCustomPrivilegeGroup)) {
+					privilegeMap.forEach((privilege, privilegeObjects) -> {
+						if (delegatedCustomPrivilegeGroupMap.get(delegatedCustomPrivilegeGroup).containsKey(privilege)) {
+							delegatedCustomPrivilegeGroupMap.get(delegatedCustomPrivilegeGroup).get(privilege).addAll(privilegeObjects);
+						}
+					});
+				} else {
+					delegatedCustomPrivilegeGroupMap.put(delegatedCustomPrivilegeGroup, privilegeMap);
+				}
+			});
+		}
+	}
+
 	public UserPrivileges getUserPrivileges() {
 		return userPrivileges;
+	}
+
+	public MultiOrganizationFieldPrivilegeProvider getMultiOrganizationFieldPrivilegeProvider() {
+		if (privilegeApplicationKey.getOrganizationFieldView() == null) {
+			return null;
+		}
+		Map<OrganizationFieldView, ApplicationPrivilegeProvider> providerMap = getInheritedOrganizationFieldPrivilegeProviderMap();
+		return new MultiOrganizationFieldPrivilegeProvider(providerMap);
+	}
+
+	@Override
+	public Map<OrganizationFieldView, ApplicationPrivilegeProvider> getInheritedOrganizationFieldPrivilegeProviderMap() {
+		if (privilegeApplicationKey.getOrganizationFieldView() == null) {
+			return null;
+		}
+		if (multiOrganizationFieldPrivilegeProviderMap != null) {
+			return multiOrganizationFieldPrivilegeProviderMap;
+		}
+		OrganizationField organizationField = OrganizationField.getById(privilegeApplicationKey.getOrganizationFieldView().getId());
+		Map<OrganizationFieldView, ApplicationPrivilegeProvider> providerMap = new HashMap<>();
+		providerMap.put(OrganizationFieldView.getById(organizationField.getId()), this);
+		for (OrganizationField childField : organizationField.getChildFields()) {
+			UserApplicationPrivilege privilegeProvider = new UserApplicationPrivilege(userPrivileges, PrivilegeApplicationKey.create(privilegeApplicationKey.getApplication(), childField));
+			providerMap.put(OrganizationFieldView.getById(childField.getId()), privilegeProvider);
+			privilegeProvider.merge(this);
+		}
+		multiOrganizationFieldPrivilegeProviderMap = providerMap;
+		return providerMap;
 	}
 
 	@Override

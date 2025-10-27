@@ -21,11 +21,14 @@ package org.teamapps.application.server.system.privilege;
 
 import org.teamapps.application.api.privilege.*;
 import org.teamapps.application.server.system.organization.OrganizationUtils;
+import org.teamapps.model.controlcenter.OrganizationFieldView;
 import org.teamapps.model.controlcenter.OrganizationUnit;
 import org.teamapps.model.controlcenter.OrganizationUnitView;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AllowAllPrivilegeProvider implements ApplicationPrivilegeProvider {
 	@Override
@@ -87,5 +90,14 @@ public class AllowAllPrivilegeProvider implements ApplicationPrivilegeProvider {
 	@Override
 	public List<PrivilegeObject> getAllowedPrivilegeObjects(RoleAssignmentDelegatedCustomPrivilegeGroup group, Privilege privilege) {
 		return Collections.emptyList();
+	}
+
+	@Override
+	public Map<OrganizationFieldView, ApplicationPrivilegeProvider> getInheritedOrganizationFieldPrivilegeProviderMap() {
+		Map<OrganizationFieldView, ApplicationPrivilegeProvider> map = new HashMap<>();
+		for (OrganizationFieldView organizationFieldView : OrganizationFieldView.getAll()) {
+			map.put(organizationFieldView, this);
+		}
+		return map;
 	}
 }

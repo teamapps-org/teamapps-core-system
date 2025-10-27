@@ -57,6 +57,7 @@ import org.teamapps.ux.resource.Resource;
 import java.io.File;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -337,6 +338,11 @@ public class UnmanagedApplicationSessionData implements ApplicationInstanceData 
 	@Override
 	public List<PrivilegeObject> getAllowedPrivilegeObjects(RoleAssignmentDelegatedCustomPrivilegeGroup group, Privilege privilege) {
 		return privilegeProvider.getAllowedPrivilegeObjects(group, privilege);
+	}
+
+	@Override
+	public Map<OrganizationFieldView, ApplicationPrivilegeProvider> getInheritedOrganizationFieldPrivilegeProviderMap() {
+		return privilegeProvider.getInheritedOrganizationFieldPrivilegeProviderMap();
 	}
 
 	@Override
