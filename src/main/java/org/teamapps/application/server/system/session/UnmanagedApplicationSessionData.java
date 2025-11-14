@@ -58,6 +58,7 @@ import java.io.File;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -353,6 +354,16 @@ public class UnmanagedApplicationSessionData implements ApplicationInstanceData 
 	@Override
 	public ServerMode getServerMode() {
 		return userSessionData.getServerMode();
+	}
+
+	@Override
+	public Set<Integer> getGroupMemberships() {
+		return userSessionData.getGroupIds();
+	}
+
+	@Override
+	public boolean isGroupModerator(int groupId) {
+		return userSessionData.getGroupModerationIds().contains(groupId);
 	}
 
 }

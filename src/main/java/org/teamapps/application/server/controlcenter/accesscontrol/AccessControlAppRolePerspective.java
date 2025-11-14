@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -54,7 +54,6 @@ import org.teamapps.ux.component.field.combobox.TagComboBox;
 import org.teamapps.ux.component.form.ResponsiveForm;
 import org.teamapps.ux.component.form.ResponsiveFormLayout;
 import org.teamapps.ux.component.table.Table;
-import org.teamapps.ux.component.table.TableColumn;
 import org.teamapps.ux.component.template.BaseTemplate;
 import org.teamapps.ux.model.ComboBoxModel;
 
@@ -108,7 +107,8 @@ public class AccessControlAppRolePerspective extends AbstractManagedApplicationP
 			case RoleApplicationRoleAssignment.FIELD_ROLE -> rolePrivilegeAssignment.getRole();
 			case RoleApplicationRoleAssignment.FIELD_APPLICATION -> rolePrivilegeAssignment.getApplication();
 			case RoleApplicationRoleAssignment.FIELD_APPLICATION_ROLE_NAME -> rolePrivilegeAssignment;
-			case RoleApplicationRoleAssignment.FIELD_FIXED_ORGANIZATION_ROOT -> rolePrivilegeAssignment.getFixedOrganizationRoot();
+			case RoleApplicationRoleAssignment.FIELD_FIXED_ORGANIZATION_ROOT ->
+					rolePrivilegeAssignment.getFixedOrganizationRoot();
 			default -> null;
 		});
 
@@ -278,6 +278,7 @@ public class AccessControlAppRolePerspective extends AbstractManagedApplicationP
 	private List<Application> getAvailableApplications() {
 		if (isAppFilter()) {
 			return getManagedApplication().getPerspectives().stream()
+					.filter(p -> p.getApplicationPerspective() != null)
 					.map(p -> p.getApplicationPerspective().getApplication())
 					.distinct()
 					.collect(Collectors.toList());

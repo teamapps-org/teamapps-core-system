@@ -422,6 +422,13 @@ public class ApplicationLauncher {
 
 		if (mobileView) {
 			userSessionData.setRootComponent(applicationLauncher);
+			try {
+				BaseApplicationBuilder baseApplicationBuilder = userProfileApp.getLoadedApplication().getBaseApplicationBuilder();
+				UserProfileApplicationBuilder builder = (UserProfileApplicationBuilder) baseApplicationBuilder;
+				builder.handleAfterLogin(userSessionData.getApplicationLauncher().createApplicationInstanceData(userProfileApp.getLoadedApplication().getApplication().getName()));
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
 		} else {
 			applicationsTabPanel = new TabPanel();
 			applicationsTabPanel.onTabSelected.addListener(tab -> {

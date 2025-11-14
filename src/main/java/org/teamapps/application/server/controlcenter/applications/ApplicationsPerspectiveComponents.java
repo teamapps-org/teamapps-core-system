@@ -217,6 +217,7 @@ public class ApplicationsPerspectiveComponents extends AbstractManagedApplicatio
 			FormDialogue dialogue = FormDialogue.create(ApplicationIcons.UPLOAD, getLocalized("applications.upload"), getLocalized("applications.uploadApplicationJar"));
 			SimpleFileField fileField = new SimpleFileField();
 			fileField.setMaxFiles(1);
+			fileField.setMaxBytesPerFile(1024 * 1024 * 100);
 			fileField.setDisplayType(FileFieldDisplayType.LIST);
 			dialogue.addField(ApplicationIcons.JAR, getLocalized("applications.applicationJar"), fileField);
 			dialogue.addOkCancelButtons(ApplicationIcons.CHECK, getLocalized(Dictionary.O_K), ApplicationIcons.ERROR, getLocalized(Dictionary.CANCEL));

@@ -90,6 +90,9 @@ public class UserSessionData {
 	private ApplicationLauncher applicationLauncher;
 	private Perspective desktopLauncherPerspective;
 
+	private Set<Integer> groupIds = new HashSet<>();
+	private Set<Integer> groupModerationIds = new HashSet<>();
+
 	public UserSessionData(User user, SessionContext context, SystemRegistry registry, ApplicationRootPanel rootPanel, Role authenticatedUserRole) {
 		this(user, context, registry, rootPanel, authenticatedUserRole, false, null);
 	}
@@ -349,5 +352,21 @@ public class UserSessionData {
 
 	public ServerMode getServerMode() {
 		return ServerData.getServerMode();
+	}
+
+	public Set<Integer> getGroupIds() {
+		return groupIds;
+	}
+
+	public void setGroupIds(Set<Integer> groupIds) {
+		this.groupIds = groupIds;
+	}
+
+	public Set<Integer> getGroupModerationIds() {
+		return groupModerationIds;
+	}
+
+	public void setGroupModerationIds(Set<Integer> groupModerationIds) {
+		this.groupModerationIds = groupModerationIds;
 	}
 }

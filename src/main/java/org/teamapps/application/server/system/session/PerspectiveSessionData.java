@@ -62,6 +62,7 @@ import java.io.File;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -327,6 +328,7 @@ public class PerspectiveSessionData implements ApplicationInstanceData {
 				.filter(userRoleAssignment -> organizationField == null || userRoleAssignment.getRole().getOrganizationField().equals(organizationField))
 				.filter(userRoleAssignment -> userRoleAssignment.getRole().getRoleType() == roleType)
 				.filter(userRoleAssignment -> userRoleAssignment.getUser() != null)
+				.filter(userRoleAssignment -> userRoleAssignment.getDelegatedCustomPrivilegeObjectId() == 0)
 				.sorted(RoleUtils.createRoleTypeAndMainResponsibleComparator())
 				.map(assignment -> assignment.getUser().getId())
 				.collect(Collectors.toList());
@@ -438,5 +440,15 @@ public class PerspectiveSessionData implements ApplicationInstanceData {
 	@Override
 	public ServerMode getServerMode() {
 		return userSessionData.getServerMode();
+	}
+
+	@Override
+	public Set<Integer> getGroupMemberships() {
+		return userSessionData.getGroupIds();
+	}
+
+	@Override
+	public boolean isGroupModerator(int groupId) {
+		return userSessionData.getGroupModerationIds().contains(groupId);
 	}
 }
