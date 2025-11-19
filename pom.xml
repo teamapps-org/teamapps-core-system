@@ -42,7 +42,7 @@
         <dependency>
             <groupId>org.teamapps</groupId>
             <artifactId>teamapps-core-system-model</artifactId>
-            <version>0.13-SNAPSHOT</version>
+            <version>0.13</version>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
