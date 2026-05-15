@@ -44,6 +44,7 @@ import org.teamapps.ux.component.itemview.SimpleItemGroup;
 import org.teamapps.ux.component.itemview.SimpleItemView;
 import org.teamapps.ux.component.map.MapView;
 import org.teamapps.ux.component.mobile.MobileLayout;
+import org.teamapps.ux.component.mobile.NavigationBar;
 import org.teamapps.ux.component.panel.Panel;
 import org.teamapps.ux.component.progress.MultiProgressDisplay;
 import org.teamapps.ux.component.table.Table;
@@ -83,6 +84,9 @@ public class MobileAssembler implements ApplicationAssembler {
 		this.mobileNavigation = mobileNavigation;
 		verticalLayout = new VerticalLayout();
 		mobileLayout = new MobileLayout();
+		NavigationBar<Object> navigationBar = new NavigationBar<>();
+		navigationBar.setVisible(false);
+		mobileLayout.setNavigationBar(navigationBar);
 		viewsItemView = new SimpleItemView<>();
 		navigationToolbar = new Toolbar();
 		navigationToolbar.setCssStyle(".toolbar-filler", "flex", "0 0 0");
@@ -281,7 +285,7 @@ public class MobileAssembler implements ApplicationAssembler {
 
 	@Override
 	public MultiProgressDisplay getMultiProgressDisplay() {
-		return null;
+		return mobileLayout.getNavigationBar().getMultiProgressDisplay();
 	}
 
 	@Override
