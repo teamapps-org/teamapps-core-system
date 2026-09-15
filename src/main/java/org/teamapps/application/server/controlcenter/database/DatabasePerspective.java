@@ -19,6 +19,7 @@
  */
 package org.teamapps.application.server.controlcenter.database;
 
+import org.teamapps.common.format.CssStringColor;
 import org.teamapps.application.api.application.ApplicationInstanceData;
 import org.teamapps.application.api.localization.Dictionary;
 import org.teamapps.application.api.privilege.Privilege;
@@ -27,7 +28,6 @@ import org.teamapps.application.server.controlcenter.Privileges;
 import org.teamapps.application.server.system.application.AbstractManagedApplicationPerspective;
 import org.teamapps.application.server.system.session.PerspectiveSessionData;
 import org.teamapps.application.server.system.session.UserSessionData;
-import org.teamapps.common.format.Color;
 import org.teamapps.databinding.MutableValue;
 import org.teamapps.databinding.TwoWayBindableValue;
 import org.teamapps.icons.Icon;
@@ -75,7 +75,7 @@ public class DatabasePerspective extends AbstractManagedApplicationPerspective {
 		timeLineView = getPerspective().addView(View.createView(StandardLayout.TOP, ApplicationIcons.CHART_LINE, getLocalized(Dictionary.TIMELINE), null));
 		tableView = getPerspective().addView(View.createView(StandardLayout.CENTER, ApplicationIcons.TABLE, getLocalized(Dictionary.TABLE), null));
 		formView = getPerspective().addView(View.createView(StandardLayout.RIGHT, ApplicationIcons.FORM, getLocalized(Dictionary.FORM), null));
-		formView.getPanel().setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.9f));
+		formView.getPanel().setBodyBackgroundColor(new CssStringColor("color-mix(in srgb, var(--ta-bg-color) 90%, transparent)"));
 
 
 

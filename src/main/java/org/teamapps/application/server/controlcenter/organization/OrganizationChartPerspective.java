@@ -19,6 +19,7 @@
  */
 package org.teamapps.application.server.controlcenter.organization;
 
+import org.teamapps.common.format.CssStringColor;
 import org.teamapps.application.api.application.ApplicationInstanceData;
 import org.teamapps.application.api.localization.Dictionary;
 import org.teamapps.application.api.privilege.Privilege;
@@ -82,7 +83,7 @@ public class OrganizationChartPerspective extends AbstractManagedApplicationPers
 			return;
 		}
 		View masterView = getPerspective().addView(View.createView(StandardLayout.CENTER, ApplicationIcons.PIECES, getLocalized("organizationChart.title"), null));
-		masterView.getPanel().setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.75f));
+		masterView.getPanel().setBodyBackgroundColor(new CssStringColor("color-mix(in srgb, var(--ta-bg-color) 75%, transparent)"));
 		View masterTableView = getPerspective().addView(View.createView(StandardLayout.CENTER, ApplicationIcons.PIECES, getLocalized("organizationChart.title"), null));
 		masterTableView.setVisible(false);
 		ToolbarButtonGroup buttonGroup;
@@ -243,7 +244,7 @@ public class OrganizationChartPerspective extends AbstractManagedApplicationPers
 		node.setBorderWidth(1f);
 		node.setConnectorLineColor(Color.MATERIAL_BLUE_700);
 		node.setBorderColor(Color.MATERIAL_BLUE_700);
-		node.setBackgroundColor(Color.MATERIAL_BLUE_100);
+		node.setBackgroundColor(new CssStringColor("color-mix(in srgb, var(--ta-bg-color) 85%, #1976d2)"));
 		node.setExpanded(false);
 
 		if (chartNode.getUserImage() != null) {
@@ -266,22 +267,22 @@ public class OrganizationChartPerspective extends AbstractManagedApplicationPers
 		node.setBorderRadius(7);
 		node.setBorderWidth(1f);
 		Color borderColor = Color.MATERIAL_GREY_700;
-		Color backgroundColor = Color.MATERIAL_GREY_100;
+		Color backgroundColor = new CssStringColor("color-mix(in srgb, var(--ta-bg-color) 85%, #9e9e9e)");
 		Template template = Templates.ORGANIZATION_GRAPH_SMALL_GREY_TEMPLATE;
 		switch (chartNode.getRoleType()) {
 			case LEADER -> {
 				borderColor = Color.MATERIAL_BLUE_700;
-				backgroundColor = Color.MATERIAL_BLUE_100;
+				backgroundColor = new CssStringColor("color-mix(in srgb, var(--ta-bg-color) 85%, #1976d2)");
 				template = Templates.ORGANIZATION_GRAPH_SMALL_BlUE_TEMPLATE;
 			}
 			case ASSISTANT, MENTOR, ADMINISTRATOR -> {
 				borderColor = Color.MATERIAL_GREEN_900;
-				backgroundColor = Color.MATERIAL_GREEN_100;
+				backgroundColor = new CssStringColor("color-mix(in srgb, var(--ta-bg-color) 85%, #43a047)");
 				template = Templates.ORGANIZATION_GRAPH_SMALL_GREEN_TEMPLATE;
 			}
 			case OTHER -> {
 				borderColor = Color.MATERIAL_GREY_700;
-				backgroundColor = Color.MATERIAL_GREY_100;
+				backgroundColor = new CssStringColor("color-mix(in srgb, var(--ta-bg-color) 85%, #9e9e9e)");
 				template = Templates.ORGANIZATION_GRAPH_SMALL_GREY_TEMPLATE;
 			}
 		}

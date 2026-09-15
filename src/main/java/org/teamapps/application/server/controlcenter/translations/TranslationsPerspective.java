@@ -19,6 +19,7 @@
  */
 package org.teamapps.application.server.controlcenter.translations;
 
+import org.teamapps.common.format.CssStringColor;
 import org.teamapps.application.api.application.ApplicationInstanceData;
 import org.teamapps.application.api.localization.Dictionary;
 import org.teamapps.application.api.localization.Language;
@@ -85,8 +86,8 @@ public class TranslationsPerspective extends AbstractManagedApplicationPerspecti
 		View localizationKeyView = View.createView(StandardLayout.CENTER, ApplicationIcons.SPELL_CHECK, getLocalized("translations.overView"), null);
 		View topicImageView = View.createView(StandardLayout.CENTER_BOTTOM, ApplicationIcons.FORM, getLocalized(Dictionary.PREVIEW_IMAGE), null);
 		View translationView = View.createView(StandardLayout.RIGHT, ApplicationIcons.SPELL_CHECK, getLocalized("translations.translation"), null);
-		localizationKeyView.getPanel().setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.9f));
-		translationView.getPanel().setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.9f));
+		localizationKeyView.getPanel().setBodyBackgroundColor(new CssStringColor("color-mix(in srgb, var(--ta-bg-color) 90%, transparent)"));
+		translationView.getPanel().setBodyBackgroundColor(new CssStringColor("color-mix(in srgb, var(--ta-bg-color) 90%, transparent)"));
 
 		topicImageView.setVisible(false);
 
@@ -165,7 +166,7 @@ public class TranslationsPerspective extends AbstractManagedApplicationPerspecti
 		keyTable.setDisplayAsList(true);
 		keyTable.setStripedRows(false);
 
-		keyTable.setCssStyle("background-color", "white");
+		keyTable.setCssStyle("background-color", "var(--ta-bg-color)");
 		keyTable.setCssStyle("border-top", "1px solid " + Color.MATERIAL_GREY_400.toHtmlColorString());
 		keyTable.setRowHeight(28);
 

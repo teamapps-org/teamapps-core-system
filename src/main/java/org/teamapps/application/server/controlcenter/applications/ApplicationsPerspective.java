@@ -19,6 +19,7 @@
  */
 package org.teamapps.application.server.controlcenter.applications;
 
+import org.teamapps.common.format.CssStringColor;
 import org.teamapps.application.api.application.ApplicationInstanceData;
 import org.teamapps.application.api.application.perspective.PerspectiveMenuPanel;
 import org.teamapps.application.api.localization.Dictionary;
@@ -33,7 +34,6 @@ import org.teamapps.application.tools.EntityListModelBuilder;
 import org.teamapps.application.tools.EntityModelBuilder;
 import org.teamapps.application.ux.IconUtils;
 import org.teamapps.application.ux.UiUtils;
-import org.teamapps.common.format.Color;
 import org.teamapps.databinding.MutableValue;
 import org.teamapps.model.controlcenter.*;
 import org.teamapps.universaldb.index.file.FileValue;
@@ -88,7 +88,7 @@ public class ApplicationsPerspective extends AbstractManagedApplicationPerspecti
 		View applicationVersionsView = getPerspective().addView(View.createView(StandardLayout.CENTER_BOTTOM, ApplicationIcons.BOX_SOFTWARE, getLocalized("applications.versions"), null));
 		View applicationDetailsView = getPerspective().addView(View.createView(StandardLayout.RIGHT, ApplicationIcons.BOX_SOFTWARE, getLocalized("applications.application"), null));
 		View applicationVersionDetailsView = getPerspective().addView(View.createView(StandardLayout.RIGHT_BOTTOM, ApplicationIcons.BOX_SOFTWARE, getLocalized("applications.appVersion"), null));
-		applicationDetailsView.getPanel().setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30, .7f) : Color.WHITE.withAlpha(0.9f));
+		applicationDetailsView.getPanel().setBodyBackgroundColor(new CssStringColor("color-mix(in srgb, var(--ta-bg-color) 90%, transparent)"));
 
 		EntityModelBuilder<Application> applicationModelBuilder = new EntityModelBuilder<>(Application::filter, getApplicationInstanceData());
 		Table<Application> applicationsTable = applicationModelBuilder.createTemplateFieldTableList(BaseTemplate.LIST_ITEM_VERY_LARGE_ICON_TWO_LINES, PropertyProviders.createApplicationPropertyProvider(userSessionData), 60);

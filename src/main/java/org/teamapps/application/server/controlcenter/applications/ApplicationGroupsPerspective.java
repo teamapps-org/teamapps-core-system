@@ -19,6 +19,7 @@
  */
 package org.teamapps.application.server.controlcenter.applications;
 
+import org.teamapps.common.format.CssStringColor;
 import org.teamapps.application.api.application.ApplicationInstanceData;
 import org.teamapps.application.api.localization.Dictionary;
 import org.teamapps.application.api.theme.ApplicationIcons;
@@ -32,7 +33,6 @@ import org.teamapps.application.tools.EntityListModelBuilder;
 import org.teamapps.application.ux.IconUtils;
 import org.teamapps.application.ux.UiUtils;
 import org.teamapps.application.ux.form.FormPanel;
-import org.teamapps.common.format.Color;
 import org.teamapps.databinding.MutableValue;
 import org.teamapps.icons.Icon;
 import org.teamapps.model.controlcenter.ManagedApplication;
@@ -70,7 +70,7 @@ public class ApplicationGroupsPerspective extends AbstractManagedApplicationPers
 	private void createUi() {
 		View groupsView = View.createView(StandardLayout.CENTER, ApplicationIcons.WINDOWS, getLocalized("applicationGroups.title"), null);
 		View applicationDetailsView = View.createView(StandardLayout.RIGHT, ApplicationIcons.WINDOWS, getLocalized("applicationGroups.title"), null);
-		applicationDetailsView.getPanel().setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.9f));
+		applicationDetailsView.getPanel().setBodyBackgroundColor(new CssStringColor("color-mix(in srgb, var(--ta-bg-color) 90%, transparent)"));
 
 		ToolbarButtonGroup buttonGroup = applicationDetailsView.addWorkspaceButtonGroup(new ToolbarButtonGroup());
 		ToolbarButton addGroupButton = buttonGroup.addButton(ToolbarButton.create(ApplicationIcons.ADD, getLocalized("applicationGroups.addGroup"), getLocalized("applicationGroups.addGroup.desc")));

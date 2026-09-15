@@ -19,6 +19,7 @@
  */
 package org.teamapps.application.server.system.launcher;
 
+import org.teamapps.common.format.CssStringColor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.teamapps.application.api.application.perspective.ApplicationPerspective;
@@ -29,7 +30,6 @@ import org.teamapps.application.server.system.application.AbstractManagedApplica
 import org.teamapps.application.server.system.session.ManagedApplicationSessionData;
 import org.teamapps.application.server.system.session.PerspectiveSessionData;
 import org.teamapps.application.server.system.session.UserSessionData;
-import org.teamapps.common.format.Color;
 import org.teamapps.databinding.MutableValue;
 import org.teamapps.model.controlcenter.ManagedApplicationPerspective;
 import org.teamapps.ux.application.ResponsiveApplication;
@@ -136,7 +136,7 @@ public class ApplicationInstance implements PerspectiveByNameLauncher {
 				applicationMenuTree = createApplicationMenuTree(sortedPerspectives);
 				View applicationMenu = View.createView(StandardLayout.LEFT, ApplicationIcons.RADIO_BUTTON_GROUP, getLocalized(Dictionary.MENU), null);
 				responsiveApplication.addApplicationView(applicationMenu);
-				applicationMenu.getPanel().setBodyBackgroundColor(userSessionData.isDarkTheme() ? Color.fromRgba(30, 30, 30, .7f) : Color.WHITE.withAlpha(0.84f));
+				applicationMenu.getPanel().setBodyBackgroundColor(new CssStringColor("color-mix(in srgb, var(--ta-bg-color) 84%, transparent)"));
 				VerticalLayout verticalLayout = new VerticalLayout();
 				applicationMenu.setComponent(verticalLayout);
 
@@ -176,7 +176,7 @@ public class ApplicationInstance implements PerspectiveByNameLauncher {
 
 		if (sortedPerspectives.size() > 1) {
 			mobileApplicationMenu = View.createView(StandardLayout.LEFT, ApplicationIcons.RADIO_BUTTON_GROUP, getLocalized(Dictionary.APPLICATION_MENU), null);
-			mobileApplicationMenu.getPanel().setBodyBackgroundColor(userSessionData.isDarkTheme() ? Color.fromRgba(30, 30, 30, .7f) : Color.WHITE.withAlpha(0.84f));
+			mobileApplicationMenu.getPanel().setBodyBackgroundColor(new CssStringColor("color-mix(in srgb, var(--ta-bg-color) 84%, transparent)"));
 			responsiveApplication.addApplicationView(mobileApplicationMenu);
 			mobileLayout = new MobileLayout();
 			mobileApplicationMenu.setComponent(mobileLayout);

@@ -36,9 +36,9 @@ public enum Templates implements Template {
 	LIST_4_LINES_TEMPLATE(create4LinesTemplate()),
 	NODE_TEMPLATE(createNodeTemplate()),
 	ORGANIZATION_GRAPH_TEMPLATE(createOrganizationGraphTreeNodeTpl()),
-	ORGANIZATION_GRAPH_SMALL_BlUE_TEMPLATE(createOrganizationGraphTreeNodeSmallTpl(Color.MATERIAL_BLUE_900)),
-	ORGANIZATION_GRAPH_SMALL_GREEN_TEMPLATE(createOrganizationGraphTreeNodeSmallTpl(Color.MATERIAL_GREEN_900)),
-	ORGANIZATION_GRAPH_SMALL_GREY_TEMPLATE(createOrganizationGraphTreeNodeSmallTpl(Color.MATERIAL_GREY_900)),
+	ORGANIZATION_GRAPH_SMALL_BlUE_TEMPLATE(createOrganizationGraphTreeNodeSmallTpl(Color.fromVariableName("--ta-link-color"))),
+	ORGANIZATION_GRAPH_SMALL_GREEN_TEMPLATE(createOrganizationGraphTreeNodeSmallTpl(Color.fromVariableName("--ta-text-color"))),
+	ORGANIZATION_GRAPH_SMALL_GREY_TEMPLATE(createOrganizationGraphTreeNodeSmallTpl(Color.fromVariableName("--ta-text-color"))),
 	;
 
 	public final static String PROPERTY_IMAGE = BaseTemplate.PROPERTY_IMAGE;
@@ -120,17 +120,17 @@ public enum Templates implements Template {
 				.addRow(SizeType.FIXED, 16, 16, 0, 0)
 				.addElement(new TextElement(PROPERTY_CAPTION, 0, 0)
 						.setWrapLines(false)
-						.setFontStyle(new FontStyle(1.2f, Color.MATERIAL_BLUE_900, null, false, false, false))
+						.setFontStyle(new FontStyle(1.2f, Color.fromVariableName("--ta-link-color"), null, false, false, false))
 						.setVerticalAlignment(VerticalElementAlignment.CENTER)
 						.setHorizontalAlignment(HorizontalElementAlignment.LEFT))
 				.addElement(new TextElement(PROPERTY_DESCRIPTION, 1, 0)
 						.setWrapLines(false)
-						.setFontStyle(new FontStyle(1f, Color.MATERIAL_GREY_900, null, true, false, false))
+						.setFontStyle(new FontStyle(1f, Color.fromVariableName("--ta-text-color"), null, true, false, false))
 						.setVerticalAlignment(VerticalElementAlignment.CENTER)
 						.setHorizontalAlignment(HorizontalElementAlignment.LEFT))
 				.addElement(new TextElement(PROPERTY_LINE3, 2, 0)
 						.setWrapLines(false)
-						.setFontStyle(new FontStyle(1f, Color.MATERIAL_GREY_700, null, false, false, false))
+						.setFontStyle(new FontStyle(1f, Color.fromVariableName("--ta-text-color-gray"), null, false, false, false))
 						.setVerticalAlignment(VerticalElementAlignment.CENTER)
 						.setHorizontalAlignment(HorizontalElementAlignment.LEFT)
 				);
@@ -150,7 +150,7 @@ public enum Templates implements Template {
 						.setHorizontalAlignment(HorizontalElementAlignment.LEFT))
 				.addElement(new TextElement(PROPERTY_LINE3, 1, 0)
 						.setWrapLines(false)
-						.setFontStyle(new FontStyle(1f, Color.MATERIAL_GREY_700, null, false, false, false))
+						.setFontStyle(new FontStyle(1f, Color.fromVariableName("--ta-text-color-gray"), null, false, false, false))
 						.setVerticalAlignment(VerticalElementAlignment.CENTER)
 						.setHorizontalAlignment(HorizontalElementAlignment.LEFT));
 		return tpl;
@@ -180,22 +180,22 @@ public enum Templates implements Template {
 								.setMargin(new Spacing(0, 4, 0, 0)))
 						.addElement(new TextElement(PROPERTY_CAPTION, 0, 0)
 								.setWrapLines(false)
-								.setFontStyle(new FontStyle(1f, Color.MATERIAL_GREY_900, null, true, false, false)))
+								.setFontStyle(new FontStyle(1f, Color.fromVariableName("--ta-text-color"), null, true, false, false)))
 						.setVerticalAlignment(VerticalElementAlignment.CENTER)
 						.setHorizontalAlignment(HorizontalElementAlignment.LEFT))
 				.addElement(new TextElement(PROPERTY_DESCRIPTION, 1, 1)
 						.setWrapLines(false)
-						.setFontStyle(new FontStyle(1f, Color.MATERIAL_GREY_700, null, false, false, false))
+						.setFontStyle(new FontStyle(1f, Color.fromVariableName("--ta-text-color-gray"), null, false, false, false))
 						.setVerticalAlignment(VerticalElementAlignment.CENTER)
 						.setHorizontalAlignment(HorizontalElementAlignment.LEFT))
 				.addElement(new TextElement(PROPERTY_LINE3, 2, 1)
 						.setWrapLines(false)
-						.setFontStyle(new FontStyle(1f, Color.MATERIAL_GREY_700, null, false, false, false))
+						.setFontStyle(new FontStyle(1f, Color.fromVariableName("--ta-text-color-gray"), null, false, false, false))
 						.setVerticalAlignment(VerticalElementAlignment.CENTER)
 						.setHorizontalAlignment(HorizontalElementAlignment.LEFT))
 				.addElement(new TextElement(PROPERTY_LINE4, 3, 1)
 						.setWrapLines(false)
-						.setFontStyle(new FontStyle(1f, Color.MATERIAL_BLUE_900, null, true, false, false))
+						.setFontStyle(new FontStyle(1f, Color.fromVariableName("--ta-link-color"), null, true, false, false))
 						.setVerticalAlignment(VerticalElementAlignment.CENTER)
 						.setHorizontalAlignment(HorizontalElementAlignment.LEFT));
 		tpl.setBorder(new Border(new Line(Color.MATERIAL_GREY_300, LineType.SOLID, 0.5f), null, null, null));

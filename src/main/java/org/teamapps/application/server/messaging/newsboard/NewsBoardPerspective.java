@@ -19,6 +19,7 @@
  */
 package org.teamapps.application.server.messaging.newsboard;
 
+import org.teamapps.common.format.CssStringColor;
 import org.teamapps.application.api.application.ApplicationInstanceData;
 import org.teamapps.application.api.localization.Dictionary;
 import org.teamapps.application.api.theme.ApplicationIcons;
@@ -27,7 +28,6 @@ import org.teamapps.application.server.messaging.newsboard.views.MessageView;
 import org.teamapps.application.server.system.application.AbstractManagedApplicationPerspective;
 import org.teamapps.application.server.system.session.PerspectiveSessionData;
 import org.teamapps.application.server.system.session.UserSessionData;
-import org.teamapps.common.format.Color;
 import org.teamapps.databinding.MutableValue;
 import org.teamapps.model.controlcenter.NewsBoardMessage;
 import org.teamapps.universaldb.index.numeric.NumericFilter;
@@ -56,7 +56,7 @@ public class NewsBoardPerspective extends AbstractManagedApplicationPerspective 
 
 	private void createUi() {
 		masterView = getPerspective().addView(View.createView(StandardLayout.CENTER, ApplicationIcons.MESSAGE, getLocalized("newsBoard.title"), null));
-		masterView.getPanel().setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.1f));
+		masterView.getPanel().setBodyBackgroundColor(new CssStringColor("color-mix(in srgb, var(--ta-bg-color) 10%, transparent)"));
 
 		updateMessages();
 

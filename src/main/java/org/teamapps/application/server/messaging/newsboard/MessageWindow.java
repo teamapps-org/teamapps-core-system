@@ -19,6 +19,7 @@
  */
 package org.teamapps.application.server.messaging.newsboard;
 
+import org.teamapps.common.format.CssStringColor;
 import net.coobird.thumbnailator.Thumbnailator;
 import org.teamapps.application.api.application.AbstractApplicationView;
 import org.teamapps.application.api.application.ApplicationInstanceData;
@@ -31,7 +32,6 @@ import org.teamapps.application.server.messaging.newsboard.views.LanguageSelecti
 import org.teamapps.application.server.messaging.newsboard.views.MessageView;
 import org.teamapps.application.server.system.bootstrap.SystemRegistry;
 import org.teamapps.application.server.ui.dialogue.UploadDialogue;
-import org.teamapps.common.format.Color;
 import org.teamapps.databinding.TwoWayBindableValue;
 import org.teamapps.icon.flags.FlagIcon;
 import org.teamapps.icons.composite.CompositeIcon;
@@ -76,15 +76,15 @@ public class MessageWindow extends AbstractApplicationView {
 
 
 		View languageView = perspective.addView(View.createView(StandardLayout.LEFT, ApplicationIcons.EARTH, getLocalized(Dictionary.LANGUAGE), null));
-		languageView.getPanel().setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.94f));
+		languageView.getPanel().setBodyBackgroundColor(new CssStringColor("color-mix(in srgb, var(--ta-bg-color) 94%, transparent)"));
 		languageView.setVisible(false);
 
 		centerView = perspective.addView(View.createView(StandardLayout.CENTER, ApplicationIcons.MESSAGE, getLocalized("newsBoard.message"), null));
-		centerView.getPanel().setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.7f));
+		centerView.getPanel().setBodyBackgroundColor(new CssStringColor("color-mix(in srgb, var(--ta-bg-color) 70%, transparent)"));
 
 
 		View imageView = perspective.addView(View.createView(ExtendedLayout.OUTER_RIGHT, ApplicationIcons.PHOTO_LANDSCAPE, getLocalized("newsBoard.images"), null));
-		imageView.getPanel().setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.94f));
+		imageView.getPanel().setBodyBackgroundColor(new CssStringColor("color-mix(in srgb, var(--ta-bg-color) 94%, transparent)"));
 		imageView.setSize(ViewSize.ofAbsoluteWidth(120));
 		imageView.setSize(ViewSize.ofRelativeWidth(0.15f));
 		imageView.setVisible(false);
@@ -253,7 +253,7 @@ public class MessageWindow extends AbstractApplicationView {
 		window.setResizable(true);
 		window.setIcon(ApplicationIcons.MESSAGE);
 		window.setTitle(getLocalized("newsBoard.message"));
-		window.setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.3f));
+		window.setBodyBackgroundColor(new CssStringColor("color-mix(in srgb, var(--ta-bg-color) 30%, transparent)"));
 		window.setMaximizable(true);
 		window.setCloseable(true);
 		window.setCloseOnEscape(true);

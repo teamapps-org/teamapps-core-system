@@ -19,13 +19,13 @@
  */
 package org.teamapps.application.server.settings;
 
+import org.teamapps.common.format.CssStringColor;
 import org.teamapps.application.api.application.ApplicationInstanceData;
 import org.teamapps.application.api.application.perspective.AbstractApplicationPerspective;
 import org.teamapps.application.api.localization.Dictionary;
 import org.teamapps.application.api.localization.Language;
 import org.teamapps.application.api.theme.ApplicationIcons;
 import org.teamapps.application.ux.UiUtils;
-import org.teamapps.common.format.Color;
 import org.teamapps.databinding.MutableValue;
 import org.teamapps.model.controlcenter.User;
 import org.teamapps.ux.application.layout.StandardLayout;
@@ -47,7 +47,7 @@ public class UserLanguageSettingsPerspective extends AbstractApplicationPerspect
 	private void createUi() {
 		Perspective perspective = getPerspective();
 		View view = perspective.addView(View.createView(StandardLayout.CENTER, ApplicationIcons.DICTIONARY, getLocalized(Dictionary.LANGUAGE), null));
-		view.getPanel().setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.9f));
+		view.getPanel().setBodyBackgroundColor(new CssStringColor("color-mix(in srgb, var(--ta-bg-color) 90%, transparent)"));
 
 		User user = User.getById(getApplicationInstanceData().getUser().getId());
 		ComboBox<Language> languageComboBox = Language.createComboBox(getApplicationInstanceData());

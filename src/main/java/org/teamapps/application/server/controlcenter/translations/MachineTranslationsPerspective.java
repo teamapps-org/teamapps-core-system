@@ -19,6 +19,7 @@
  */
 package org.teamapps.application.server.controlcenter.translations;
 
+import org.teamapps.common.format.CssStringColor;
 import org.teamapps.application.api.application.ApplicationInstanceData;
 import org.teamapps.application.api.localization.Dictionary;
 import org.teamapps.application.api.localization.Language;
@@ -100,8 +101,8 @@ public class MachineTranslationsPerspective extends AbstractManagedApplicationPe
 	private void createUi() {
 		View localizationKeyView = View.createView(StandardLayout.CENTER, ApplicationIcons.EARTH_LINK, getLocalized("machineTranslation.title"), null);
 		View translationView = View.createView(StandardLayout.RIGHT, ApplicationIcons.EARTH_LINK, getLocalized("machineTranslation.title"), null);
-		localizationKeyView.getPanel().setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.9f));
-		translationView.getPanel().setBodyBackgroundColor(getUser().isDarkTheme() ? Color.fromRgba(30, 30, 30,.7f) : Color.WHITE.withAlpha(0.9f));
+		localizationKeyView.getPanel().setBodyBackgroundColor(new CssStringColor("color-mix(in srgb, var(--ta-bg-color) 90%, transparent)"));
+		translationView.getPanel().setBodyBackgroundColor(new CssStringColor("color-mix(in srgb, var(--ta-bg-color) 90%, transparent)"));
 
 
 		ToolbarButtonGroup buttonGroup = localizationKeyView.addWorkspaceButtonGroup(new ToolbarButtonGroup());
@@ -126,7 +127,7 @@ public class MachineTranslationsPerspective extends AbstractManagedApplicationPe
 		keyTable.setDisplayAsList(true);
 		keyTable.setStripedRows(false);
 
-		keyTable.setCssStyle("background-color", "white");
+		keyTable.setCssStyle("background-color", "var(--ta-bg-color)");
 		keyTable.setCssStyle("border-top", "1px solid " + Color.MATERIAL_GREY_400.toHtmlColorString());
 		keyTable.setRowHeight(28);
 

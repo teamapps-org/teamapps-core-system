@@ -116,7 +116,7 @@ public class SystemLogPerspective extends AbstractManagedApplicationPerspective 
 		table.setDisplayAsList(true);
 		table.setStripedRows(false);
 		table.setRowHeight(28);
-		table.setCssStyle("background-color", "white");
+		table.setCssStyle("background-color", "var(--ta-bg-color)");
 		table.setCssStyle("border-top", "1px solid " + Color.MATERIAL_GREY_400.toHtmlColorString());
 
 

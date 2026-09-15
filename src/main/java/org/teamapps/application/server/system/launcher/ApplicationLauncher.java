@@ -19,6 +19,7 @@
  */
 package org.teamapps.application.server.system.launcher;
 
+import org.teamapps.common.format.CssStringColor;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +48,6 @@ import org.teamapps.application.server.system.session.ManagedApplicationSessionD
 import org.teamapps.application.server.system.session.UserSessionData;
 import org.teamapps.application.server.system.template.PropertyProviders;
 import org.teamapps.application.ux.UiUtils;
-import org.teamapps.common.format.Color;
 import org.teamapps.databinding.TwoWayBindableValue;
 import org.teamapps.icons.Icon;
 import org.teamapps.model.controlcenter.*;
@@ -451,7 +451,7 @@ public class ApplicationLauncher {
 			perspective.addView(launcherView);
 			if (userSessionData.getOnlineUsersView() != null) {
 				View onlineUsers = View.createView(StandardLayout.RIGHT_BOTTOM, ApplicationIcons.USERS_CROWD, "Online Users", userSessionData.getOnlineUsersView().getComponent());
-				onlineUsers.getPanel().setBodyBackgroundColor(Color.WHITE.withAlpha(0.74f));
+				onlineUsers.getPanel().setBodyBackgroundColor(new CssStringColor("color-mix(in srgb, var(--ta-bg-color) 74%, transparent)"));
 				perspective.addView(onlineUsers);
 			}
 			applicationLauncherTab = new Tab(ApplicationIcons.HOME, getLocalized(Dictionary.APPLICATIONS), application.getUi());
@@ -653,7 +653,7 @@ public class ApplicationLauncher {
 		applicationsSearchField.onTextInput().addListener(launcherItemView::setFilter);
 		panel.setRightHeaderField(applicationsSearchField);
 		panel.setContent(launcherItemView);
-		panel.setBodyBackgroundColor(userSessionData.isDarkTheme() ? Color.fromRgba(30, 30, 30, .7f) : Color.WHITE.withAlpha(0.7f));
+		panel.setBodyBackgroundColor(new CssStringColor("color-mix(in srgb, var(--ta-bg-color) 70%, transparent)"));
 		applicationLauncher = panel;
 	}
 
