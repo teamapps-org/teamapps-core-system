@@ -299,7 +299,10 @@ public class ApplicationInstance implements PerspectiveByNameLauncher {
 			} else {
 				mobileLayout.setContent(applicationPerspective.getPerspectiveMenuPanel());
 			}
-			perspectiveSessionData.getManagedApplicationSessionData().getMobileNavigation().setBackOperationAvailable(true);
+			Component perspectiveMenu = applicationPerspective.getPerspectiveMenuPanel();
+			MobileApplicationNavigation navigation = perspectiveSessionData.getManagedApplicationSessionData().getMobileNavigation();
+			navigation.setForwardOperation(() -> mobileLayout.setContent(perspectiveMenu, PageTransition.MOVE_TO_LEFT_VS_MOVE_FROM_RIGHT, 500));
+			navigation.setBackOperationAvailable(true);
 		}
 
 		return applicationPerspective;

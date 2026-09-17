@@ -31,6 +31,23 @@ public class MobileApplicationNavigation implements MobileNavigation {
 	private Component applicationLauncher;
 	private View applicationMenu;
 	private boolean backOperationAvailable;
+	private Runnable forwardOperation;
+	final Event<Void> onNavigationStateChanged = new Event<>();
+
+	void setForwardOperation(Runnable forwardOperation) {
+		this.forwardOperation = forwardOperation;
+	}
+
+	boolean hasForwardOperation() {
+		return forwardOperation != null;
+	}
+
+	void fireForwardOperation() {
+		if (!backOperationAvailable && forwardOperation != null) {
+			forwardOperation.run();
+			setBackOperationAvailable(true);
+		}
+	}
 
 	public void setApplicationLauncher(Component applicationLauncher) {
 		this.applicationLauncher = applicationLauncher;
@@ -69,9 +86,11 @@ public class MobileApplicationNavigation implements MobileNavigation {
 	public void fireBackOperation() {
 		backOperationAvailable = false;
 		onBackOperation.fire();
+		onNavigationStateChanged.fire();
 	}
 
 	public void setBackOperationAvailable(boolean backOperationAvailable) {
 		this.backOperationAvailable = backOperationAvailable;
+		onNavigationStateChanged.fire();
 	}
 }

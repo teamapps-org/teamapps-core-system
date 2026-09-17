@@ -99,13 +99,11 @@ public class MobileAssembler implements ApplicationAssembler {
 		ToolbarButton backButton = new ToolbarButton(BaseTemplate.LIST_ITEM_MEDIUM_ICON_SINGLE_LINE, new BaseTemplateRecord<>(ApplicationIcons.NAVIGATE_LEFT, getLocalized(Dictionary.BACK)));
 		leftGroup.addButton(backButton);
 		leftGroup.setShowGroupSeparator(false);
-		backButton.onClick.addListener(() -> {
-			if (activeView != null && activeView.equals(mobileNavigation.getApplicationMenuView()) && mobileNavigation.isBackOperationAvailable()) {
-				mobileNavigation.fireBackOperation();
-			} else {
-				goBack();
-			}
-		});
+		backButton.onClick.addListener(this::navigateBack);
+		mobileLayout.onNavigationRequested.addListener(this::navigateToEntry);
+		if (mobileNavigation instanceof MobileApplicationNavigation navigation) {
+			navigation.onNavigationStateChanged.addListener(this::updateNavigationState);
+		}
 
 		mobileNavigation.onShowStartViewRequest().addListener(() -> {
 			setNavigationToolbarVisible(true);
@@ -164,6 +162,68 @@ public class MobileAssembler implements ApplicationAssembler {
 		setNavigationToolbarVisible(false);
 	}
 
+
+	void navigateBack() {
+		if (activeView != null && activeView.equals(mobileNavigation.getApplicationMenuView()) && mobileNavigation.isBackOperationAvailable()) {
+			mobileNavigation.fireBackOperation();
+			updateNavigationState();
+		} else {
+			goBack();
+		}
+	}
+
+	private record NavigationEntry(String id, View view, boolean menuOverview) {}
+
+	private List<NavigationEntry> navigationEntries() {
+		List<NavigationEntry> entries = new ArrayList<>();
+		entries.add(new NavigationEntry("home", null, false));
+		List<View> views = new ArrayList<>(applicationViews);
+		views.addAll(perspectiveViews);
+		View menu = mobileNavigation.getApplicationMenuView();
+		boolean includeSubmenu = mobileNavigation.isBackOperationAvailable()
+				|| ((activeView == null || activeView == menu) && mobileNavigation instanceof MobileApplicationNavigation navigation && navigation.hasForwardOperation());
+		for (View view : views.stream().distinct().toList()) {
+			String id = view.getPanel().getId();
+			entries.add(new NavigationEntry(id, view, view == menu));
+			if (view == menu && includeSubmenu) entries.add(new NavigationEntry(id + ":submenu", view, false));
+		}
+		return entries;
+	}
+
+	private String currentNavigationEntry() {
+		if (activeView == null) return "home";
+		return activeView.getPanel().getId() + (activeView == mobileNavigation.getApplicationMenuView()
+				&& mobileNavigation.isBackOperationAvailable() ? ":submenu" : "");
+	}
+
+	private void updateNavigationState() {
+		List<String> entries = navigationEntries().stream().map(NavigationEntry::id).toList();
+		String current = currentNavigationEntry();
+		// A removed/unregistered view retains the original assembler behavior; no stale gesture may target it.
+		if (entries.contains(current)) mobileLayout.setNavigationState(entries, current, true, true);
+		else mobileLayout.clearNavigationState();
+	}
+
+	void navigateToEntry(String targetId) {
+		List<NavigationEntry> entries = navigationEntries();
+		NavigationEntry target = entries.stream().filter(e -> e.id().equals(targetId)).findFirst().orElse(null);
+		if (target == null) return;
+		int currentIndex = entries.stream().map(NavigationEntry::id).toList().indexOf(currentNavigationEntry());
+		int targetIndex = entries.indexOf(target);
+		if (targetIndex < currentIndex) {
+			// Execute the exact toolbar path, including the nested application-menu Back operation.
+			for (int i = 0; i < entries.size() && !currentNavigationEntry().equals(targetId); i++) navigateBack();
+		} else if (targetIndex > currentIndex) {
+			if (mobileNavigation instanceof MobileApplicationNavigation navigation && !target.menuOverview()
+					&& entries.subList(currentIndex + 1, targetIndex + 1).stream().anyMatch(e -> e.id().endsWith(":submenu"))) {
+				navigation.fireForwardOperation();
+			}
+			setNavigationToolbarVisible(target.view() != null);
+			showView(target.view());
+		}
+		updateNavigationState();
+	}
+
 	private String getLocalized(String key) {
 		return localizationProvider.getLocalized(key);
 	}
@@ -207,6 +267,7 @@ public class MobileAssembler implements ApplicationAssembler {
 			setNavigationToolbarVisible(true);
 			mobileLayout.setContent(activeView.getPanel(), PageTransition.MOVE_TO_RIGHT_VS_MOVE_FROM_LEFT, PAGE_TRANSITION_ANIMATION_DURATION);
 		}
+		updateNavigationState();
 	}
 
 	public void showView(View view) {
@@ -214,10 +275,12 @@ public class MobileAssembler implements ApplicationAssembler {
 			activeView = view;
 			setNavigationToolbarVisible(false);
 			mobileLayout.setContent(mobileNavigation.getApplicationLauncher(), PageTransition.MOVE_TO_RIGHT_VS_MOVE_FROM_LEFT, PAGE_TRANSITION_ANIMATION_DURATION);
+			updateNavigationState();
 			return;
 		}
 
 		if (view.equals(activeView)) {
+			updateNavigationState();
 			return;
 		}
 
@@ -241,6 +304,7 @@ public class MobileAssembler implements ApplicationAssembler {
 			mobileLayout.setContent(view.getPanel(), PageTransition.MOVE_TO_RIGHT_VS_MOVE_FROM_LEFT, PAGE_TRANSITION_ANIMATION_DURATION);
 		}
 		activeView = view;
+		updateNavigationState();
 	}
 
 	public void showInitialView() {
@@ -254,6 +318,7 @@ public class MobileAssembler implements ApplicationAssembler {
 			mobileLayout.setContent(view.getPanel(), PageTransition.MOVE_TO_LEFT_VS_MOVE_FROM_RIGHT, PAGE_TRANSITION_ANIMATION_DURATION);
 			activeView = view;
 		}
+		updateNavigationState();
 	}
 
 	@Override
@@ -291,11 +356,13 @@ public class MobileAssembler implements ApplicationAssembler {
 	@Override
 	public void handleApplicationViewAdded(ResponsiveApplication application, View view) {
 		applicationViews.add(view);
+		updateNavigationState();
 	}
 
 	@Override
 	public void handleApplicationViewRemoved(ResponsiveApplication application, View view) {
 		applicationViews.remove(view);
+		updateNavigationState();
 	}
 
 	private void updateViewsDropdown() {
@@ -323,6 +390,7 @@ public class MobileAssembler implements ApplicationAssembler {
 			mobileLayout.setContent(view.getPanel(), PageTransition.MOVE_TO_LEFT_VS_MOVE_FROM_RIGHT, PAGE_TRANSITION_ANIMATION_DURATION);
 			setNavigationToolbarVisible(true);
 		}
+		updateNavigationState();
 	}
 
 
@@ -382,6 +450,7 @@ public class MobileAssembler implements ApplicationAssembler {
 		if (isActivePerspective) {
 			mobileLayout.preloadView(view.getPanel());
 			perspectiveViews.add(view);
+			updateNavigationState();
 		}
 	}
 
@@ -389,6 +458,7 @@ public class MobileAssembler implements ApplicationAssembler {
 	public void handleViewRemoved(ResponsiveApplication application, boolean isActivePerspective, Perspective perspective, View view) {
 		if (isActivePerspective) {
 			perspectiveViews.remove(view);
+			updateNavigationState();
 		}
 	}
 
