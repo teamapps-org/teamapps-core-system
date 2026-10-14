@@ -19,8 +19,6 @@
  */
 package org.teamapps.application.server.system.launcher;
 
-import org.teamapps.application.api.application.WindowApplicationBuilder;
-
 import org.teamapps.common.format.CssStringColor;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -350,11 +348,6 @@ public class ApplicationLauncher {
 		if (managedApplication.isHidden() || registry.getLoadedApplication(managedApplication.getMainApplication()) == null) {
 			return false;
 		}
-		if (registry.getLoadedApplication(managedApplication.getMainApplication()).getBaseApplicationBuilder() instanceof WindowApplicationBuilder windowBuilder) {
-			ApplicationPrivilegeProvider privilegeProvider = userSessionData.getUserPrivileges()
-					.getApplicationPrivilegeProvider(PrivilegeApplicationKey.createUnmanagedKey(managedApplication));
-			return windowBuilder.isWindowAccessible(privilegeProvider);
-		}
 		for (ManagedApplicationPerspective managedApplicationPerspective : managedApplication.getPerspectives()) {
 			if (managedApplicationPerspective.getApplicationPerspective() != null) {
 				Application application = managedApplicationPerspective.getApplicationPerspective().getApplication();
@@ -554,12 +547,6 @@ public class ApplicationLauncher {
 	}
 
 	private void openApplication(ApplicationData applicationData) {
-		if (applicationData.getLoadedApplication().getBaseApplicationBuilder() instanceof WindowApplicationBuilder windowBuilder) {
-			if (isApplicationAccessible(applicationData.getManagedApplication())) {
-				windowBuilder.showWindow(applicationData.getApplicationSessionData().getUnmanagedApplicationData());
-			}
-			return;
-		}
 		selectedApplication.set(applicationData.getManagedApplication());
 		userSessionData.addOpenApplicationsCount();
 		LOGGER.info("Open app: " + applicationData.getManagedApplication().getQualifiedName()); //+ (selectedPerspective.get() != null ? selectedPerspective.get().getApplicationPerspective().getQualifiedName() : null));
