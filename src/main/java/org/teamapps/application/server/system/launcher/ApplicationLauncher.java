@@ -657,6 +657,11 @@ public class ApplicationLauncher {
 		applicationLauncher = panel;
 	}
 
+	/** The launcher panel, also reused as the home view inside mobile applications. */
+	public Component getLauncherComponent() {
+		return applicationLauncher;
+	}
+
 	public List<ApplicationData> getAllApplications() {
 		return sortedApplicationGroups.stream()
 				.flatMap(group -> group.getSortedApplications().stream())
